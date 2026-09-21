@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * デザイントークンの実値（tailwind.config.js の colors 参照）。
+ * <html class="dark"> の有無で --xxx-rgb を切り替えることで、
+ * ビルドし直さずにライト/ダークを反映する（ThemeProvider が付け外しする）。
+ */
+:root {
+  --canvas-rgb: 248 250 252;
+  --surface-rgb: 255 255 255;
+  --accent-rgb: 37 99 235;
+  --accent-hover-rgb: 29 78 216;
+  --ink-rgb: 30 41 59;
+  --ink-sub-rgb: 100 116 139;
+  --line-rgb: 226 232 240;
+  --danger-rgb: 220 38 38;
+}
+
+.dark {
+  --canvas-rgb: 15 23 42;
+  --surface-rgb: 30 41 59;
+  --accent-rgb: 59 130 246;
+  --accent-hover-rgb: 96 165 250;
+  --ink-rgb: 241 245 249;
+  --ink-sub-rgb: 148 163 184;
+  --line-rgb: 51 65 85;
+  --danger-rgb: 248 113 113;
+  color-scheme: dark;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: rgb(var(--ink-rgb));
+  background-color: rgb(var(--canvas-rgb));
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: rgb(var(--accent-rgb));
+  text-decoration: inherit;
+}
+a:hover {
+  color: rgb(var(--accent-hover-rgb));
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background-color: rgb(var(--canvas-rgb));
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+#root {
+  width: 100%;
+  flex:1;
+}
+
+@media screen and (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

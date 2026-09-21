@@ -1,0 +1,15 @@
+# JWT認証キー
+ACCESS_TOKEN_JWT_KEY=your-access-token-secret-key
+ACCESS_TOKEN_EXPIRES=15m
+REFRESH_TOKEN_JWT_KEY=your-refresh-token-secret-key
+REFRESH_TOKEN_EXPIRES=7d
+
+# パスワードハッシュ用ペッパー
+PEPPER=your-pepper-secret-key
+
+# CORS許可オリジン
+CORS_ORIGIN=http://127.0.0.1:5173
+
+# 機能制御
+ALLOW_USER_OPERATION=true
+ENV_PRODUCTION=false

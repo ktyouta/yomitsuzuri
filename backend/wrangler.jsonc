@@ -1,0 +1,54 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "react-hono-rpc",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-12-31",
+
+  // ──────────────────────────────────────
+  // デフォルト（ローカル開発用）
+  // wrangler dev で使用される設定
+  // ──────────────────────────────────────
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hono-rest-template-db",
+      "database_id": "local",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "vars": {
+    "ACCESS_TOKEN_EXPIRES": "15m",
+    "REFRESH_TOKEN_EXPIRES": "7d",
+    "CORS_ORIGIN": ["http://localhost:5173", "http://localhost:5174"],
+    "ALLOW_USER_OPERATION": "true",
+    "ENV_PRODUCTION": "false"
+  },
+
+  // ──────────────────────────────────────
+  // 本番環境
+  // wrangler deploy --env production で使用
+  // シークレット: wrangler secret put <KEY> --env production
+  //   - ACCESS_TOKEN_JWT_KEY
+  //   - REFRESH_TOKEN_JWT_KEY
+  //   - PEPPER
+  // ──────────────────────────────────────
+  "env": {
+    "production": {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "hono-rest-template-db",
+          "database_id": "<your-d1-database-id>",
+          "migrations_dir": "drizzle"
+        }
+      ],
+      "vars": {
+        "ACCESS_TOKEN_EXPIRES": "15m",
+        "REFRESH_TOKEN_EXPIRES": "7d",
+        "CORS_ORIGIN": ["https://<your-frontend-domain>"],
+        "ALLOW_USER_OPERATION": "false",
+        "ENV_PRODUCTION": "true"
+      }
+    }
+  }
+}
