@@ -1,6 +1,6 @@
-# React Vite Template
+# yomitsuzuri（フロントエンド）
 
-React + TypeScript + Vite を使用したフロントエンド開発用テンプレートです。
+React + TypeScript + Vite を使用したフロントエンドアプリケーションです。
 
 ## 技術スタック
 

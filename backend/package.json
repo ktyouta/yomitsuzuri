@@ -1,5 +1,5 @@
 {
-  "name": "react-hono-rpc-backend",
+  "name": "yomitsuzuri-backend",
   "type": "module",
   "scripts": {
     "start": "npm run dev",
@@ -7,9 +7,9 @@
     "test": "vitest",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply hono-rest-template-db --local",
-    "db:migrate:prod": "wrangler d1 migrations apply hono-rest-template-db --env production --remote",
-    "db:seed:local": "wrangler d1 execute hono-rest-template-db --local --file=./seed/seed.sql",
+    "db:migrate:local": "wrangler d1 migrations apply yomitsuzuri-db --local",
+    "db:migrate:prod": "wrangler d1 migrations apply yomitsuzuri-db --env production --remote",
+    "db:seed:local": "wrangler d1 execute yomitsuzuri-db --local --file=./seed/seed.sql",
     "deploy:prod": "wrangler deploy --env production --minify"
   },
   "dependencies": {

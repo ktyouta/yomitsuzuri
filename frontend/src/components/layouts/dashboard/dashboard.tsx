@@ -106,7 +106,7 @@ export function Dashboard(props: PropsType) {
                             className="block truncate text-sm sm:text-xl font-bold text-accent cursor-pointer"
                             onClick={props.moveHome}
                         >
-                            React Hono RPC DDD Template
+                            yomitsuzuri
                         </span>
                     </div>
                     {/* ユーザーアイコン */}

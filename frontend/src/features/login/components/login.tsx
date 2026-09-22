@@ -34,7 +34,7 @@ export function Login(props: PropsType) {
             {isLoading && <LoadingOverlay />}
             <div className="w-full max-w-lg bg-surface rounded-xl shadow-lg p-8 sm:p-10">
                 <h1 className="text-lg sm:text-2xl font-bold text-accent text-center mb-8 leading-snug">
-                    React Hono RPC DDD Template
+                    yomitsuzuri
                 </h1>
                 {errMessage && (
                     <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg p-4 mb-6">

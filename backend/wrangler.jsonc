@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "react-hono-rpc",
+  "name": "yomitsuzuri",
   "main": "src/index.ts",
   "compatibility_date": "2025-12-31",
 
@@ -11,7 +11,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "hono-rest-template-db",
+      "database_name": "yomitsuzuri-db",
       "database_id": "local",
       "migrations_dir": "drizzle"
     }
@@ -37,7 +37,7 @@
       "d1_databases": [
         {
           "binding": "DB",
-          "database_name": "hono-rest-template-db",
+          "database_name": "yomitsuzuri-db",
           "database_id": "<your-d1-database-id>",
           "migrations_dir": "drizzle"
         }

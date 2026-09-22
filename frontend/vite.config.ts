@@ -23,9 +23,9 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//],
       },
       manifest: {
-        name: 'React Hono RPC DDD Template',
-        short_name: 'React Hono RPC DDD Template',
-        description: 'React + Hono + RPC を用いたフロントエンド・バックエンド統合テンプレート（認証付き）',
+        name: 'yomitsuzuri',
+        short_name: 'yomitsuzuri',
+        description: 'React + Hono + RPC を用いたフロントエンド・バックエンド統合アプリケーション（認証付き）',
         start_url: '/',
         display: 'standalone',
         background_color: '#18181b',

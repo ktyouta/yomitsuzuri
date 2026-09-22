@@ -1,6 +1,6 @@
-# React + Hono RPC Template
+# yomitsuzuri
 
-JWT 認証付きのフルスタックテンプレート。React フロントエンドと Hono バックエンドを Hono RPC で型安全に連携する。
+JWT 認証付きのフルスタックアプリケーション（React + Hono RPC）。React フロントエンドと Hono バックエンドを Hono RPC で型安全に連携する。React + Hono RPC テンプレートを元に作成した実プロジェクトであり、テンプレート自体ではない。
 
 ## 技術スタック
 
@@ -25,7 +25,7 @@ JWT 認証付きのフルスタックテンプレート。React フロントエ�
 ## ディレクトリ構成
 
 ```
-react-hono-rpc-ddd-template/
+yomitsuzuri/
 ├── backend/                  # Hono バックエンド（Cloudflare Workers）
 │   ├── src/
 │   │   ├── domain/           # Entity・Value Object・Repository interface（何にも依存しない）
@@ -262,7 +262,7 @@ const data = await res.json();
 
 ### sample 機能について
 
-`frontend/src/features/sample/` はテンプレートの**リファレンス実装**として用意されている。Container / Presentational パターン、hooks、Storybook の書き方の参考として利用し、実際のプロジェクトでは削除または置き換える想定。
+`frontend/src/features/sample/`（および backend 側の `sample` 配下）は元テンプレートの**リファレンス実装**であり、Container / Presentational パターン、hooks、Storybook の書き方の参考として用意されたもの。本プロジェクトでは現時点で未削除のまま残っており、不要になった時点で削除または置き換えを検討する。
 
 ### ルート package.json の hono 依存
 
@@ -279,12 +279,13 @@ const data = await res.json();
 
 バックエンドでは `@/` パスエイリアスを設定していない（相対パスで import する）。フロントエンドの `tsconfig` が `@/*` を `frontend/src/*` にマッピングしているため、バックエンドに同様のエイリアスを追加すると、RPC 型チェーンでバックエンドファイルを処理する際に誤解決される。
 
-### DB 名・ワーカー名の変更
+### DB 名・ワーカー名
 
-テンプレートを自分のプロジェクトに適用する際は、以下の設定値を変更する:
+このプロジェクトでは以下の設定値を使用している（リポジトリ名 `yomitsuzuri` に合わせて設定済み）:
 
-| 設定 | ファイル | 現在の値 | 変更箇所 |
+| 設定 | ファイル | 値 | 該当箇所 |
 |---|---|---|---|
-| ワーカー名 | `backend/wrangler.jsonc` | `react-hono-rpc` | `"name"` フィールド |
-| DB 名 | `backend/wrangler.jsonc` | `hono-rest-template-db` | `"database_name"`（デフォルト + production の両方） |
-| DB 名 | `backend/package.json` | `hono-rest-template-db` | `db:migrate:*` / `db:seed:*` スクリプト内 |
+| ワーカー名 | `backend/wrangler.jsonc` | `yomitsuzuri` | `"name"` フィールド |
+| DB 名 | `backend/wrangler.jsonc` | `yomitsuzuri-db` | `"database_name"`（デフォルト + production の両方） |
+| DB 名 | `backend/package.json` | `yomitsuzuri-db` | `db:migrate:*` / `db:seed:*` スクリプト内 |
+

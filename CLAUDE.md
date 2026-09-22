@@ -1,13 +1,13 @@
 # プロジェクト概要
 
-React + Hono + RPC を用いたフロントエンド・バックエンド統合テンプレート（認証付き）
+yomitsuzuri は React + Hono + RPC を用いたフロントエンド・バックエンド統合アプリケーション（認証付き）である。
 
 * フロントエンド：React（Vite）
 * バックエンド：Hono（Cloudflare Workers 前提）
 * 通信方式：Hono RPC（型安全通信）
 * データベース：Cloudflare D1（SQLite）+ Drizzle ORM
 
-本リポジトリは **テンプレート用途** を目的としており、設計の分かりやすさ・拡張のしやすさを最優先とする。
+本リポジトリは React + Hono RPC テンプレートを元に作成した実プロジェクトであり、テンプレート自体ではない。設計の分かりやすさ・拡張のしやすさは引き続き重視する。
 
 ---
 
@@ -114,8 +114,8 @@ React + Hono + RPC を用いたフロントエンド・バックエンド統合�
 
 ### sample 機能
 
-* `features/sample/` はテンプレートのリファレンス実装（Container / Presentational パターンの参考）
-* 実際のプロジェクトでは削除または置き換える想定
+* `features/sample/` は元テンプレートのリファレンス実装（Container / Presentational パターンの参考）が未使用のまま残っているもの
+* 本プロジェクトでは削除または置き換えを検討すること（現時点では未実施）
 
 ---
 
