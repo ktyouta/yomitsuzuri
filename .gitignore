@@ -62,3 +62,9 @@ lerna-debug.log*
 !.claude/incidents-template.md
 
 tmpclaude-*
+
+# =====================
+# local temp
+# =====================
+/tmp/*
+!/tmp/README.md
