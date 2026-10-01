@@ -7,7 +7,6 @@ import { RefreshToken } from "../../../domain";
 import { GetUserProfileRepository, UserLoginRepository } from "../../../infrastructure";
 import type { AppEnv } from "../../../types";
 import { formatZodErrors } from "../../../util";
-import { UserLoginResponseDto } from "../dto";
 import { UserLoginSchema } from "../schema";
 
 const userLogin = new Hono<AppEnv>().post(
@@ -31,11 +30,11 @@ const userLogin = new Hono<AppEnv>().post(
             return c.json({ message: "IDかパスワードが間違っています。" }, HTTP_STATUS.UNAUTHORIZED);
         }
 
-        const responseDto = new UserLoginResponseDto(result.userInfo, result.accessToken.token);
+        const { accessToken, refreshToken, user } = result.value;
 
-        setCookie(c, RefreshToken.COOKIE_KEY, result.refreshToken.value, RefreshToken.getCookieSetOption(config));
+        setCookie(c, RefreshToken.COOKIE_KEY, refreshToken, RefreshToken.getCookieSetOption(config));
 
-        return c.json({ message: "ログイン成功", data: responseDto.value }, HTTP_STATUS.OK);
+        return c.json({ message: "ログイン成功", data: { accessToken, user } }, HTTP_STATUS.OK);
     }
 );
 

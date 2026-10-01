@@ -1,11 +1,12 @@
 import type { EnvConfig } from "../../../config";
 import { AccessToken, RefreshToken } from "../../../domain/auth";
-import type { IGetUserProfileRepository, UserProfile } from "../../../domain/user";
+import type { IGetUserProfileRepository } from "../../../domain/user";
+import { VerifyResultDto } from "../dto";
 
 export type VerifyResult =
   | { status: "user_not_found" }
   | { status: "expired" }
-  | { status: "success"; accessToken: AccessToken; userInfo: UserProfile };
+  | { status: "success"; dto: VerifyResultDto };
 
 /**
  * 認証チェックユースケース
@@ -31,6 +32,6 @@ export class VerifyUsecase {
 
     const accessToken = await AccessToken.create(userId, this.config);
 
-    return { status: "success", accessToken, userInfo };
+    return { status: "success", dto: new VerifyResultDto(accessToken, userInfo) };
   }
 }

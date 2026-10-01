@@ -17,23 +17,23 @@
 - 振る舞いへの影響: なし（振る舞いを変えないことを確認）
 ```
 
-### Step 2 出力（リファクタ前テスト）
+### Step 3 出力（リファクタ前テスト）
 
 ```
-テスト実行: npm run test
+テスト実行: npm run test --prefix backend -- --run
 結果: 全テスト通過（12/12）
 → リファクタリングを開始します
 ```
 
-### Step 4 出力（リファクタ後テスト）
+### Step 5 出力（リファクタ後テスト）
 
 ```
-テスト実行: npm run test
+テスト実行: npm run test --prefix backend -- --run
 結果: 全テスト通過（12/12）
 → 振る舞いが保たれていることを確認しました
 ```
 
-### Step 5 出力（レビュー）
+### Step 6 出力（レビュー）
 
 ```
 ## Backend Review 結果
@@ -56,10 +56,10 @@
 ### 状況
 - リファクタリング後にテストが失敗した
 
-### Step 4 出力
+### Step 5 出力
 
 ```
-テスト実行: npm run test
+テスト実行: npm run test --prefix backend -- --run
 結果: 2件失敗
   - create-item: 重複登録の場合に 409 を返すべきだが 200 が返る
   - create-item: 後処理が2回行われている

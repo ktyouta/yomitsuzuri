@@ -2,13 +2,8 @@ import type { EnvConfig } from "../../../config";
 import { AccessToken, Pepper, RefreshToken } from "../../../domain/auth";
 import type { IUserLoginRepository } from "../../../domain/auth";
 import { UserId, UserName } from "../../../domain/user";
-import type { IGetUserProfileRepository, UserProfile } from "../../../domain/user";
-
-export type LoginResult = {
-  userInfo: UserProfile;
-  accessToken: AccessToken;
-  refreshToken: RefreshToken;
-};
+import type { IGetUserProfileRepository } from "../../../domain/user";
+import { LoginResultDto } from "../dto";
 
 /**
  * ログインユースケース
@@ -20,7 +15,7 @@ export class LoginUsecase {
     private readonly config: EnvConfig
   ) { }
 
-  async execute(name: string, password: string): Promise<LoginResult | null> {
+  async execute(name: string, password: string): Promise<LoginResultDto | null> {
     const loginId = new UserName(name);
     const credential = await this.loginRepository.getLoginUser(loginId);
     if (!credential) {
@@ -44,6 +39,6 @@ export class LoginUsecase {
 
     await this.loginRepository.updateLastLoginDate(userId);
 
-    return { userInfo, accessToken, refreshToken };
+    return new LoginResultDto(userInfo, accessToken, refreshToken);
   }
 }

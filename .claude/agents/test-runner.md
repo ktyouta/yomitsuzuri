@@ -19,15 +19,16 @@ tools: Bash, Read, Grep, Glob
 ## 許可されたコマンド
 
 ```bash
-# ルートから両方実行
-npm run test
-
 # フロントエンドのみ
-npm run test --prefix frontend
+npm run test --prefix frontend -- --run
 
 # バックエンドのみ
-npm run test --prefix backend
+npm run test --prefix backend -- --run
 ```
+
+- `npm run test` 単体は `vitest`（watch モード）のため終了しない。必ず `-- --run` を付ける
+- 両方実行する場合も上記2つを順に実行する（ルートの `npm run test` は frontend の watch で停止し、`-- --run` も最後のスクリプトにしか渡らない）
+- バックエンドで `ConnectEx` 等により workerd が起動せず `no tests` / 大量の起動失敗になった場合は、テスト失敗ではなく環境要因としてレポートする
 
 ## 実行ワークフロー
 

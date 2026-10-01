@@ -8,7 +8,6 @@ import { UpdateUserRepository } from "../../../infrastructure";
 import { authMiddleware, userOperationGuardMiddleware } from "../../../middleware";
 import type { AppEnv } from "../../../types";
 import { formatZodErrors } from "../../../util";
-import { UpdateUserResponseDto } from "../dto";
 import { UpdateUserSchema } from "../schema";
 
 const updateUser = new Hono<AppEnv>().patch(
@@ -40,16 +39,11 @@ const updateUser = new Hono<AppEnv>().patch(
             return c.json({ message: "ユーザーが見つかりません。" }, HTTP_STATUS.NOT_FOUND);
         }
 
-        const responseDto = new UpdateUserResponseDto(
-            result.entity.userId,
-            result.entity.userName,
-            result.entity.userBirthday,
-            result.darkMode
-        );
+        const { refreshToken, user: updatedUser } = result.dto.value;
 
-        setCookie(c, RefreshToken.COOKIE_KEY, result.refreshToken.value, RefreshToken.getCookieSetOption(config));
+        setCookie(c, RefreshToken.COOKIE_KEY, refreshToken, RefreshToken.getCookieSetOption(config));
 
-        return c.json({ message: "ユーザー情報の更新が完了しました。", data: responseDto.value }, HTTP_STATUS.OK);
+        return c.json({ message: "ユーザー情報の更新が完了しました。", data: { user: updatedUser } }, HTTP_STATUS.OK);
     }
 );
 

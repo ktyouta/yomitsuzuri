@@ -90,7 +90,7 @@ docs/[機能名]/spec.md が存在する場合のみ実施する。
 
 ### フォルダ構成チェック（CLAUDE.md 準拠）
 - エンドポイント単位のファイル分割になっているか
-- `domain/{機能}/`（entity, value-object, repository interface）、`application/{機能}/usecase/`、`infrastructure/{機能}/repository/`、`presentation/{機能}/`（controller, dto, schema）の4層構成に沿っているか
+- `domain/{機能}/`（entity, value-object, repository interface）、`application/{機能}/`（usecase, dto）、`infrastructure/{機能}/repository/`、`presentation/{機能}/`（controller, schema）の4層構成に沿っているか
 - repository に .interface.ts が `domain/` 側にセットで存在するか
 - Container に -container.tsx サフィックスがついているか
 - api/ に query-key.ts が含まれているか

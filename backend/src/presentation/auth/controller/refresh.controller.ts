@@ -33,9 +33,9 @@ const refresh = new Hono<AppEnv>().post(API_ENDPOINT.REFRESH, async (c) => {
             return c.json({ message: "認証失敗" }, HTTP_STATUS.UNAUTHORIZED);
         }
 
-        setCookie(c, RefreshToken.COOKIE_KEY, result.refreshToken.value, RefreshToken.getCookieSetOption(config));
+        setCookie(c, RefreshToken.COOKIE_KEY, result.dto.value.refreshToken, RefreshToken.getCookieSetOption(config));
 
-        return c.json({ message: "認証成功", data: result.accessToken.token }, 200);
+        return c.json({ message: "認証成功", data: result.dto.value.accessToken }, 200);
     } catch (e) {
         console.warn(`Refresh failed: ${e}`);
 

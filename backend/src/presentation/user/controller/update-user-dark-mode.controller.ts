@@ -6,7 +6,6 @@ import { UpdateUserDarkModeRepository } from "../../../infrastructure";
 import { authMiddleware, userOperationGuardMiddleware } from "../../../middleware";
 import type { AppEnv } from "../../../types";
 import { formatZodErrors } from "../../../util";
-import { UpdateUserDarkModeResponseDto } from "../dto";
 import { UpdateUserDarkModeSchema } from "../schema";
 
 const updateUserDarkMode = new Hono<AppEnv>().patch(
@@ -28,15 +27,13 @@ const updateUserDarkMode = new Hono<AppEnv>().patch(
         const repository = new UpdateUserDarkModeRepository(db);
         const usecase = new UpdateUserDarkModeUsecase(repository);
 
-        const updated = await usecase.execute(user.userId.value, body.darkMode);
+        const result = await usecase.execute(user.userId.value, body.darkMode);
 
-        if (!updated) {
+        if (!result) {
             return c.json({ message: "ユーザーが見つかりません。" }, HTTP_STATUS.NOT_FOUND);
         }
 
-        const responseDto = new UpdateUserDarkModeResponseDto(body.darkMode);
-
-        return c.json({ message: "ダークモード設定を更新しました。", data: responseDto.value }, HTTP_STATUS.OK);
+        return c.json({ message: "ダークモード設定を更新しました。", data: result.value }, HTTP_STATUS.OK);
     }
 );
 

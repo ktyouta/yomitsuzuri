@@ -1,12 +1,13 @@
 import type { EnvConfig } from "../../../config";
 import { AccessToken, RefreshToken } from "../../../domain/auth";
 import type { IGetUserProfileRepository } from "../../../domain/user";
+import { RefreshResultDto } from "../dto";
 
 export type RefreshResult =
   | { status: "invalid_token" }
   | { status: "user_not_found" }
   | { status: "expired" }
-  | { status: "success"; accessToken: AccessToken; refreshToken: RefreshToken };
+  | { status: "success"; dto: RefreshResultDto };
 
 /**
  * トークンリフレッシュユースケース
@@ -38,6 +39,6 @@ export class RefreshUsecase {
     const newRefreshToken = await refreshToken.refresh();
     const accessToken = await AccessToken.create(userId, this.config);
 
-    return { status: "success", accessToken, refreshToken: newRefreshToken };
+    return { status: "success", dto: new RefreshResultDto(accessToken, newRefreshToken) };
   }
 }

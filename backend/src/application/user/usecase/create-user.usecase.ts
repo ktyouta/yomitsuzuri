@@ -2,12 +2,7 @@ import type { EnvConfig } from "../../../config";
 import { AccessToken, Pepper, RefreshToken, UserLoginEntity, UserPassword, UserSalt } from "../../../domain/auth";
 import { UserBirthday, UserEntity, UserId, UserName } from "../../../domain/user";
 import type { ICreateUserRepository } from "../../../domain/user";
-
-export type CreateUserResult = {
-  entity: UserEntity;
-  accessToken: AccessToken;
-  refreshToken: RefreshToken;
-};
+import { CreateUserResultDto } from "../dto";
 
 /**
  * ユーザー作成ユースケース
@@ -22,7 +17,7 @@ export class CreateUserUsecase {
    * ユーザーを新規作成する
    * @returns 作成結果。ユーザー名が重複している場合は null
    */
-  async execute(name: string, birthday: string, password: string): Promise<CreateUserResult | null> {
+  async execute(name: string, birthday: string, password: string): Promise<CreateUserResultDto | null> {
     const userName = new UserName(name);
     const userBirthday = new UserBirthday(birthday);
     const salt = UserSalt.generate();
@@ -44,6 +39,6 @@ export class CreateUserUsecase {
     const accessToken = await AccessToken.create(userId, this.config);
     const refreshToken = await RefreshToken.create(userId, this.config);
 
-    return { entity: userEntity, accessToken, refreshToken };
+    return new CreateUserResultDto(userEntity, accessToken, refreshToken);
   }
 }

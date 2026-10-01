@@ -8,7 +8,6 @@ import { CreateUserRepository } from "../../../infrastructure";
 import { userOperationGuardMiddleware } from "../../../middleware";
 import type { AppEnv } from "../../../types";
 import { formatZodErrors } from "../../../util";
-import { CreateUserResponseDto } from "../dto";
 import { CreateUserSchema } from "../schema";
 
 const createUser = new Hono<AppEnv>().post(
@@ -31,11 +30,11 @@ const createUser = new Hono<AppEnv>().post(
             return c.json({ message: "既にユーザーが存在しています。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
         }
 
-        const responseDto = new CreateUserResponseDto(result.entity, result.accessToken.token);
+        const { accessToken, refreshToken, user } = result.value;
 
-        setCookie(c, RefreshToken.COOKIE_KEY, result.refreshToken.value, RefreshToken.getCookieSetOption(config));
+        setCookie(c, RefreshToken.COOKIE_KEY, refreshToken, RefreshToken.getCookieSetOption(config));
 
-        return c.json({ message: "ユーザー情報の登録が完了しました。", data: responseDto.value }, HTTP_STATUS.CREATED);
+        return c.json({ message: "ユーザー情報の登録が完了しました。", data: { accessToken, user } }, HTTP_STATUS.CREATED);
     }
 );
 

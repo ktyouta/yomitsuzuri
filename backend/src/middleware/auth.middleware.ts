@@ -23,11 +23,13 @@ export const authMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
         const repository = new GetUserProfileRepository(db);
         const usecase = new GetAuthenticatedUserUsecase(repository);
 
-        const userInfo = await usecase.execute(userId);
+        const result = await usecase.execute(userId);
 
-        if (!userInfo) {
+        if (!result) {
             return c.json({ message: "認証エラー" }, HTTP_STATUS.UNAUTHORIZED);
         }
+
+        const userInfo = result.value;
 
         c.set("user", {
             userId,

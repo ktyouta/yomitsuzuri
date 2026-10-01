@@ -1,12 +1,13 @@
 import type { EnvConfig } from "../../../config";
 import { RefreshToken } from "../../../domain/auth";
 import { UserBirthday, UserId, UserName } from "../../../domain/user";
-import type { IUpdateUserRepository, UserEntity } from "../../../domain/user";
+import type { IUpdateUserRepository } from "../../../domain/user";
+import { UpdateUserResultDto } from "../dto";
 
 export type UpdateUserResult =
   | { status: "duplicate" }
   | { status: "not_found" }
-  | { status: "success"; entity: UserEntity; darkMode: boolean; refreshToken: RefreshToken };
+  | { status: "success"; dto: UpdateUserResultDto };
 
 /**
  * ユーザー更新ユースケース
@@ -34,6 +35,6 @@ export class UpdateUserUsecase {
 
     const refreshToken = await RefreshToken.create(userIdObj, this.config);
 
-    return { status: "success", entity: updateResult.entity, darkMode: updateResult.darkMode, refreshToken };
+    return { status: "success", dto: new UpdateUserResultDto(updateResult.entity, updateResult.darkMode, refreshToken) };
   }
 }

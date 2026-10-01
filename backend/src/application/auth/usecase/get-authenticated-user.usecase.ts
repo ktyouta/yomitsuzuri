@@ -1,4 +1,5 @@
-import type { IGetUserProfileRepository, UserId, UserProfile } from "../../../domain/user";
+import type { IGetUserProfileRepository, UserId } from "../../../domain/user";
+import { GetAuthenticatedUserResultDto } from "../dto";
 
 /**
  * 認証済みユーザー取得ユースケース（authMiddleware専用）
@@ -6,7 +7,11 @@ import type { IGetUserProfileRepository, UserId, UserProfile } from "../../../do
 export class GetAuthenticatedUserUsecase {
   constructor(private readonly repository: IGetUserProfileRepository) { }
 
-  async execute(userId: UserId): Promise<UserProfile | undefined> {
-    return await this.repository.findById(userId);
+  async execute(userId: UserId): Promise<GetAuthenticatedUserResultDto | undefined> {
+    const userInfo = await this.repository.findById(userId);
+    if (!userInfo) {
+      return undefined;
+    }
+    return new GetAuthenticatedUserResultDto(userInfo);
   }
 }
