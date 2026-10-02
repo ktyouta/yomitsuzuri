@@ -30,7 +30,7 @@ export function useSignup() {
     // セッションキャッシュ除去
     const { clearSessionCache } = useClearSessionCache();
     // フォーム
-    const { register, handleSubmit, formState: { errors }, reset, watch } = useSignupForm();
+    const { register, handleSubmit, formState: { errors }, resetField, watch } = useSignupForm();
     // 登録リクエスト
     const postMutation = useSignupMutation({
         // 正常終了後の処理
@@ -48,10 +48,9 @@ export function useSignup() {
             //エラーメッセージを表示
             setErrMessage(message);
 
-            reset({
-                password: ``,
-                confirmPassword: ``,
-            });
+            // ユーザー名・生年月日は再入力の手間を省くため残し、パスワードのみクリアする
+            resetField('password');
+            resetField('confirmPassword');
         },
     });
 
