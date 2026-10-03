@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Pepper } from "../../src/domain/auth";
+import { Pepper } from "../../../../src/domain/auth";
 
 describe("Pepper", () => {
   it("正常な値でインスタンスを生成できること", () => {

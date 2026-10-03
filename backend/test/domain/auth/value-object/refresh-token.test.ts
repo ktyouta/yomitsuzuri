@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { Cookie, RefreshToken } from "../../src/domain/auth";
-import { UserId } from "../../src/domain/user";
-import type { EnvConfig } from "../../src/config";
+import { Cookie, RefreshToken } from "../../../../src/domain/auth";
+import { UserId } from "../../../../src/domain/user";
+import type { EnvConfig } from "../../../../src/config";
 
 const testConfig: EnvConfig = {
     accessTokenJwtKey: "test-jwt-secret-key-for-access-token",

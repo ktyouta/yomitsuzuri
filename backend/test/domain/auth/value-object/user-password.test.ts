@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UserPassword, UserSalt, Pepper } from "../../src/domain";
+import { UserPassword, UserSalt, Pepper } from "../../../../src/domain";
 
 describe("UserPassword", () => {
   const testPepper = new Pepper("test-pepper-secret");

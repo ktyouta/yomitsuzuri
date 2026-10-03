@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UserBirthday } from "../../src/domain";
+import { UserBirthday } from "../../../../src/domain";
 
 describe("UserBirthday", () => {
   it("正常な日付でインスタンスを生成できること", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UserSalt } from "../../src/domain";
+import { UserSalt } from "../../../../src/domain";
 
 describe("UserSalt", () => {
   it("generateでランダムなソルトを生成できること", () => {

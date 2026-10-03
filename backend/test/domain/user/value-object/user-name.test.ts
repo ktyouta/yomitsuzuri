@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UserName } from "../../src/domain";
+import { UserName } from "../../../../src/domain";
 
 describe("UserName", () => {
   it("正常な名前でインスタンスを生成できること", () => {

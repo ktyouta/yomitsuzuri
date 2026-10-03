@@ -1,1 +1,1 @@
-export * from "./work-memo";
+export * from "./wrok-memo";

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Header } from "../../src/domain/auth";
+import { Header } from "../../../../src/domain/auth";
 
 /**
  * テスト用のモックRequestを作成

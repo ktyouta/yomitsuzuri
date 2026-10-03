@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { UserId } from "../../src/domain";
+import { UserId } from "../../../../src/domain";
 
 describe("UserId", () => {
   it("ofで既存のID（ULID文字列）からインスタンスを生成できること", () => {
