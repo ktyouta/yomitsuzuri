@@ -88,6 +88,22 @@ version: 2.1.0
   - アンチパターン: `public constructor` のみを持つVOに対し、デフォルト値生成のために `new Theme(Theme.LAVENDER)` のような自己参照的な呼び出しをコール側に書かせている
   - 正しいパターン: `UserId` の `static generate()`（新規生成）/ `static of()`（既存値から復元）のように、生成意味ごとに名前付きファクトリメソッドを分離する（例: `static of(value)` / `static default()`）
 
+### 契約・純粋性（ドメイン層・util・Usecase）
+CLAUDE.md の「クラス設計指針（契約による設計）」に基づき確認する。
+
+**ドメイン層（Entity・Value Object）・`util/`**
+- 副作用（DB・外部 API 等の I/O、`console` 出力、引数や外部変数の書き換え）がないか
+- 決定的でない処理（`Date.now()`・引数なしの `new Date()`・`Math.random()`・`crypto.getRandomValues()`・`ulid()` 等）が、不可避なものに限り、新しいインスタンスを返す名前付きファクトリメソッド（`generate()` / `create()` / `refresh()` 等）に閉じ込められているか
+  - 外部ライブラリが内部で時刻等を参照するもの（例: JWT の有効期限検証）は、JSDoc にその旨が記載されていれば許可する
+- 不変条件をコンストラクタで検証し、不変条件を満たさないインスタンスを生成できないようになっているか
+- フィールドが `readonly` で setter がなく、メソッドが自身の状態を書き換えず新しいインスタンスを返しているか
+- 事前条件違反で例外を投げるコンストラクタ・メソッドの JSDoc に `@throws` があるか
+- private ヘルパーメソッドの書き方（`static` かインスタンスメソッドか）が、同じ役割を持つ既存の Value Object（例: `UserBirthday` の `checkFormat` / `checkDateValid`）と揃っているか
+
+**Usecase**
+- public メソッドの JSDoc に、業務上意味のある分岐ごとの事後条件（`@returns` に分岐ごとの戻り値、書き込みを行わない条件等）が記載されているか
+- 事後条件に Repository の呼び出し順など実装の手順を含めていないか
+
 ### Repository 単一操作（Infrastructure層）
 - Repositoryの1メソッドは、そのユースケースが要求するアトミックな書き込み単位に対応しているか（無関係な操作を便宜的に1メソッドにまとめていないか）
 - テーブル操作（SELECT / INSERT / UPDATE / DELETE）はすべて Repository に集約されているか

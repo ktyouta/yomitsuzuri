@@ -21,15 +21,20 @@ tools: Read, Glob, Grep
 ```
 1. DB スキーマ定義（Drizzle ORM, infrastructure/db/schema.ts）
 2. マイグレーション SQL 生成（npm run db:generate）
-3. ドメイン Entity・Value Object・Repository interface（domain/<機能>/）
-4. リポジトリ実装（infrastructure/<機能>/repository/）
-5. ユースケース実装（application/<機能>/usecase/）
-6. コントローラー実装（presentation/<機能>/controller/）
-7. ルーター定義（presentation/<機能>/index.ts）
-8. RPC 集約への登録（rpc/index.ts）
-9. フロントエンド実装（features/<機能>/）
-10. テスト実装
+3. Repository interface と、ドメイン Entity・Value Object・util の型（シグネチャのみ。中身は未実装）（domain/<機能>/ ・ util/）
+4. ドメイン・util の契約テスト作成（backend/test/domain/<機能>/ ・ backend/test/util/）→ 失敗することを確認する
+5. ドメイン Entity・Value Object・util の実装 → 4 の契約テストを通す
+6. ユースケースの契約テスト作成（backend/test/application/<機能>/usecase/。Repository はスタブを使い DB を使わない）→ 失敗することを確認する
+7. ユースケース実装（application/<機能>/usecase/）→ 6 の契約テストを通す
+8. リポジトリ実装（infrastructure/<機能>/repository/）
+9. コントローラー実装（presentation/<機能>/controller/）
+10. ルーター定義（presentation/<機能>/index.ts）
+11. RPC 集約への登録（rpc/index.ts）
+12. フロントエンド実装（features/<機能>/）
+13. コントローラーの結合テスト（必要な場合。backend/test/presentation/<機能>/controller/）
 ```
+
+**契約テストは実装より先に書く（テスト駆動）。** 設計で定めた契約（クラス仕様）からテストを作成し、失敗を確認してから実装に進む。テストを実装の後に書くと、契約ではなく書いたコードの動きを確かめるテストになりやすいため。
 
 **機能がどのモジュール（`user` / `auth` / 等）に属するかは「変更理由の一致」で判断する。** 新しい機能が既存モジュールのどれにも当てはまらない場合のみ新規モジュールを切る。
 
@@ -52,6 +57,8 @@ tools: Read, Glob, Grep
 - Zod v3 を使う（v4 は使わない）
 - `createEnvConfig(c.env)` で環境変数を取得する
 - 新しいルーターは `rpc/index.ts` に登録する
+- テストファイルは `backend/test/` 配下に `src` と同じフォルダ構成で配置する
+- Usecase のテストでは、Repository interface を満たすスタブ（オブジェクトリテラル + `vi.fn()`）を使い、DB を使わない
 
 ### フロントエンド
 - 通常の API 呼び出しは `lib/rpc-client.ts` の `rpc` を使う
@@ -93,4 +100,5 @@ tools: Read, Glob, Grep
 
 ### 完了確認チェックリスト
 - [ ] チェック項目
+- [ ] 設計で定めた契約（クラス仕様）の各項目に対応するテストケースがある
 ```

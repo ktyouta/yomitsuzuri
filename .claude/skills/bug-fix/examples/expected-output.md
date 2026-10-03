@@ -21,6 +21,10 @@
 
 ### 根本原因
 - Repository の戻り値型が `null` であるのに対し、Usecase が `undefined` チェックをしているため、重複している場合も INSERT に進んでしまう
+
+### 契約との関係
+- 分類: 契約どおりに実装されていない
+- 該当する契約項目: CreateTaskUsecase.createTask の事後条件「同一内容のタスクが既に存在する場合は書き込みを行わずに null を返す」
 ```
 
 ### Step 3〜5 中間確認
