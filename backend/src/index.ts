@@ -2,6 +2,7 @@ import { Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import { health } from "./presentation/health";
 import { user } from "./presentation/user";
+import { book } from "./presentation/book";
 import { userLogin, userLogout, userPassword, refresh, verify } from "./presentation/auth";
 import {
   accessLogMiddleware,
@@ -52,7 +53,8 @@ const routes = app
   .route("/", refresh)
   .route("/", verify)
   .route("/", userLogout)
-  .route("/", userPassword);
+  .route("/", userPassword)
+  .route("/", book);
 
 // RPC用の型エクスポート
 export type AppType = typeof routes;

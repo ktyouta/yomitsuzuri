@@ -9,6 +9,7 @@ import {
   unique,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
+import { BOOK_READING_STATUSES } from "../../domain/book/value-object/book-reading-status";
 
 /**
  * ユーザーマスタ
@@ -70,9 +71,10 @@ export const bookTransaction = sqliteTable(
     userId: text("user_id").notNull().references(() => userMaster.id, { onDelete: "no action" }), // FK → user_master.id
     title: text("title").notNull(),
     publishedDate: text("published_date"), // YYYY / YYYY-MM / YYYY-MM-DD のいずれか
-    readingStatus: text("reading_status", { enum: ["unread", "reading", "finished"] }).notNull().default("unread"),
+    readingStatus: text("reading_status", { enum: BOOK_READING_STATUSES }).notNull().default("unread").references(() => readingStatusMaster.code, { onDelete: "restrict" }),
     currentPage: integer("current_page"),
     memo: text("memo"),
+    icon: integer("icon").notNull().default(1).references(() => iconMaster.id, { onDelete: "restrict" }),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
@@ -300,3 +302,31 @@ export const bookTagTransaction = sqliteTable(
 
 export type BookTagTransaction = typeof bookTagTransaction.$inferSelect;
 export type NewBookTagTransaction = typeof bookTagTransaction.$inferInsert;
+
+/**
+ * アイコンマスタ
+ */
+export const iconMaster = sqliteTable("icon_master", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  emoji: text("emoji").notNull(),
+  deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export type IconMaster = typeof iconMaster.$inferSelect;
+export type NewIconMaster = typeof iconMaster.$inferInsert;
+
+/**
+ * 読書状況マスタ
+ */
+export const readingStatusMaster = sqliteTable("reading_status_master", {
+  code: text("code", { enum: BOOK_READING_STATUSES }).primaryKey(),
+  label: text("label").notNull(),
+  deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export type ReadingStatusMaster = typeof readingStatusMaster.$inferSelect;
+export type NewReadingStatusMaster = typeof readingStatusMaster.$inferInsert;

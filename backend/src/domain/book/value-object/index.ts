@@ -5,3 +5,5 @@ export * from "./book-title";
 export * from "./work-id";
 export * from "./work-memo";
 export * from "./work-title";
+export * from "./book-list-pagination";
+export * from "./book-reading-status";
