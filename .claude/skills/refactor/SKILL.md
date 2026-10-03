@@ -111,6 +111,8 @@ cd frontend && npx tsc --noEmit -p tsconfig.app.json
 - comments-review
 - performance-check
 
+差分がファイルの移動と相対 import パスの変更のみの場合、comments-review と performance-check はスキップしてよい。スキップした場合は、その旨と理由（差分が import パスのみ）を報告に記載する。
+
 ---
 
 ### Step 7: session-retrospective 実行
