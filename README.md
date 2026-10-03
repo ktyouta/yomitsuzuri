@@ -47,7 +47,7 @@ AI はアプリの目的そのものではなく、情報を登録する作業�
 
 将来的には読んだ本・読書履歴・好きなジャンル・好きだった作品・興味のあるテーマ・読みたい本・次に読む本を管理し、「この本を読んだなら次はこの本」のように次に読む本を探す・推薦する機能への拡張も構想している。最終的には「本を読む→本の中身を整理する→自分の読書の地図が広がる→自分の読書傾向が分かる→次の本に出会う→また地図が広がる」という循環を作ることを目指す。「小説を書くためのアプリ」ではなく、あくまで読書中の情報整理を中心とした読書支援アプリという位置づけ。
 
-> **現在の実装状況**：上記のドメイン機能（本・登場人物・関係・出来事・手がかり・メモ管理、AI入力支援）はまだ実装されていない。現状のコードベースは JWT 認証機能と `sample` リファレンス実装のみを備えた土台。
+> **現在の実装状況**：上記のドメイン機能（本・登場人物・関係・出来事・手がかり・メモ管理、AI入力支援）はまだ実装されていない。現状のコードベースは JWT 認証機能のみを備えた土台。
 
 ## 技術スタック
 
@@ -77,22 +77,18 @@ yomitsuzuri/
 │   ├── src/
 │   │   ├── domain/           # Entity・Value Object・Repository interface（何にも依存しない）
 │   │   │   ├── user/         #   プロフィール管理
-│   │   │   ├── auth/         #   認証（login/logout/password/token/credential）
-│   │   │   └── sample/
+│   │   │   └── auth/         #   認証（login/logout/password/token/credential）
 │   │   ├── application/      # Usecase（メインロジック。Repository interface 経由で domain を操作）
 │   │   │   ├── user/usecase/
-│   │   │   ├── auth/usecase/
-│   │   │   └── sample/usecase/
+│   │   │   └── auth/usecase/
 │   │   ├── infrastructure/   # Repository 実装（Drizzle ORM）・DB スキーマ・DB クライアント
 │   │   │   ├── db/
 │   │   │   ├── user/repository/
-│   │   │   ├── auth/repository/
-│   │   │   └── sample/repository/
+│   │   │   └── auth/repository/
 │   │   ├── presentation/     # Controller・DTO・Zod スキーマ（HTTP 入出力のみ）
 │   │   │   ├── user/
 │   │   │   ├── auth/
-│   │   │   ├── health/
-│   │   │   └── sample/
+│   │   │   └── health/
 │   │   ├── config/           # 環境変数設定（EnvConfig）
 │   │   ├── middleware/       # ミドルウェア（認証, CORS, ログ等）
 │   │   ├── rpc/              # RPC 型エクスポート専用
@@ -105,7 +101,7 @@ yomitsuzuri/
 ├── frontend/                 # React フロントエンド（Vite）
 │   ├── src/
 │   │   ├── components/       # 共通 UI コンポーネント
-│   │   ├── features/         # 機能別モジュール（home, login, sample 等）
+│   │   ├── features/         # 機能別モジュール（home, login 等）
 │   │   ├── lib/              # RPC クライアント等
 │   │   └── testing/          # テストセットアップ
 │   └── .storybook/           # Storybook 設定
@@ -306,10 +302,6 @@ const data = await res.json();
 **新しい API エンドポイントを追加する際は、必ず `rpc-client.ts` の `rpc` を使用すること。**
 
 ## 設計上の補足
-
-### sample 機能について
-
-`frontend/src/features/sample/`（および backend 側の `sample` 配下）は元テンプレートの**リファレンス実装**であり、Container / Presentational パターン、hooks、Storybook の書き方の参考として用意されたもの。本プロジェクトでは現時点で未削除のまま残っており、不要になった時点で削除または置き換えを検討する。
 
 ### ルート package.json の hono 依存
 

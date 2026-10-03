@@ -22,22 +22,18 @@ tools: Read, Glob, Grep
 backend/src/
 ├── domain/            # Entity・Value Object・Repository interface（何にも依存しない）
 │   ├── user/          #   プロフィール管理
-│   ├── auth/          #   認証（login/logout/password/token/credential）
-│   └── sample/
+│   └── auth/          #   認証（login/logout/password/token/credential）
 ├── application/        # Usecase（メインロジック。Repository interface経由でdomainを操作）
 │   ├── user/usecase/
-│   ├── auth/usecase/
-│   └── sample/usecase/
+│   └── auth/usecase/
 ├── infrastructure/     # Repository実装（Drizzle ORM）・DBスキーマ・DBクライアント
 │   ├── db/
 │   ├── user/repository/
-│   ├── auth/repository/
-│   └── sample/repository/
+│   └── auth/repository/
 ├── presentation/        # Controller・DTO・Zodスキーマ（HTTP入出力のみ）
 │   ├── user/
 │   ├── auth/
-│   ├── health/
-│   └── sample/
+│   └── health/
 ├── config/       # 環境変数（EnvConfig ファクトリ）
 ├── constant/     # 定数（エンドポイント名・HTTPステータス）
 ├── middleware/   # Hono ミドルウェア

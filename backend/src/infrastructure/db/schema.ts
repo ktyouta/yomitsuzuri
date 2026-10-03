@@ -11,21 +11,6 @@ import {
 } from "drizzle-orm/sqlite-core";
 
 /**
- * サンプルテーブル
- */
-export const sample = sqliteTable("sample", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  name: text("name").notNull(),
-  description: text("description"),
-  deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
-  createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
-});
-
-export type Sample = typeof sample.$inferSelect;
-export type NewSample = typeof sample.$inferInsert;
-
-/**
  * ユーザーマスタ
  */
 export const userMaster = sqliteTable(

@@ -46,7 +46,6 @@ tools: Read, Glob, Grep
 - Props のインターフェースが明確に定義されているか
 - 再利用性が考慮されているか
 - Container / Presentational パターンが守られているか
-  - `features/sample/` がリファレンス実装
 
 ### UI の一貫性
 - 既存コンポーネントと色・スペーシング・フォントサイズが統一されているか

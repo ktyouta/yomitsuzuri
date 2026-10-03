@@ -2,7 +2,6 @@ import { Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import { health } from "./presentation/health";
 import { user } from "./presentation/user";
-import { sample } from "./presentation/sample";
 import { userLogin, userLogout, userPassword, refresh, verify } from "./presentation/auth";
 import {
   accessLogMiddleware,
@@ -48,7 +47,6 @@ app.notFound(notFoundHandler);
 // ルーティング（チェーンで型情報を保持）
 const routes = app
   .route("/", health)
-  .route("/", sample)
   .route("/", user)
   .route("/", userLogin)
   .route("/", refresh)

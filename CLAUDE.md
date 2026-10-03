@@ -118,11 +118,6 @@ yomitsuzuri（よみつづり）は、小説を読みながら得た情報（登
   * `rpc-client.ts` → `refresh-handler.ts` → `rpc-client.ts` の循環参照を避けるため
 * 新しい API エンドポイントを追加する際は `rpc` を使うこと
 
-### sample 機能
-
-* `features/sample/` は元テンプレートのリファレンス実装（Container / Presentational パターンの参考）が未使用のまま残っているもの
-* 本プロジェクトでは削除または置き換えを検討すること（現時点では未実施）
-
 ---
 
 ## バックエンド固有の設計指針
