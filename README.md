@@ -317,7 +317,7 @@ const data = await res.json();
 
 ### バックエンドの import パス
 
-バックエンドでは `@/` パスエイリアスを設定していない（相対パスで import する）。フロントエンドはバックエンドの型定義（`backend/dist-types`）を参照するため、バックエンドにエイリアスを追加すると型定義に `@/` が残り、フロントエンドの `tsconfig` の `@/*`（`frontend/src/*`）に誤解決される。
+バックエンドでは `@/` パスエイリアスを設定していない（相対パスで import する）。`npm run typecheck` ではフロントエンドがバックエンドの型定義（`backend/dist-types`）を参照するが、型定義の出力ではパスエイリアスが書き換えられないため、バックエンドで `@/` を使うと型定義に `@/` が残り、フロントエンドの `tsconfig` の `@/*`（`frontend/src/*`）として誤解決される。実行時（vite・vitest）も、フロントエンドの `@` エイリアス（`frontend/src`）の設定のもとでバックエンドのソースを読み込むため、同様に誤解決される。
 
 ### フロントエンドの型チェック構成
 
@@ -330,7 +330,17 @@ const data = await res.json();
 | `tsconfig.node.json` | `vite.config.ts`・`vitest.config.ts`・`.storybook/main.ts` |
 | `tsconfig.functions.json` | Cloudflare Pages Functions（`functions/`。Workers ランタイムのため DOM の型を含めない） |
 
-フロントエンドはバックエンドのソースを直接型チェックせず、`backend/tsconfig.types.json` が出力する型定義（`backend/dist-types`、Git 管理外）を参照する。`tsc -b` が先に型定義を生成するため、手動で生成する必要はない。これにより、バックエンドのコードがフロントエンドの tsconfig 設定（ブラウザ用の型など）でチェックされることを防いでいる。
+フロントエンドがバックエンドの何を読むかは、場面によって異なる。
+
+| 場面 | フロントエンドが読むもの |
+|---|---|
+| `npm run typecheck`（`tsc -b`） | `backend/tsconfig.types.json` が出力する型定義（`backend/dist-types`、Git 管理外） |
+| エディタ（VS Code 等） | バックエンドのソース（`references` で参照しているプロジェクトは、型定義ではなくソースを読む。`dist-types` が無くても型が効く） |
+| 実行時（`npm run dev`・テスト） | バックエンドのソース（vite・vitest の `@backend` エイリアス） |
+
+`npm run typecheck` では、`tsc -b` がまずバックエンドをバックエンド自身の設定（`backend/tsconfig.types.json`）でチェックして型定義を出力し、そのあとでフロントエンドの各 tsconfig をチェックする。型定義は自動で生成されるため、手動で生成する必要はない。これにより、`npm run typecheck` でバックエンドのコードがフロントエンドの tsconfig 設定（ブラウザ用の型など）でチェックされることを防いでいる。
+
+型チェックは必ず `npm run typecheck` で行うこと。`npx tsc -p tsconfig.app.json` のように tsconfig を直接指定して実行すると、型定義が生成されないため、`dist-types` が無い状態では RPC の型が解決できずエラーになる。
 
 ### DB 名・ワーカー名
 
