@@ -59,6 +59,7 @@ version: 2.1.0
 - ルーター集約ファイルが `[機能グループ名]/[機能グループ名].controller.ts` になっているか
 - repository に対応する `.repository.interface.ts` が `domain/` 側にセットで存在するか
 - 各レイヤーフォルダ・単位フォルダに `index.ts` が存在するか
+- 複数のドメインで共有する VO（`UserId` / `UserName` 等）が `domain/shared/` に置かれ、ドメイン同士が直接 import していないか
 
 ### コーディング規約
 - ユーティリティ関数（日付変換・文字列変換等）を Usecase / Controller 内に直接定義していないか
@@ -83,7 +84,7 @@ version: 2.1.0
   - 正しいパターン: 構造が同じでも概念が異なるなら、そのドメイン概念専用の型を別途定義する
 - `string` 型を使っているフィールドのうち、対応するドメイン型を新規作成すべきものが残っていないか
 - 新規作成したVOのクラス名が、同一 `domain/{機能}/value-object/` 配下の既存VOの命名プレフィックスと一貫しているか
-  - 実例: `domain/user/value-object/` 配下は `UserName`/`UserBirthday` のように全て `User` プレフィックスが付いている。ここに `Theme` のようなプレフィックスなしのVOを追加すると、フォルダ内での一貫性が崩れる（`UserTheme` とすべき）
+  - 実例: `domain/user/value-object/` 配下は `UserBirthday` のように全て `User` プレフィックスが付いている。ここに `Theme` のようなプレフィックスなしのVOを追加すると、フォルダ内での一貫性が崩れる（`UserTheme` とすべき）
 - VOに複数の生成意味（値検証によるインスタンス化 vs デフォルト値生成 等）がある場合、`private constructor` + 名前付き静的ファクトリメソッド（`of` / `default` 等）に分離しているか
   - アンチパターン: `public constructor` のみを持つVOに対し、デフォルト値生成のために `new Theme(Theme.LAVENDER)` のような自己参照的な呼び出しをコール側に書かせている
   - 正しいパターン: `UserId` の `static generate()`（新規生成）/ `static of()`（既存値から復元）のように、生成意味ごとに名前付きファクトリメソッドを分離する（例: `static of(value)` / `static default()`）

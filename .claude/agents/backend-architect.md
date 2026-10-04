@@ -21,6 +21,7 @@ tools: Read, Glob, Grep
 ```
 backend/src/
 ├── domain/            # Entity・Value Object・Repository interface（何にも依存しない）
+│   ├── shared/        #   複数コンテキストで共有する概念（UserId・UserName）
 │   ├── user/          #   プロフィール管理
 │   └── auth/          #   認証（login/logout/password/token/credential）
 ├── application/        # Usecase（メインロジック。Repository interface経由でdomainを操作）
@@ -56,7 +57,7 @@ backend/src/
 
 ### インポート規約
 - `@/` パスエイリアスは使わない（相対パスを使う）
-- 理由: フロントエンドの tsconfig が `@/*` → `frontend/src/*` にマッピングしており、RPC 型チェーンで混入すると誤解決される
+- 理由: フロントエンドはバックエンドの型定義（`backend/dist-types`）を参照する。型定義に `@/` が残ると、フロントエンドの tsconfig の `@/*` → `frontend/src/*` で誤解決される
 
 ### Zod バージョン
 - バックエンドは **Zod v3**（`@hono/zod-validator@0.4.x` が v3 のみ対応）
@@ -78,6 +79,7 @@ backend/src/
 ### フォルダ・ファイル配置
 - 新しい機能が `domain/<機能名>/`・`application/<機能名>/usecase/`・`infrastructure/<機能名>/repository/`・`presentation/<機能名>/` の4層に正しく配置されているか
 - Entity・Value Object・Repository interface が `domain/` に集約されているか
+- 複数のドメインで共有する VO が `domain/shared/` に置かれ、ドメイン同士が直接 import していないか
 - Repository実装（DB アクセス）が `infrastructure/` に分離されているか
 - 共通ロジックが適切なレイヤーに配置されているか
 - 機能の境界（どのモジュールに属するか）が「変更理由の一致」で切られているか（データの近さだけで判断していないか）

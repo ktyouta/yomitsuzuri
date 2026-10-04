@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
+    /* vitest の globals（describe / test 等）はテストコードにだけ型を公開する */
+    "types": ["vite/client", "vitest/globals"]
+  },
+  "include": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/testing", ".storybook/vitest.setup.ts"],
+  "exclude": ["**/node_modules/**"],
+  "references": [{ "path": "../backend/tsconfig.types.json" }]
+}

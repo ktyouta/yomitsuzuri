@@ -1,0 +1,15 @@
+{
+  /* フロントエンドが RPC の型（AppType 等）を参照するための型定義（.d.ts）だけを出力する */
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "composite": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": "./src",
+    "outDir": "./dist-types",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.types.tsbuildinfo"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "src/**/*.test.ts"]
+}

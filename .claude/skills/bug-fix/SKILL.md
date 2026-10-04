@@ -114,6 +114,8 @@ Step 3 のテストが通るように修正する。
 
 - `npm run test` 単体は `vitest`（watch モード）のため終了しない。必ず `-- --run` を付ける
 
+テスト通過後、ルートで `npm run typecheck` と `npm run lint` を実行し、エラーが 0 件であることを確認する。
+
 ---
 
 ### Step 6: 横展開確認

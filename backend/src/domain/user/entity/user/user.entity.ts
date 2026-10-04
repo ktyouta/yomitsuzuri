@@ -1,5 +1,5 @@
-import { UserName, UserBirthday } from "../../value-object";
-import { UserId } from "../../../shared";
+import { UserBirthday } from "../../value-object";
+import { UserId, UserName } from "../../../shared";
 
 /**
  * ユーザーエンティティ

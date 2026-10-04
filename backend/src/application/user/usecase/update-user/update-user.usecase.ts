@@ -1,7 +1,7 @@
 import type { EnvConfig } from "../../../../config";
 import { RefreshToken } from "../../../../domain/auth";
-import { UserBirthday, UserName } from "../../../../domain/user";
-import { UserId } from "../../../../domain/shared";
+import { UserBirthday } from "../../../../domain/user";
+import { UserId, UserName } from "../../../../domain/shared";
 import type { IUpdateUserRepository } from "../../../../domain/user";
 import { UpdateUserResultDto } from "../../dto";
 

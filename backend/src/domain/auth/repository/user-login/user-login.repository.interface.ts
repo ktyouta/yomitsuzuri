@@ -1,5 +1,4 @@
-import type { UserName } from "../../../user";
-import type { UserId } from "../../../shared";
+import type { UserId, UserName } from "../../../shared";
 import type { UserLoginEntity } from "../../entity";
 
 /**

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { UpdateUserUsecase } from "..";
-import { UserBirthday, UserEntity, UserName } from "../../../../domain/user";
-import { UserId } from "../../../../domain/shared";
+import { UserBirthday, UserEntity } from "../../../../domain/user";
+import { UserId, UserName } from "../../../../domain/shared";
 import type { IUpdateUserRepository } from "../../../../domain/user";
 import type { EnvConfig } from "../../../../config";
 

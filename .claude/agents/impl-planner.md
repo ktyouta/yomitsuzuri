@@ -59,6 +59,7 @@ tools: Read, Glob, Grep
 - 新しいルーターは `src/index.ts` に登録する（`rpc/index.ts` は `AppType` の型再 export 専用）
 - バックエンドのファイルは1単位1フォルダ（`<名前>/<名前>.<種別>.ts` + `index.ts`）で配置する
 - テストファイルは実装ファイルと同じ単位フォルダに配置する（`backend/test/` はマイグレーション適用・型定義の設定専用）
+- 複数のドメインで共有する VO（`UserId` / `UserName` 等）は `domain/shared/` に置く
 - Usecase のテストでは、Repository interface を満たすスタブ（オブジェクトリテラル + `vi.fn()`）を使い、DB を使わない
 
 ### フロントエンド

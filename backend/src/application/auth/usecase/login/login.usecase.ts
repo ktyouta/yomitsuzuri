@@ -1,8 +1,7 @@
 import type { EnvConfig } from "../../../../config";
 import { AccessToken, Pepper, RefreshToken } from "../../../../domain/auth";
 import type { IUserLoginRepository } from "../../../../domain/auth";
-import { UserName } from "../../../../domain/user";
-import { UserId } from "../../../../domain/shared";
+import { UserId, UserName } from "../../../../domain/shared";
 import type { IGetUserProfileRepository } from "../../../../domain/user";
 import { LoginResultDto } from "../../dto";
 

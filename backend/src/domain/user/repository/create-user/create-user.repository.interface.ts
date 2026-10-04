@@ -1,6 +1,6 @@
 import type { UserLoginEntity } from "../../../auth";
 import type { UserEntity } from "../../entity";
-import type { UserName } from "../../value-object";
+import type { UserName } from "../../../shared";
 
 /**
  * ユーザー作成リポジトリインターフェース

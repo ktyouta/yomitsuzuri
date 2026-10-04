@@ -23,17 +23,26 @@ yomitsuzuri（よみつづり）は、小説を読みながら得た情報（登
 
 * `npm run dev`: 開発サーバー起動
 * `npm run test`: テスト実行
+* `npm run typecheck`: 型チェック（バックエンドの型定義 `backend/dist-types` の生成も含む）
+* `npm run lint`: ESLint
 * `npm run storybook`: Storybook 起動
 
 ## バックエンド (`backend/`)
 
 * `npm run dev`: 開発サーバー起動
 * `npm run test`: テスト実行
+* `npm run typecheck`: 型チェック
 * `npm run db:generate`: マイグレーション SQL 生成
 * `npm run db:migrate:local`: ローカル D1 にマイグレーション適用
 * `npm run db:migrate:prod`: 本番 D1 にマイグレーション適用
 * `npm run db:seed:local`: ローカル D1 に Seed データ投入
 * `npm run deploy:prod`: 本番環境にデプロイ
+
+## ルート
+
+* `npm run typecheck`: バックエンド・フロントエンドの型チェック
+* `npm run lint`: フロントエンドの ESLint
+* 実装・修正の完了時は `npm run typecheck` と `npm run lint` を実行し、エラー 0 件を確認すること
 
 ---
 
@@ -115,7 +124,7 @@ yomitsuzuri（よみつづり）は、小説を読みながら得た情報（登
   * RPC以外の箇所についても型アサーションが必要になる場合は修正前に相談すること
 * **バックエンドに `@/` パスエイリアスを追加しないこと（相対パスを使う）**
   * フロントエンドの tsconfig が `@/*` → `frontend/src/*` にマッピングしている
-  * バックエンドに同様のエイリアスを追加すると、RPC 型チェーンでフロントエンド tsc がバックエンドファイルを処理する際に誤解決される
+  * フロントエンドはバックエンドの型定義（`backend/tsconfig.types.json` が出力する `backend/dist-types`）を参照する。バックエンドにエイリアスを追加すると、型定義に `@/` のまま残り、フロントエンド側で `frontend/src` に誤解決される
   * バックエンドの import は必ず `../../../domain` のような相対パスで記述する
 
 ---
@@ -156,7 +165,7 @@ yomitsuzuri（よみつづり）は、小説を読みながら得た情報（登
 
 ### domain/shared の扱い
 
-* `domain/shared` には、複数のコンテキストで本当に共有される概念（例: `UserId`）だけを置く
+* `domain/shared` には、複数のコンテキストで本当に共有される概念（例: `UserId`・`UserName`）だけを置く
 * 構造が似ているというだけで、安易に共通化しないこと
 
 ---

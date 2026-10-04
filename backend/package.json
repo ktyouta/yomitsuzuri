@@ -5,6 +5,7 @@
     "start": "npm run dev",
     "dev": "wrangler dev",
     "test": "vitest",
+    "typecheck": "tsc --noEmit -p .",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply yomitsuzuri-db --local",

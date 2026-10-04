@@ -88,14 +88,15 @@ Step 1 の目的に沿って内部構造を改善する。
 
 Step 3 と同じコマンドを実行し、全テストが引き続き通過することを確認する。
 
-バックエンドの Controller / Usecase / DTO の戻り値の型を変更した場合は、テストに加えて型チェックも行う（テストでは RPC レスポンス型の変化を検出できないため）。
+テスト通過後、ルートで以下を実行し、エラーが 0 件であることを確認する（テストでは RPC レスポンス型の変化を検出できないため、変更範囲によらず必ず実行する）。
 
 ```bash
-cd backend && npx tsc --noEmit
-cd frontend && npx tsc --noEmit -p tsconfig.app.json
+npm run typecheck
+npm run lint
 ```
 
-- フロントエンドは既存エラーがあるため、エラー件数ゼロではなく「変更前からエラーが増えていないこと」で判断する
+- `npm run typecheck` は backend の tsc と frontend の `tsc -b` を実行する。`tsc -b` はバックエンドの型定義 `backend/dist-types` を生成してから frontend の各 tsconfig をチェックする
+- `npx tsc --noEmit` を frontend で直接実行しない（`frontend/tsconfig.json` は references のみで、チェック対象を持たない）
 
 テストが落ちた場合はリファクタリングを見直す（振る舞いが変わっている可能性がある）。
 

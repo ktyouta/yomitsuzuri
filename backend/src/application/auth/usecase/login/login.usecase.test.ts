@@ -2,8 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { LoginUsecase } from "..";
 import { Pepper, UserLoginEntity, UserPassword, UserSalt } from "../../../../domain/auth";
 import type { IUserLoginRepository } from "../../../../domain/auth";
-import { UserName } from "../../../../domain/user";
-import { UserId } from "../../../../domain/shared";
+import { UserId, UserName } from "../../../../domain/shared";
 import type { IGetUserProfileRepository, UserProfile } from "../../../../domain/user";
 import type { EnvConfig } from "../../../../config";
 

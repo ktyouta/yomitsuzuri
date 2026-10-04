@@ -80,7 +80,7 @@ describe("useQueryParams", () => {
         expect(result.current["filter"]).toBe("a&b=c");
     });
 
-    test("should preserve params across re-renders using useRef", () => {
+    test("should preserve params across re-renders", () => {
 
         window.location.search = "?id=original";
 
@@ -88,11 +88,36 @@ describe("useQueryParams", () => {
 
         expect(result.current["id"]).toBe("original");
 
-        // URLを変更してもrefは初回の値を保持する
+        // URLを変更しても初回レンダー時の値を保持する
         window.location.search = "?id=changed";
         rerender();
 
         expect(result.current["id"]).toBe("original");
+    });
+
+    test("should keep empty params when the initial query is empty and URL changes later", () => {
+
+        window.location.search = "";
+
+        const { result, rerender } = renderHook(() => useQueryParams());
+
+        // 初回が空でも、その後のURL変更は拾わない（初回レンダー時の値を保持する）
+        window.location.search = "?id=later";
+        rerender();
+
+        expect(result.current["id"]).toBe("");
+    });
+
+    test("should return the same object across re-renders", () => {
+
+        window.location.search = "?id=1";
+
+        const { result, rerender } = renderHook(() => useQueryParams());
+        const first = result.current;
+
+        rerender();
+
+        expect(result.current).toBe(first);
     });
 
     test("should return Proxy object", () => {

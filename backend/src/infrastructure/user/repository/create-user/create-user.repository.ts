@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { UserLoginEntity } from "../../../../domain/auth";
-import type { ICreateUserRepository, UserEntity, UserName } from "../../../../domain/user";
+import type { ICreateUserRepository, UserEntity } from "../../../../domain/user";
+import type { UserName } from "../../../../domain/shared";
 import type { Database } from "../../../db";
 import { userLoginMaster, userMaster } from "../../../db";
 
