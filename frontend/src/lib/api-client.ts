@@ -1,6 +1,6 @@
 import { env } from '@/config/env';
 import { getAccessToken, handleRefresh } from '@/lib/refresh-handler';
-import { default as Axios, InternalAxiosRequestConfig } from 'axios';
+import { default as Axios, type InternalAxiosRequestConfig } from 'axios';
 
 function authRequestInterceptor(config: InternalAxiosRequestConfig) {
 

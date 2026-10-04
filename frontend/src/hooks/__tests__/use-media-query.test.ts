@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, test, vi, beforeEach, afterEach } from "vitest";
 import { useMediaQuery, mediaQuery } from "../use-media-query";
 
 describe("useMediaQuery", () => {
@@ -130,13 +130,13 @@ describe("useMediaQuery", () => {
         const { result: mobileResult } = renderHook(() => useMediaQuery(mediaQuery.mobile));
         expect(mobileResult.current).toBe(true);
 
-        const { result: tabletResult } = renderHook(() => useMediaQuery(mediaQuery.tablet));
+        renderHook(() => useMediaQuery(mediaQuery.tablet));
         expect(mockMatchMedia).toHaveBeenCalledWith("(768px <= width < 1024px)");
 
-        const { result: pcResult } = renderHook(() => useMediaQuery(mediaQuery.pc));
+        renderHook(() => useMediaQuery(mediaQuery.pc));
         expect(mockMatchMedia).toHaveBeenCalledWith("(1024px <= width)");
 
-        const { result: pcLessResult } = renderHook(() => useMediaQuery(mediaQuery.pcLess));
+        renderHook(() => useMediaQuery(mediaQuery.pcLess));
         expect(mockMatchMedia).toHaveBeenCalledWith("(width < 1024px)");
     });
 
@@ -148,8 +148,6 @@ describe("useMediaQuery", () => {
             ({ query }: { query: MediaQueryType }) => useMediaQuery(query),
             { initialProps: { query: mediaQuery.mobile as MediaQueryType } }
         );
-
-        const firstOnchange = mockMql.onchange;
 
         rerender({ query: mediaQuery.pc });
 

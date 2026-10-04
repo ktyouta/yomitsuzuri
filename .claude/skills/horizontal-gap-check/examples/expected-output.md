@@ -13,7 +13,7 @@ Claude がカテゴリ機能のバックエンド実装を完了した直後に�
 ## 水平展開漏れチェック結果
 
 ### 変更済みファイル（git diff より）
-- `backend/src/infrastructure/db/schema.ts`
+- `backend/src/infrastructure/db/schema/schema.ts`
 - `backend/src/domain/category/` （全ファイル）
 - `backend/src/infrastructure/category/` （全ファイル）
 - `backend/src/application/category/` （全ファイル）

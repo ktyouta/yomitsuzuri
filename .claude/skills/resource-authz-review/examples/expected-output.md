@@ -12,7 +12,7 @@
 ## Resource Authorization Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/presentation/user/controller/update-user.controller.ts:31
+- **ファイル**: backend/src/presentation/user/controller/update-user/update-user.controller.ts:31
 - **違反内容**: パスパラメータの `userId` を認証済みユーザーの `c.get('user').userId` と照合せずに Repository に渡している。他ユーザーのプロフィールを更新できる。
 - **修正方針**: Repository 呼び出し前に `c.get('user').userId.value !== userId` の場合に 403 を返す照合チェックを追加する。
 ```
@@ -29,7 +29,7 @@
 ## Resource Authorization Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/infrastructure/item/repository/delete-item.repository.ts:20
+- **ファイル**: backend/src/infrastructure/item/repository/delete-item/delete-item.repository.ts:20
 - **違反内容**: DELETE クエリの WHERE 句に userId フィルタが存在しない。全ユーザーのアイテムを削除できる。
 - **修正方針**: WHERE 句に `eq(item.userId, userId.value)` を追加する。
 ```
@@ -60,7 +60,7 @@
 ## Resource Authorization Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/infrastructure/item/repository/delete-item.repository.ts:20
+- **ファイル**: backend/src/infrastructure/item/repository/delete-item/delete-item.repository.ts:20
 - **違反内容**: DELETE クエリの WHERE 句に `userId` フィルタがない。`itemId` のみで削除しているため、他ユーザーのリソースを操作できる。
 - **修正方針**: WHERE 句に `eq(table.userId, authenticatedUserId.value)` を追加して所有者を限定する。
 ```

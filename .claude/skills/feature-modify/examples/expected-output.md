@@ -33,7 +33,7 @@
 
 | ファイルパス | レイヤー | 操作 |
 |---|---|---|
-| backend/src/application/task/usecase/create-task.usecase.ts | Usecase (Application) | 変更 |
+| backend/src/application/task/usecase/create-task/create-task.usecase.ts | Usecase (Application) | 変更 |
 
 ### フォルダ構成チェック（CLAUDE.md 準拠）
 - エンドポイント単位のファイル分割になっているか ✓
@@ -61,7 +61,7 @@
 ## バックエンド変更完了
 
 ### 変更ファイル
-- backend/src/application/task/usecase/create-task.usecase.ts: `DEFAULT_PRIORITY` を "medium" → "low" に変更
+- backend/src/application/task/usecase/create-task/create-task.usecase.ts: `DEFAULT_PRIORITY` を "medium" → "low" に変更
 
 ### 実装内容サマリー
 - デフォルト優先度定数の値を変更（振る舞いは仕様変更の範囲）

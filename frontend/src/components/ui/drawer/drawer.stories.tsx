@@ -93,7 +93,7 @@ export const WithoutTitle: Story = {
 };
 
 export const NavigationMenu: Story = {
-    render: () => {
+    render: function Render() {
         const [isOpen, setIsOpen] = useState(false);
 
         return (
@@ -153,7 +153,7 @@ export const NavigationMenu: Story = {
 };
 
 export const FormDrawer: Story = {
-    render: () => {
+    render: function Render() {
         const [isOpen, setIsOpen] = useState(false);
 
         return (
@@ -227,7 +227,7 @@ export const FormDrawer: Story = {
 };
 
 export const DetailDrawer: Story = {
-    render: () => {
+    render: function Render() {
         const [isOpen, setIsOpen] = useState(false);
 
         return (

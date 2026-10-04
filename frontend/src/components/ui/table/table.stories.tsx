@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Table, TableProps } from './table';
+import { Table, type TableProps } from './table';
 
 type User = {
   id: string;

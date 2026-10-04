@@ -1,7 +1,7 @@
 import { verifyKeys } from "@/app/api/query-key";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, test } from "vitest";
 import { useClearSessionCache } from "../use-clear-session-cache";
 

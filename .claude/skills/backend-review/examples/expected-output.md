@@ -13,7 +13,7 @@
 ## Backend Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/presentation/item/controller/create-item.controller.ts:18
+- **ファイル**: backend/src/presentation/item/controller/create-item/create-item.controller.ts:18
 - **違反内容**: 「同名のアイテムが既に存在するか」の判定ロジックが Controller に直書きされている
 - **修正方針**: Usecase メソッド `findByName()` に切り出し、Controller は呼び出し結果で分岐する
 ```
@@ -49,7 +49,7 @@
 ## Backend Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/application/item/usecase/create-item.usecase.ts:10
+- **ファイル**: backend/src/application/item/usecase/create-item/create-item.usecase.ts:10
 - **違反内容**: JSDoc が単行形式（`/** 説明 */`）になっている。`@param` / `@returns` を含む複数行形式が必要
 - **修正方針**: 以下の形式に変更する
   ```ts
@@ -74,7 +74,7 @@
 ## Backend Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/presentation/user/controller/create-user.controller.ts:53
+- **ファイル**: backend/src/presentation/user/controller/create-user/create-user.controller.ts:53
 - **違反内容**: Controller が Repository を経由せず `db.batch` と Drizzle のクエリビルダーを直接呼び出している。Repository に定義済みの `insertUser` / `insertLoginUser` も使われず未使用のままになっている
 - **修正方針**: `ICreateUserRepository` に `createUserWithLogin(user, login): Promise<void>` を1メソッドとして定義し、その内部で `db.batch` を完結させる。Usecase はこの1メソッドを呼ぶだけにし、Controller・Usecase から Drizzle への直接依存を除去する
 ```
@@ -93,7 +93,7 @@
 ## Backend Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/domain/task/entity/task.entity.ts:42
+- **ファイル**: backend/src/domain/task/entity/task/task.entity.ts:42
 - **違反内容**: 決定的でない処理（`ulid()`）が、名前付きファクトリメソッド（`generate()` / `create()` 等）以外のメソッド `duplicate()` の中に書かれている
 - **修正方針**: ID の生成は既存の `TaskId.generate()` に任せ、`duplicate(newId: TaskId)` のように生成済みの ID を引数で受け取る。`TaskId.generate()` の呼び出しは Usecase で行う
 ```

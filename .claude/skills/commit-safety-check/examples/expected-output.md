@@ -31,7 +31,7 @@
 ## Pre-Commit Check 結果
 
 ### 要確認
-- **ファイル**: backend/src/application/item/usecase/create-item.usecase.ts:5
+- **ファイル**: backend/src/application/item/usecase/create-item/create-item.usecase.ts:5
 - **検出内容**: `sk-` で始まる文字列（API キーの可能性）がハードコードされている
 - **対応方針**: 環境変数（.dev.vars）に移動し、コード上は `c.env.EXTERNAL_API_KEY` 等で参照する
 ```

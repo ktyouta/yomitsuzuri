@@ -13,7 +13,7 @@
 ## Comments Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/application/item/usecase/get-item.usecase.ts:12
+- **ファイル**: backend/src/application/item/usecase/get-item/get-item.usecase.ts:12
 - **違反内容**: `// アイテムを取得する` — 関数名 `getItem` から明らかに読み取れる WHAT コメント
 - **修正方針**: 削除する（関数名で十分に意味が伝わる）
 ```

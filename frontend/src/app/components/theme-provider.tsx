@@ -1,5 +1,5 @@
 import { createCtx } from '@/utils/create-ctx';
-import { ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 const THEME_STORAGE_KEY = 'theme';
 

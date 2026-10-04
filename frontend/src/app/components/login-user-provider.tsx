@@ -1,9 +1,9 @@
 import { paths } from "@/config/paths";
 import { registerResetLogin } from "@/stores/access-token-store";
 import { createCtx } from "@/utils/create-ctx";
-import { ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LoginUserType } from "../api/verify";
+import { type LoginUserType } from "../api/verify";
 import { SetThemeContext } from "./theme-provider";
 
 // ログインユーザー情報
@@ -28,31 +28,32 @@ export function LoginUserProvider(props: PropsType) {
     /**
      * ログイン画面に遷移
      */
-    function moveLogin() {
+    const moveLogin = useCallback(() => {
         navigate(paths.login.getHref(window.location.pathname));
-    }
+    }, [navigate]);
 
     /**
      * ユーザー情報をリセット
      */
-    function resetUser() {
+    const resetUser = useCallback(() => {
         setLoginUser(null);
-    }
+    }, []);
 
-    // ログインリセット処理を登録
+    // ログインリセット処理を登録（登録は上書きのため、navigate が変わった場合は最新の処理で登録し直す）
     useEffect(() => {
         registerResetLogin({
             resetUser,
             moveLogin,
         });
-    }, []);
+    }, [resetUser, moveLogin]);
 
     // ログインユーザーのダークモード設定をThemeContextに反映
+    const darkMode = loginUser?.darkMode;
     useEffect(() => {
-        if (loginUser) {
-            setTheme(loginUser.darkMode ? 'dark' : 'light');
+        if (darkMode !== undefined) {
+            setTheme(darkMode ? 'dark' : 'light');
         }
-    }, [loginUser?.darkMode, setTheme]);
+    }, [darkMode, setTheme]);
 
     return (
         <LoginUserContext.Provider value={loginUser}>

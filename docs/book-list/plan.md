@@ -52,7 +52,7 @@
 
 - [x] `application/book/usecase/index copy.ts` を削除する
 - [x] 値オブジェクト `BookListPagination`（`domain/book/value-object/book-list-pagination/`）
-- [x] Repository interface `IGetListBookRepository`（`domain/book/repository/get-list-book.repository.interface.ts`）
+- [x] Repository interface `IGetListBookRepository`（`domain/book/repository/get-list-book/get-list-book.repository.interface.ts`）
 - [x] Usecase `GetListBookUsecase`・DTO `GetListBookResultDto` を作り直す
 - [x] Repository 実装 `GetListBookRepository`（`infrastructure/book/repository/`）
 - [x] zod スキーマ `GetListBookQuerySchema`（`presentation/book/schema/`）

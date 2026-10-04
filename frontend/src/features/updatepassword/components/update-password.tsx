@@ -1,6 +1,6 @@
 import { LoadingOverlay, Textbox } from "@/components";
-import { BaseSyntheticEvent } from "react";
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import { type BaseSyntheticEvent } from "react";
+import { type FieldErrors, type UseFormRegister } from "react-hook-form";
 
 type PropsType = {
     errMessage: string,
@@ -16,7 +16,7 @@ type PropsType = {
         newPassword: string;
         confirmPassword: string;
     }>,
-    handleConfirm: (e?: BaseSyntheticEvent<object, any, any> | undefined) => Promise<void>
+    handleConfirm: (e?: BaseSyntheticEvent | undefined) => Promise<void>
 }
 
 export function UpdatePassword(props: PropsType) {

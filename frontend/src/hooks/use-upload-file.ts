@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client";
-import { AxiosProgressEvent } from "axios";
+import { type AxiosProgressEvent } from "axios";
 import { useState } from "react";
 
 // 許可ファイル情報

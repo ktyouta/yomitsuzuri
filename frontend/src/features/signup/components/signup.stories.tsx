@@ -14,7 +14,7 @@ export default meta;
 type Story = StoryObj<typeof Signup>;
 
 export const Default: Story = {
-    render: () => {
+    render: function Render() {
         const { register, watch, formState: { errors } } = useForm<{
             name: string;
             birthday: {

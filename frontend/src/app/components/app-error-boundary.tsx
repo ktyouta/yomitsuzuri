@@ -1,6 +1,6 @@
 import { NotFound } from '@/components';
 import { NotFoundError } from '@/lib/errors';
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useLocation } from 'react-router-dom';
 

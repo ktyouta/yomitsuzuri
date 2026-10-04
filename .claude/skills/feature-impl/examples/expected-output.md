@@ -22,11 +22,11 @@
 
 | ファイルパス | レイヤー | 操作 |
 |---|---|---|
-| backend/src/presentation/task/controller/create-task.controller.ts | Controller (Presentation) | 新規 |
-| backend/src/application/task/usecase/create-task.usecase.ts | Usecase (Application) | 新規 |
-| backend/src/domain/task/repository/create-task.repository.interface.ts | Interface (Domain) | 新規 |
-| backend/src/infrastructure/task/repository/create-task.repository.ts | Repository実装 (Infrastructure) | 新規 |
-| backend/src/presentation/task/schema/create-task.schema.ts | Schema (Presentation) | 新規 |
+| backend/src/presentation/task/controller/create-task/create-task.controller.ts | Controller (Presentation) | 新規 |
+| backend/src/application/task/usecase/create-task/create-task.usecase.ts | Usecase (Application) | 新規 |
+| backend/src/domain/task/repository/create-task/create-task.repository.interface.ts | Interface (Domain) | 新規 |
+| backend/src/infrastructure/task/repository/create-task/create-task.repository.ts | Repository実装 (Infrastructure) | 新規 |
+| backend/src/presentation/task/schema/create-task/create-task.schema.ts | Schema (Presentation) | 新規 |
 | frontend/src/features/task/api/create-task.ts | API | 新規 |
 | frontend/src/features/task/api/query-key.ts | QueryKey | 新規 |
 | frontend/src/features/task/components/task-form-container.tsx | Container | 新規 |
@@ -76,9 +76,9 @@
 ## バックエンド実装完了
 
 ### 変更ファイル
-- backend/src/presentation/task/controller/create-task.controller.ts: POST /api/tasks エンドポイントを追加
-- backend/src/application/task/usecase/create-task.usecase.ts: タスク作成ユースケースを実装
-- backend/src/infrastructure/task/repository/create-task.repository.ts: INSERT 処理を実装
+- backend/src/presentation/task/controller/create-task/create-task.controller.ts: POST /api/tasks エンドポイントを追加
+- backend/src/application/task/usecase/create-task/create-task.usecase.ts: タスク作成ユースケースを実装
+- backend/src/infrastructure/task/repository/create-task/create-task.repository.ts: INSERT 処理を実装
 
 ### 実装内容サマリー
 - エンドポイント: POST /api/tasks
@@ -145,7 +145,7 @@ NG 累計: 1 件 → Step 11 で skill-gap-detector を必ず実行すること
 
 ### 変更ファイル
 - backend/src/domain/task/value-object/task-title/task-title.ts: タスクタイトルの値オブジェクトを追加
-- backend/src/application/task/usecase/create-task.usecase.ts: タスク作成ユースケースを実装
+- backend/src/application/task/usecase/create-task/create-task.usecase.ts: タスク作成ユースケースを実装
 
 ### backend-review 結果
 - 問題なし

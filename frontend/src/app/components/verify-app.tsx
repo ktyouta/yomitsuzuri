@@ -1,5 +1,5 @@
-import { ReactNode } from "react";
-import { LoginUserType, verify } from "../api/verify";
+import { type ReactNode } from "react";
+import { type LoginUserType, useVerify } from "../api/verify";
 
 type ChildrenPropsType = {
     user: LoginUserType | null
@@ -12,7 +12,7 @@ type PropsType = {
 export function VerifyApp(props: PropsType) {
 
     // 認証チェック
-    const { data } = verify();
+    const { data } = useVerify();
     return props.children({
         user: data ? data.data.userInfo : null
     });

@@ -1,4 +1,4 @@
-import { QueryKey, useQueryClient } from "@tanstack/react-query";
+import { type QueryKey, useQueryClient } from "@tanstack/react-query";
 
 export function useInvalidateQuery(key: QueryKey) {
 

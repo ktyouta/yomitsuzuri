@@ -1,6 +1,6 @@
 import * as React from "react";
 import { type ComponentPropsWithoutRef } from "react";
-import { UseFormRegisterReturn } from "react-hook-form";
+import { type UseFormRegisterReturn } from "react-hook-form";
 import { cn } from "@/utils/cn";
 
 type Props = {

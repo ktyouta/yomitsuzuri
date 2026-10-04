@@ -1,1 +1,1 @@
-export * from "./get-list-book.schema";
+export * from "./get-list-book";

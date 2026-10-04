@@ -6,7 +6,7 @@ import { updateAccessToken } from '@/stores/access-token-store';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLoginMutation } from '../api/login';
-import { LoginRequestType } from '../types/login-request-type';
+import { type LoginRequestType } from '../types/login-request-type';
 import { useLoginForm } from './use-login-form';
 
 

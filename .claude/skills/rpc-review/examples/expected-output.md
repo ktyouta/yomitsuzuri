@@ -49,7 +49,7 @@
 ## RPC Review 結果
 
 ### 違反あり
-- **ファイル**: backend/src/application/item/usecase/get-item.usecase.ts:2
+- **ファイル**: backend/src/application/item/usecase/get-item/get-item.usecase.ts:2
 - **違反内容**: `@/` パスエイリアスを使用している（フロントエンドの tsconfig と競合する）
 - **修正方針**: `../../domain/user` のような相対パスに変更する
 ```

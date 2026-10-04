@@ -19,19 +19,19 @@ tools: Read, Glob, Grep
 このプロジェクトは DDD 4層アーキテクチャ（`presentation → application → domain ← infrastructure`）を採用している。実装依存順序：
 
 ```
-1. DB スキーマ定義（Drizzle ORM, infrastructure/db/schema.ts）
+1. DB スキーマ定義（Drizzle ORM, infrastructure/db/schema/schema.ts）
 2. マイグレーション SQL 生成（npm run db:generate）
 3. Repository interface と、ドメイン Entity・Value Object・util の型（シグネチャのみ。中身は未実装）（domain/<機能>/ ・ util/）
-4. ドメイン・util の契約テスト作成（backend/test/domain/<機能>/ ・ backend/test/util/）→ 失敗することを確認する
+4. ドメイン・util の契約テスト作成（実装と同じ単位フォルダ。例: domain/<機能>/value-object/<名前>/<名前>.test.ts）→ 失敗することを確認する
 5. ドメイン Entity・Value Object・util の実装 → 4 の契約テストを通す
-6. ユースケースの契約テスト作成（backend/test/application/<機能>/usecase/。Repository はスタブを使い DB を使わない）→ 失敗することを確認する
+6. ユースケースの契約テスト作成（application/<機能>/usecase/<名前>/<名前>.usecase.test.ts。Repository はスタブを使い DB を使わない）→ 失敗することを確認する
 7. ユースケース実装（application/<機能>/usecase/）→ 6 の契約テストを通す
 8. リポジトリ実装（infrastructure/<機能>/repository/）
 9. コントローラー実装（presentation/<機能>/controller/）
-10. ルーター定義（presentation/<機能>/index.ts）
-11. RPC 集約への登録（rpc/index.ts）
+10. ルーター定義（presentation/<機能>/controller/<機能>/<機能>.controller.ts）
+11. ルーターの登録（src/index.ts の `.route()`）
 12. フロントエンド実装（features/<機能>/）
-13. コントローラーの結合テスト（必要な場合。backend/test/presentation/<機能>/controller/）
+13. コントローラーの結合テスト（必要な場合。presentation/<機能>/controller/<名前>/<名前>.controller.test.ts）
 ```
 
 **契約テストは実装より先に書く（テスト駆動）。** 設計で定めた契約（クラス仕様）からテストを作成し、失敗を確認してから実装に進む。テストを実装の後に書くと、契約ではなく書いたコードの動きを確かめるテストになりやすいため。
@@ -56,8 +56,9 @@ tools: Read, Glob, Grep
 - `@/` パスエイリアスを使わない（相対パスで記述）
 - Zod v3 を使う（v4 は使わない）
 - `createEnvConfig(c.env)` で環境変数を取得する
-- 新しいルーターは `rpc/index.ts` に登録する
-- テストファイルは `backend/test/` 配下に `src` と同じフォルダ構成で配置する
+- 新しいルーターは `src/index.ts` に登録する（`rpc/index.ts` は `AppType` の型再 export 専用）
+- バックエンドのファイルは1単位1フォルダ（`<名前>/<名前>.<種別>.ts` + `index.ts`）で配置する
+- テストファイルは実装ファイルと同じ単位フォルダに配置する（`backend/test/` はマイグレーション適用・型定義の設定専用）
 - Usecase のテストでは、Repository interface を満たすスタブ（オブジェクトリテラル + `vi.fn()`）を使い、DB を使わない
 
 ### フロントエンド

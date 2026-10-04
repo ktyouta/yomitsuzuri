@@ -13,7 +13,7 @@ export type LoginUserType = InferResponseType<typeof endpoint, 200>['data']['use
  * @param props
  * @returns
  */
-export function verify() {
+export function useVerify() {
 
     return useSuspenseQuery({
         queryKey: verifyKeys.all,

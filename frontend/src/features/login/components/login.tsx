@@ -1,5 +1,5 @@
 import { LoadingOverlay, Textbox } from '@/components';
-import { FieldErrors, UseFormRegister } from 'react-hook-form';
+import { type FieldErrors, type UseFormRegister } from 'react-hook-form';
 
 type PropsType = {
     errMessage: string,
@@ -12,7 +12,7 @@ type PropsType = {
         name: string;
         password: string;
     }>,
-    clickLogin: (e?: React.BaseSyntheticEvent<object, any, any> | undefined) => Promise<void>,
+    clickLogin: (e?: React.BaseSyntheticEvent | undefined) => Promise<void>,
     navigateSignup(): void,
     handleKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => void,
 }

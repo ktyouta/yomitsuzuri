@@ -14,7 +14,7 @@ export default meta;
 type Story = StoryObj<typeof Login>;
 
 export const Default: Story = {
-    render: () => {
+    render: function Render() {
         const { register, formState: { errors } } = useForm<{
             name: string;
             password: string;

@@ -1,1 +1,1 @@
-export * from "./get-list-book-result.dto";
+export * from "./get-list-book-result";

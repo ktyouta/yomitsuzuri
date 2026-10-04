@@ -1,7 +1,7 @@
-import { LoginUserType } from "@/app/api/verify";
+import { type LoginUserType } from "@/app/api/verify";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { UpdateUserRequestSchema, UpdateUserRequestType } from "../types/update-user-request-type";
+import { UpdateUserRequestSchema, type UpdateUserRequestType } from "../types/update-user-request-type";
 
 /**
  * yyyyMMdd形式の生年月日を年・月・日に分割する

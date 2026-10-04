@@ -1,4 +1,4 @@
-import { createContext, Provider, useContext } from "react";
+import { createContext, type Provider, useContext } from "react";
 
 export function createCtx<T>(): {
     useCtx: () => T,

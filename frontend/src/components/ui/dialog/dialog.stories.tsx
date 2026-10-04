@@ -73,7 +73,7 @@ export const WithoutTitle: Story = {
 };
 
 export const ConfirmDialog: Story = {
-    render: () => {
+    render: function Render() {
         const [isOpen, setIsOpen] = useState(false);
 
         return (
@@ -115,7 +115,7 @@ export const ConfirmDialog: Story = {
 };
 
 export const FormDialog: Story = {
-    render: () => {
+    render: function Render() {
         const [isOpen, setIsOpen] = useState(false);
 
         return (

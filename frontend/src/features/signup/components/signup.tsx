@@ -1,8 +1,8 @@
 import { LoadingOverlay, Select, Textbox } from "@/components";
 import { MONTH_LIST } from "@/constants/date-options";
 import { getDayList } from "@/utils/date-select-options";
-import { BaseSyntheticEvent } from "react";
-import { FieldErrors, UseFormRegister, UseFormWatch } from "react-hook-form";
+import { type BaseSyntheticEvent } from "react";
+import { type FieldErrors, type UseFormRegister, type UseFormWatch } from "react-hook-form";
 
 type PropsType = {
     errMessage: string,
@@ -42,7 +42,7 @@ type PropsType = {
         password: string;
         confirmPassword: string;
     }>,
-    handleConfirm: (e?: BaseSyntheticEvent<object, any, any> | undefined) => Promise<void>,
+    handleConfirm: (e?: BaseSyntheticEvent | undefined) => Promise<void>,
 }
 
 export function Signup(props: PropsType) {

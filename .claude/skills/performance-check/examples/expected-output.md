@@ -11,7 +11,7 @@
 ## Performance Check 結果
 
 ### 問題あり
-- **ファイル**: backend/src/application/item/usecase/get-item-list.usecase.ts:24
+- **ファイル**: backend/src/application/item/usecase/get-item-list/get-item-list.usecase.ts:24
 - **問題内容**: N+1 — `for` ループ内で `itemRepository.find(id)` を呼び出している。ID 件数分だけ DB クエリが発行される
 - **修正方針**: `itemRepository.findByIds(ids)` のように一括取得メソッドを用意するか、`db.batch([])` で並列発行する
 ```
@@ -47,7 +47,7 @@
 ## Performance Check 結果
 
 ### 問題あり
-- **ファイル**: backend/src/application/list/usecase/get-list.usecase.ts:41
+- **ファイル**: backend/src/application/list/usecase/get-list/get-list.usecase.ts:41
 - **問題内容**: O(n²) — `items.map(item => users.find(u => u.ownerId === item.id))` の形でループ内 find を実行している
 - **修正方針**: `users` を `Map<ownerId, user>` に変換してから `map` 内で O(1) アクセスする
 ```

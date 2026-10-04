@@ -16,7 +16,7 @@
 - 同一リクエストを短時間に2回送信すると、2件目も INSERT される
 
 ### 原因箇所
-- ファイル: backend/src/application/task/usecase/create-task.usecase.ts:18
+- ファイル: backend/src/application/task/usecase/create-task/create-task.usecase.ts:18
 - 原因: `checkDuplicate()` の戻り値を `undefined` チェックしているが、返却型が `null` のため常に falsy とならない
 
 ### 根本原因

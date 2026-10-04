@@ -117,6 +117,7 @@ docs/[機能名]/spec.md が存在する場合のみ実施する。
 
 ### フォルダ構成チェック（CLAUDE.md 準拠）
 - エンドポイント単位のファイル分割になっているか
+- バックエンドのファイルが1単位1フォルダ（`<名前>/<名前>.<種別>.ts` + `index.ts`）になっているか
 - `domain/{機能}/`（entity, value-object, repository interface）、`application/{機能}/`（usecase, dto）、`infrastructure/{機能}/repository/`、`presentation/{機能}/`（controller, schema）の4層構成に沿っているか
 - repository に .interface.ts が `domain/` 側にセットで存在するか
 - Container に -container.tsx サフィックスがついているか
@@ -166,7 +167,7 @@ Step 4 の差分設計に沿ってバックエンドを変更する。
 3. コードを変更し、テストを通す
 
 テストの書き方：
-- テストファイルは `backend/test/` 配下に `src` と同じフォルダ構成で配置する
+- バックエンドのテストファイルは実装ファイルと同じ単位フォルダに配置する（例: `src/domain/book/value-object/book-id/book-id.test.ts`）
 - ドメイン層・`util/`：値を渡し、戻り値・保持する値・例外を確認する
 - Usecase：Repository interface を満たすスタブ（オブジェクトリテラル + `vi.fn()`）を渡し、DB を使わずに戻り値と、業務上意味のある書き込みが行われた／行われなかったことを確認する
 - 決定的でない値（ID・時刻）は具体値ではなく、存在・形式を確認する

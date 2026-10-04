@@ -22,7 +22,7 @@
 ### 仕様と異なる実装
 - ステータス設定
   - 仕様: 登録後にステータスを `active` に設定する
-  - 実装: backend/src/application/task/usecase/create-task.usecase.ts:22 で `setStatus()` の呼び出しがない
+  - 実装: backend/src/application/task/usecase/create-task/create-task.usecase.ts:22 で `setStatus()` の呼び出しがない
   - 差分の概要: ステータス設定処理が実装されていない
 ```
 
@@ -84,7 +84,7 @@
 ## 仕様突き合わせ結果
 
 ### 実装済み（仕様通り）
-- タスク作成ユースケース: backend/src/application/task/usecase/create-task.usecase.ts:18
+- タスク作成ユースケース: backend/src/application/task/usecase/create-task/create-task.usecase.ts:18
 
 ### 未実装
 - CreateTaskUsecase.createTask の事後条件「タイトル不正時は書き込みが行われない」: 対応するテストが確認できない（未カバー）

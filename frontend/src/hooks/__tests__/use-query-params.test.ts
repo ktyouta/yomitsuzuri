@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react";
-import { describe, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, test, beforeEach, afterEach } from "vitest";
 import { useQueryParams } from "../use-query-params";
 
 describe("useQueryParams", () => {

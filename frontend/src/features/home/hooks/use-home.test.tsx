@@ -1,7 +1,17 @@
 import { act, renderHook } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, expect } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { useHome } from "./use-home";
+
+// count の検証に health API は不要なため、通信しないようモックする
+vi.mock("../api/health", () => ({
+    useHealthQuery: () => ({
+        data: undefined,
+        isLoading: false,
+        isError: false,
+        refetch: vi.fn(),
+    }),
+}));
 
 function createWrapper() {
     const queryClient = new QueryClient({

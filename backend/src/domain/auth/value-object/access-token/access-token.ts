@@ -1,7 +1,7 @@
 import { sign, verify } from "hono/jwt";
 import type { EnvConfig } from "../../../../config";
 import { parseDuration } from "../../../../util";
-import { UserId } from "../../../user/value-object/user-id";
+import { UserId } from "../../../shared";
 import { Header } from "../header/header";
 import { AccessTokenError } from "./access-token.error";
 

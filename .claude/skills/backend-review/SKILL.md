@@ -51,14 +51,14 @@ version: 2.1.0
   - アンチパターン: `usecase.buildEntity()` のような、内部で単に `new Entity(...)` するだけのメソッドを Usecase に定義している
   - 正しいパターン: Controller で直接 `new SomeEntity(...)` する（ロジックを含まない単純な構築・変換は Controller で直接行う）
 - Usecase が Drizzle のクエリビルダー（`db.insert(...)` 等）やテーブルスキーマを直接importしていないか（Infrastructure層の詳細はRepository経由でのみ扱う）
-- **モジュール跨ぎの依存は許可される**: Usecase が自モジュール以外の `domain/{他モジュール}/repository` interface に依存すること自体は違反ではない（例: `application/user/usecase/create-user.usecase.ts` が `domain/auth` の `IUserLoginRepository` に依存する）。ただし domain 層の Entity/VO 同士が直接依存するのは違反として指摘する
+- **モジュール跨ぎの依存は許可される**: Usecase が自モジュール以外の `domain/{他モジュール}/repository` interface に依存すること自体は違反ではない（例: `application/user/usecase/create-user/create-user.usecase.ts` が `domain/auth` の `IUserLoginRepository` に依存する）。ただし domain 層の Entity/VO 同士が直接依存するのは違反として指摘する
 
 ### フォルダ・ファイル構成
 - `domain/{機能グループ名}/`（entity, value-object, repository interface）、`application/{機能グループ名}/`（usecase, dto）、`infrastructure/{機能グループ名}/repository/`、`presentation/{機能グループ名}/`（controller, schema）の4層構成に沿っているか
-- 各レイヤーのファイルが `[操作名].[レイヤー].ts` の命名でエンドポイント単位に分割されているか
-- ルーター集約ファイルが `[機能グループ名].controller.ts` になっているか
+- 各レイヤーのファイルが `[操作名]/[操作名].[レイヤー].ts` の命名でエンドポイント単位に分割されているか（1単位1フォルダ。テストも同じフォルダに置く）
+- ルーター集約ファイルが `[機能グループ名]/[機能グループ名].controller.ts` になっているか
 - repository に対応する `.repository.interface.ts` が `domain/` 側にセットで存在するか
-- 各レイヤーフォルダに `index.ts` が存在するか
+- 各レイヤーフォルダ・単位フォルダに `index.ts` が存在するか
 
 ### コーディング規約
 - ユーティリティ関数（日付変換・文字列変換等）を Usecase / Controller 内に直接定義していないか
@@ -83,7 +83,7 @@ version: 2.1.0
   - 正しいパターン: 構造が同じでも概念が異なるなら、そのドメイン概念専用の型を別途定義する
 - `string` 型を使っているフィールドのうち、対応するドメイン型を新規作成すべきものが残っていないか
 - 新規作成したVOのクラス名が、同一 `domain/{機能}/value-object/` 配下の既存VOの命名プレフィックスと一貫しているか
-  - 実例: `domain/user/value-object/` 配下は `UserId`/`UserName`/`UserBirthday` のように全て `User` プレフィックスが付いている。ここに `Theme` のようなプレフィックスなしのVOを追加すると、フォルダ内での一貫性が崩れる（`UserTheme` とすべき）
+  - 実例: `domain/user/value-object/` 配下は `UserName`/`UserBirthday` のように全て `User` プレフィックスが付いている。ここに `Theme` のようなプレフィックスなしのVOを追加すると、フォルダ内での一貫性が崩れる（`UserTheme` とすべき）
 - VOに複数の生成意味（値検証によるインスタンス化 vs デフォルト値生成 等）がある場合、`private constructor` + 名前付き静的ファクトリメソッド（`of` / `default` 等）に分離しているか
   - アンチパターン: `public constructor` のみを持つVOに対し、デフォルト値生成のために `new Theme(Theme.LAVENDER)` のような自己参照的な呼び出しをコール側に書かせている
   - 正しいパターン: `UserId` の `static generate()`（新規生成）/ `static of()`（既存値から復元）のように、生成意味ごとに名前付きファクトリメソッドを分離する（例: `static of(value)` / `static default()`）

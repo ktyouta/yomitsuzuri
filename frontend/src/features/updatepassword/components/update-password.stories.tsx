@@ -14,7 +14,7 @@ export default meta;
 type Story = StoryObj<typeof UpdatePassword>;
 
 export const Default: Story = {
-    render: () => {
+    render: function Render() {
         const { register, formState: { errors } } = useForm<{
             nowPassword: string;
             newPassword: string;

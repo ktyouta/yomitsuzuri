@@ -1,2 +1,2 @@
-export * from "./user-login.schema";
-export * from "./user-password.schema";
+export * from "./user-login";
+export * from "./user-password";

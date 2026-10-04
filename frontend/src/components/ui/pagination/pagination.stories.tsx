@@ -16,7 +16,7 @@ type Story = StoryObj<typeof Pagination>;
 
 // ページ操作が可能なインタラクティブストーリー
 export const Interactive: Story = {
-    render: () => {
+    render: function Render() {
         const [page, setPage] = useState(1);
         return (
             <Pagination

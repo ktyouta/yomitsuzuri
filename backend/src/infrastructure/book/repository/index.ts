@@ -1,1 +1,1 @@
-export * from "./get-list-book.repository";
+export * from "./get-list-book";

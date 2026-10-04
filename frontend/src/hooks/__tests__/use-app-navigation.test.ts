@@ -1,5 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, expect, vi, beforeEach, Mock } from "vitest";
+import { describe, expect, test, vi, beforeEach, type Mock } from "vitest";
 import { useAppNavigation } from "../use-app-navigation";
 import { navigationDepth } from "@/stores/navigation-depth-store";
 

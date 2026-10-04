@@ -1,5 +1,5 @@
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { describe, expect, vi, beforeEach, Mock } from "vitest";
+import { renderHook, act } from "@testing-library/react";
+import { describe, expect, test, vi, beforeEach, type Mock } from "vitest";
 import { useUploadFile } from "../use-upload-file";
 import { api } from "@/lib/api-client";
 
@@ -109,7 +109,7 @@ describe("useUploadFile", () => {
 
         test("should call onUploadProgress callback", async () => {
 
-            (api.post as Mock).mockImplementation((url, data, config) => {
+            (api.post as Mock).mockImplementation((_url, _data, config) => {
                 // onUploadProgress コールバックを呼び出す
                 if (config?.onUploadProgress) {
                     config.onUploadProgress({ loaded: 50, total: 100 });

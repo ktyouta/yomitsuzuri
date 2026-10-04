@@ -1,2 +1,2 @@
-export * from "./user-login.repository.interface";
-export * from "./user-password.repository.interface";
+export * from "./user-login";
+export * from "./user-password";

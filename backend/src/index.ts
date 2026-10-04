@@ -1,4 +1,4 @@
-import { Context, Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { cors } from "hono/cors";
 import { health } from "./presentation/health";
 import { user } from "./presentation/user";

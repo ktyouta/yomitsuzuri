@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
+import { type ComponentProps, useState } from 'react';
 import { Checkbox } from './checkbox';
 
 const meta: Meta<typeof Checkbox> = {
@@ -26,7 +26,7 @@ export default meta;
 
 type Story = StoryObj<typeof Checkbox>;
 
-const StatefulWrapper = (args: any) => {
+const StatefulWrapper = (args: ComponentProps<typeof Checkbox>) => {
     const [checked, setChecked] = useState(args.checked);
 
     return (

@@ -1,8 +1,8 @@
 import { renderHook, act } from "@testing-library/react";
-import { describe, expect, vi, beforeEach } from "vitest";
+import { describe, expect, test, vi, beforeEach } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useInvalidateQuery } from "../use-invalidate-query";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 describe("useInvalidateQuery", () => {
 

@@ -76,10 +76,12 @@ export const AppRouter = () => {
     const { pathname } = useLocation();
     const navigationType = useNavigationType();
 
+    // ページ遷移（pathname の変化）時だけ実行したいため、navigationType は依存配列に含めない
     useEffect(() => {
         if (navigationType !== "POP") {
             window.scrollTo(0, 0);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname]);
 
     return router;

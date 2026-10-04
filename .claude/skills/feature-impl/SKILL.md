@@ -69,10 +69,10 @@ impl-planner を実行し、設計内容・作成ファイル一覧・フォル�
 
 | ファイルパス | レイヤー | 操作 |
 |---|---|---|
-| backend/src/presentation/xxx/controller/get-xxx.controller.ts | Controller (Presentation) | 新規 |
-| backend/src/application/xxx/usecase/get-xxx.usecase.ts | Usecase (Application) | 新規 |
-| backend/src/domain/xxx/repository/get-xxx.repository.interface.ts | Repository interface (Domain) | 新規 |
-| backend/src/infrastructure/xxx/repository/get-xxx.repository.ts | Repository実装 (Infrastructure) | 新規 |
+| backend/src/presentation/xxx/controller/get-xxx/get-xxx.controller.ts | Controller (Presentation) | 新規 |
+| backend/src/application/xxx/usecase/get-xxx/get-xxx.usecase.ts | Usecase (Application) | 新規 |
+| backend/src/domain/xxx/repository/get-xxx/get-xxx.repository.interface.ts | Repository interface (Domain) | 新規 |
+| backend/src/infrastructure/xxx/repository/get-xxx/get-xxx.repository.ts | Repository実装 (Infrastructure) | 新規 |
 | frontend/src/features/xxx/api/get-xxx.ts | API | 新規 |
 | ... | ... | ... |
 
@@ -90,6 +90,7 @@ docs/[機能名]/spec.md が存在する場合のみ実施する。
 
 ### フォルダ構成チェック（CLAUDE.md 準拠）
 - エンドポイント単位のファイル分割になっているか
+- バックエンドのファイルが1単位1フォルダ（`<名前>/<名前>.<種別>.ts` + `index.ts`）になっているか
 - `domain/{機能}/`（entity, value-object, repository interface）、`application/{機能}/`（usecase, dto）、`infrastructure/{機能}/repository/`、`presentation/{機能}/`（controller, schema）の4層構成に沿っているか
 - repository に .interface.ts が `domain/` 側にセットで存在するか
 - Container に -container.tsx サフィックスがついているか
@@ -151,7 +152,7 @@ Step 3 の実装計画に沿ってバックエンドを実装する。
 6. Repository 実装・Controller 等の残りを実装する
 
 テストの書き方：
-- テストファイルは `backend/test/` 配下に `src` と同じフォルダ構成で配置する
+- バックエンドのテストファイルは実装ファイルと同じ単位フォルダに配置する（例: `src/domain/book/value-object/book-id/book-id.test.ts`）
 - ドメイン層・`util/`：値を渡し、戻り値・保持する値・例外を確認する
 - Usecase：Repository interface を満たすスタブ（オブジェクトリテラル + `vi.fn()`）を渡し、DB を使わずに戻り値と、業務上意味のある書き込みが行われた／行われなかったことを確認する
 - 決定的でない値（ID・時刻）は具体値ではなく、存在・形式を確認する

@@ -1,7 +1,7 @@
 import { cn } from "@/utils/cn";
 import * as React from "react";
 import { type ComponentPropsWithoutRef } from "react";
-import { UseFormRegisterReturn } from "react-hook-form";
+import { type UseFormRegisterReturn } from "react-hook-form";
 
 type Props = {
     registration?: Partial<UseFormRegisterReturn>;

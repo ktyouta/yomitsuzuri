@@ -13,7 +13,7 @@ export function useCreateYearList() {
         // 現在年を取得
         const nowYear = new Date().getFullYear();
 
-        let yearList: {
+        const yearList: {
             label: string,
             value: string,
         }[] = [];

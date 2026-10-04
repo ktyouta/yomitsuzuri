@@ -1,2 +1,2 @@
-export * from "./api-response.type";
-export * from "./app-env.type";
+export * from "./api-response";
+export * from "./app-env";

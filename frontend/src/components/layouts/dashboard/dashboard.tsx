@@ -1,5 +1,5 @@
-import { LoginUserType } from '@/app/api/verify';
-import { ThemeType } from '@/app/components/theme-provider';
+import { type LoginUserType } from '@/app/api/verify';
+import { type ThemeType } from '@/app/components/theme-provider';
 import { Footer } from '@/components';
 import type { ReactNode } from 'react';
 import { useState } from 'react';

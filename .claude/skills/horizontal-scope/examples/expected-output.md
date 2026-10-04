@@ -12,29 +12,29 @@
 ## 水平展開対象ファイル
 
 ### バックエンド（新規作成）
-- `backend/src/infrastructure/db/schema.ts` — categoriesTable の定義を追加
+- `backend/src/infrastructure/db/schema/schema.ts` — categoriesTable の定義を追加
 - `backend/drizzle/` — マイグレーションファイルを新規生成（`db:generate` で作成）
-- `backend/src/domain/category/entity/category.entity.ts` — Entity 定義
+- `backend/src/domain/category/entity/category/category.entity.ts` — Entity 定義
 - `backend/src/domain/category/entity/index.ts`
-- `backend/src/domain/category/repository/get-categories.repository.interface.ts`
-- `backend/src/domain/category/repository/create-category.repository.interface.ts`
+- `backend/src/domain/category/repository/get-categories/get-categories.repository.interface.ts`
+- `backend/src/domain/category/repository/create-category/create-category.repository.interface.ts`
 - `backend/src/domain/category/repository/index.ts`
 - `backend/src/domain/category/index.ts`
-- `backend/src/infrastructure/category/repository/get-categories.repository.ts`
-- `backend/src/infrastructure/category/repository/create-category.repository.ts`
+- `backend/src/infrastructure/category/repository/get-categories/get-categories.repository.ts`
+- `backend/src/infrastructure/category/repository/create-category/create-category.repository.ts`
 - `backend/src/infrastructure/category/repository/index.ts`
-- `backend/src/application/category/usecase/get-categories.usecase.ts`
-- `backend/src/application/category/usecase/create-category.usecase.ts`
+- `backend/src/application/category/usecase/get-categories/get-categories.usecase.ts`
+- `backend/src/application/category/usecase/create-category/create-category.usecase.ts`
 - `backend/src/application/category/usecase/index.ts`
 - `backend/src/application/category/index.ts`
-- `backend/src/presentation/category/schema/create-category.schema.ts` — Zod バリデーション
+- `backend/src/presentation/category/schema/create-category/create-category.schema.ts` — Zod バリデーション
 - `backend/src/presentation/category/schema/index.ts`
-- `backend/src/presentation/category/dto/get-categories-response.dto.ts`
-- `backend/src/presentation/category/dto/create-category-response.dto.ts`
+- `backend/src/presentation/category/dto/get-categories-response/get-categories-response.dto.ts`
+- `backend/src/presentation/category/dto/create-category-response/create-category-response.dto.ts`
 - `backend/src/presentation/category/dto/index.ts`
-- `backend/src/presentation/category/controller/get-categories.controller.ts`
-- `backend/src/presentation/category/controller/create-category.controller.ts`
-- `backend/src/presentation/category/controller/category.controller.ts` — ルーター結合
+- `backend/src/presentation/category/controller/get-categories/get-categories.controller.ts`
+- `backend/src/presentation/category/controller/create-category/create-category.controller.ts`
+- `backend/src/presentation/category/controller/category/category.controller.ts` — ルーター結合
 - `backend/src/presentation/category/controller/index.ts`
 - `backend/src/presentation/category/index.ts`
 
