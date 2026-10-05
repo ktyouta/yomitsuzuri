@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetListBookResultDto } from "..";
-import { BookId } from "../../../../domain/book";
+import { BookId, ReadingStatusId } from "../../../../domain/book";
 import type { BookListItem } from "../../../../domain/book";
 
 describe("GetListBookResultDto", () => {
@@ -10,7 +10,7 @@ describe("GetListBookResultDto", () => {
         id: BookId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ"),
         title: "テスト書籍",
         updatedAt: "2026-10-01T00:00:00.000Z",
-        readingStatus: "finished",
+        readingStatusId: ReadingStatusId.of(3),
         readingStatusLabel: "読了",
         workCount: 1,
         icon: null,
@@ -25,7 +25,7 @@ describe("GetListBookResultDto", () => {
           id: "01BX5ZZKBKACTAV9WEVGEMMVRZ",
           title: "テスト書籍",
           updatedAt: "2026-10-01T00:00:00.000Z",
-          readingStatus: "finished",
+          readingStatusId: 3,
           readingStatusLabel: "読了",
           workCount: 1,
           icon: null,

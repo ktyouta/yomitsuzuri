@@ -9,7 +9,7 @@ import {
   unique,
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
-import { BOOK_READING_STATUSES } from "../../../domain/book/value-object/book-reading-status";
+import { ReadingStatusId } from "../../../domain/book/value-object/reading-status-id";
 
 /**
  * ユーザーマスタ
@@ -71,7 +71,7 @@ export const bookTransaction = sqliteTable(
     userId: text("user_id").notNull().references(() => userMaster.id, { onDelete: "no action" }), // FK → user_master.id
     title: text("title").notNull(),
     publishedDate: text("published_date"), // YYYY / YYYY-MM / YYYY-MM-DD のいずれか
-    readingStatus: text("reading_status", { enum: BOOK_READING_STATUSES }).notNull().default("unread").references(() => readingStatusMaster.code, { onDelete: "restrict" }),
+    readingStatusId: integer("reading_status_id").notNull().default(ReadingStatusId.INITIAL).references(() => readingStatusMaster.id, { onDelete: "restrict" }),
     currentPage: integer("current_page"),
     memo: text("memo"),
     icon: integer("icon").notNull().default(1).references(() => iconMaster.id, { onDelete: "restrict" }),
@@ -321,7 +321,7 @@ export type NewIconMaster = typeof iconMaster.$inferInsert;
  * 読書状況マスタ
  */
 export const readingStatusMaster = sqliteTable("reading_status_master", {
-  code: text("code", { enum: BOOK_READING_STATUSES }).primaryKey(),
+  id: integer("id").primaryKey({ autoIncrement: true }),
   label: text("label").notNull(),
   deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull(),

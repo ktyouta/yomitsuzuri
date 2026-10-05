@@ -1,5 +1,5 @@
 import { and, count, desc, eq, sql } from "drizzle-orm";
-import { BookId } from "../../../../domain/book";
+import { BookId, ReadingStatusId } from "../../../../domain/book";
 import type { BookListPageResult, BookListPagination, IGetListBookRepository } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import type { Database } from "../../../db";
@@ -24,7 +24,7 @@ export class GetListBookRepository implements IGetListBookRepository {
           id: bookTransaction.id,
           title: bookTransaction.title,
           updatedAt: bookTransaction.updatedAt,
-          readingStatus: bookTransaction.readingStatus,
+          readingStatusId: bookTransaction.readingStatusId,
           readingStatusLabel: readingStatusMaster.label,
           workCount: sql<number>`(select count(*) from ${workTransaction} where ${and(
             eq(workTransaction.bookId, bookTransaction.id),
@@ -37,7 +37,7 @@ export class GetListBookRepository implements IGetListBookRepository {
         .leftJoin(
           readingStatusMaster,
           and(
-            eq(bookTransaction.readingStatus, readingStatusMaster.code),
+            eq(bookTransaction.readingStatusId, readingStatusMaster.id),
             eq(readingStatusMaster.deleteFlg, false)
           )
         )
@@ -60,7 +60,11 @@ export class GetListBookRepository implements IGetListBookRepository {
         .where(condition),
     ]);
 
-    const list = rows.map((row) => ({ ...row, id: BookId.of(row.id) }));
+    const list = rows.map((row) => ({
+      ...row,
+      id: BookId.of(row.id),
+      readingStatusId: ReadingStatusId.of(row.readingStatusId),
+    }));
 
     return { list, total: countResult?.total ?? 0 };
   }

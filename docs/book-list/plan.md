@@ -10,11 +10,11 @@
 
 - ページングあり（クエリ `page`、レスポンス `{ list, total, totalPages }`）
 - 並び順は updatedAt 降順
-- 返却項目: id, title, updatedAt, readingStatus（コード）, readingStatusLabel（表示名）, workCount, icon（絵文字）
-- 読書状況は `reading_status_master` を新設して JOIN し、コードと表示名をフラットに返す
+- 返却項目: id, title, updatedAt, readingStatusId（読書状況ID）, readingStatusLabel（表示名）, workCount, icon（絵文字）
+- 読書状況は `reading_status_master` を新設して JOIN し、読書状況IDと表示名をフラットに返す
 - 読み始めた日・タグ数・著者は返さない
 - 絞り込みは今回なし
-- 主キーをコード値（text）にし、`book_transaction.reading_status` から FK で参照する（Claude提案をユーザー承認）
+- 主キーを `id`（integer）にし、`book_transaction.reading_status_id` から FK で参照する（`icon_master` と同じ形。当初の「コード値（text）を主キー」から、ユーザー指示で変更）
 - 論理削除された読書状況は readingStatusLabel を null にする（Claude提案をユーザー承認）
 - page の上限（MAX_PAGE）は設けない
 - 論理削除された絵文字は返さない（icon を null にし、フロント側でデフォルト絵文字を表示する）
@@ -43,7 +43,9 @@
 - ページサイズを可変にする場合: 値オブジェクトのコンストラクタ変更が必要
 - ページングする一覧が他にも増える場合: 汎用 Pagination への抽出が必要
 - 絞り込みを追加する場合: Repository 引数の条件オブジェクト化が必要（COUNT 側への条件適用漏れに注意）
-- 読書状況をユーザーごとに追加可能にする場合: マスタに user_id が必要になり、コード値の主キーが重複する
+- 読書状況をユーザーごとに追加可能にする場合: マスタに user_id が必要になる
+- 特定の読書状況に依存する処理（例: 読了時に読了日を記録）が必要になる場合: 主キーの id では意味を表せないため、`code` 列（unique）の追加が必要
+- `book_transaction.reading_status_id` のデフォルト（`ReadingStatusId.INITIAL` = 1、未読）は、マスタ初期データの id=1 が未読であることに依存する
 - 書籍数が大きく深いページを開く場合: OFFSET 方式からカーソル方式への変更が必要
 
 ## タスク
@@ -58,7 +60,7 @@
 - [x] zod スキーマ `GetListBookQuerySchema`（`presentation/book/schema/`）
 - [x] Controller `getListBook` を作り直し、集約ルーター `book` を作成して `src/index.ts` に登録する
 - [x] `schema.ts` に `reading_status_master` を追加し、`book_transaction.reading_status` に FK を付与する
-- [x] 読書状況コードを `BOOK_READING_STATUSES`（`domain/book/value-object/book-reading-status/`）に一本化し、`schema.ts` から参照する
+- [x] 読書状況を値オブジェクト `ReadingStatusId`（`domain/book/value-object/reading-status-id/`）で表す（値の一覧はマスタのみで管理する）
 - [x] index.ts の再エクスポート（domain / application / infrastructure / presentation）
 
 ### スコープ外
@@ -81,6 +83,18 @@
 | totalPages(total) | total が 0 以上の整数（Error） | ceil(total/30) を返す（0 なら 0） | なし |
 
 - **テストケース**: page=1 で offset=0・limit=30 / page=2 で offset=30 / page が 0・-1・1.5・NaN で例外 / totalPages の境界 0→0・1→1・30→1・31→2 / totalPages に -1・1.5 で例外
+
+### ReadingStatusId（Value Object）
+
+- **不変条件**: value は 1 以上の整数
+
+| メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
+|---|---|---|---|
+| of(readingStatusId) | readingStatusId が 1 以上の整数（Error） | value は引数の値 | なし |
+| initial() | なし | value は `INITIAL`（1、未読） | なし |
+
+- **テストケース**: of(1) で生成できる / of に 0・-1・1.5・NaN で例外 / initial() の value が 1
+- マスタに存在するかは FK で保証する（値オブジェクトでは確認しない）
 
 ### GetListBookUsecase（Usecase）
 

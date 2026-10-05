@@ -1,5 +1,5 @@
 import type { UserId } from "../../../shared";
-import type { BookId, BookListPagination, BookReadingStatus } from "../../value-object";
+import type { BookId, BookListPagination, ReadingStatusId } from "../../value-object";
 
 /**
  * 書籍一覧の1件分
@@ -8,7 +8,7 @@ export type BookListItem = {
   id: BookId;
   title: string;
   updatedAt: string;
-  readingStatus: BookReadingStatus;
+  readingStatusId: ReadingStatusId;
   // 論理削除された読書状況の場合は null
   readingStatusLabel: string | null;
   workCount: number;

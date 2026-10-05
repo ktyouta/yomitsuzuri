@@ -3,7 +3,7 @@
  * YYYY / YYYY-MM / YYYY-MM-DD のいずれかの形式を許容する
  * 未入力（null / undefined / 空白のみ）の場合は null として保持する
  */
-export class BookPublishedDate {
+export class PublishedDate {
 
     private readonly _value: string | null;
 

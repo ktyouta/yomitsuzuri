@@ -1,11 +1,11 @@
-import type { BookListItem, BookReadingStatus } from "../../../../domain/book";
+import type { BookListItem } from "../../../../domain/book";
 
 export type GetListBookResultType = {
   list: {
     id: string;
     title: string;
     updatedAt: string;
-    readingStatus: BookReadingStatus;
+    readingStatusId: number;
     readingStatusLabel: string | null;
     workCount: number;
     icon: string | null;
@@ -31,7 +31,7 @@ export class GetListBookResultDto {
         id: e.id.value,
         title: e.title,
         updatedAt: e.updatedAt,
-        readingStatus: e.readingStatus,
+        readingStatusId: e.readingStatusId.value,
         readingStatusLabel: e.readingStatusLabel,
         workCount: e.workCount,
         icon: e.icon,

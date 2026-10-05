@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { GetListBookUsecase } from "..";
-import { BookId } from "../../../../domain/book";
+import { BookId, ReadingStatusId } from "../../../../domain/book";
 import type { BookListItem, BookListPageResult, IGetListBookRepository } from "../../../../domain/book";
 
 const USER_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
@@ -9,7 +9,7 @@ const BOOK: BookListItem = {
   id: BookId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ"),
   title: "テスト書籍",
   updatedAt: "2026-10-01T00:00:00.000Z",
-  readingStatus: "reading",
+  readingStatusId: ReadingStatusId.of(2),
   readingStatusLabel: "読書中",
   workCount: 2,
   icon: "📕",
@@ -27,7 +27,7 @@ describe("GetListBookUsecase", () => {
 
     const result = await usecase.execute(USER_ID, 1);
 
-    expect(result.value.list).toEqual([{ ...BOOK, id: "01BX5ZZKBKACTAV9WEVGEMMVRZ" }]);
+    expect(result.value.list).toEqual([{ ...BOOK, id: "01BX5ZZKBKACTAV9WEVGEMMVRZ", readingStatusId: 2 }]);
     expect(result.value.total).toBe(31);
     expect(result.value.totalPages).toBe(2);
   });
