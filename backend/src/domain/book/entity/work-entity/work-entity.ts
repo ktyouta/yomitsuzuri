@@ -6,6 +6,7 @@ export class WorkEntity {
         private readonly _title: WorkTitle,
         private readonly _sort: WorkSort,
         private readonly _memo: WorkMemo,
+        private readonly _deleteFlg: boolean,
     ) { }
 
     get id() {
@@ -22,5 +23,9 @@ export class WorkEntity {
 
     get memo() {
         return this._memo.value;
+    }
+
+    get deleteFlg() {
+        return this._deleteFlg;
     }
 }
