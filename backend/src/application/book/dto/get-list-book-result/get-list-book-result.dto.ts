@@ -28,10 +28,10 @@ export class GetListBookResultDto {
   constructor(list: BookListItem[], total: number, totalPages: number) {
     this._value = {
       list: list.map((e) => ({
-        id: e.id.value,
+        id: e.id,
         title: e.title,
         updatedAt: e.updatedAt,
-        readingStatusId: e.readingStatusId.value,
+        readingStatusId: e.readingStatusId,
         readingStatusLabel: e.readingStatusLabel,
         workCount: e.workCount,
         icon: e.icon,

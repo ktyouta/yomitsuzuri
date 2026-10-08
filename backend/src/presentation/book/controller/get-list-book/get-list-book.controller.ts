@@ -29,7 +29,7 @@ const getListBook = new Hono<AppEnv>().get(
     const repository = new GetListBookRepository(db);
     const usecase = new GetListBookUsecase(repository);
 
-    const result = await usecase.execute(user.userId.value, query.page);
+    const result = await usecase.execute(user.userId, query.page);
 
     return c.json({ message: "書籍一覧を取得しました。", data: result.value }, HTTP_STATUS.OK);
   }
