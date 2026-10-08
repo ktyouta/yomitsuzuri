@@ -4,6 +4,7 @@
  */
 export class CurrentPage {
 
+    static readonly MIN_VALUE = 0;
     private readonly _value: number | null;
 
     /**
@@ -16,7 +17,7 @@ export class CurrentPage {
             return;
         }
 
-        if (!Number.isInteger(currentPage) || currentPage < 0) {
+        if (!Number.isInteger(currentPage) || currentPage < CurrentPage.MIN_VALUE) {
             throw new Error(`現在の読書ページ数が不正です。`);
         }
 

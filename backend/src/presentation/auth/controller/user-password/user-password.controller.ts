@@ -28,7 +28,7 @@ const userPassword = new Hono<AppEnv>().patch(
         const repository = new UserPasswordRepository(db);
         const usecase = new UpdatePasswordUsecase(repository, config);
 
-        const updated = await usecase.execute(user.userId.value, body.nowPassword, body.newPassword);
+        const updated = await usecase.execute(user.userId, body.nowPassword, body.newPassword);
 
         if (!updated) {
             return c.json({ message: "パスワードの更新に失敗しました。" }, HTTP_STATUS.UNAUTHORIZED);

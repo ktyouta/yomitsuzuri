@@ -1,7 +1,8 @@
 import type { EnvConfig } from "../../../../config";
 import { RefreshToken } from "../../../../domain/auth";
 import { UserBirthday } from "../../../../domain/user";
-import { UserId, UserName } from "../../../../domain/shared";
+import { UserName } from "../../../../domain/shared";
+import type { UserId } from "../../../../domain/shared";
 import type { IUpdateUserRepository } from "../../../../domain/user";
 import { UpdateUserResultDto } from "../../dto";
 
@@ -19,22 +20,21 @@ export class UpdateUserUsecase {
     private readonly config: EnvConfig
   ) { }
 
-  async execute(userId: string, name: string, birthday: string): Promise<UpdateUserResult> {
-    const userIdObj = UserId.of(userId);
+  async execute(userId: UserId, name: string, birthday: string): Promise<UpdateUserResult> {
     const userName = new UserName(name);
     const userBirthday = new UserBirthday(birthday);
 
-    const duplicated = await this.repository.checkUserNameExists(userIdObj, userName);
+    const duplicated = await this.repository.checkUserNameExists(userId, userName);
     if (duplicated) {
       return { status: "duplicate" };
     }
 
-    const updateResult = await this.repository.updateUserWithLogin(userIdObj, userName, userBirthday);
+    const updateResult = await this.repository.updateUserWithLogin(userId, userName, userBirthday);
     if (!updateResult) {
       return { status: "not_found" };
     }
 
-    const refreshToken = await RefreshToken.create(userIdObj, this.config);
+    const refreshToken = await RefreshToken.create(userId, this.config);
 
     return { status: "success", dto: new UpdateUserResultDto(updateResult.entity, updateResult.darkMode, refreshToken) };
   }

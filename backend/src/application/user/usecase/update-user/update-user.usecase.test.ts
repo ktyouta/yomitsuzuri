@@ -37,7 +37,7 @@ describe("UpdateUserUsecase", () => {
     const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: true });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(USER_ID, "renamed", "20000101");
+    const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
 
     expect(result.status).toBe("success");
     if (result.status !== "success") {
@@ -53,7 +53,7 @@ describe("UpdateUserUsecase", () => {
     const repository = createRepository(true, { entity: createUpdatedEntity(), darkMode: false });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(USER_ID, "renamed", "20000101");
+    const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
 
     expect(result.status).toBe("duplicate");
     expect(repository.updateUserWithLogin).not.toHaveBeenCalled();
@@ -63,24 +63,17 @@ describe("UpdateUserUsecase", () => {
     const repository = createRepository(false, undefined);
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(USER_ID, "renamed", "20000101");
+    const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
 
     expect(result.status).toBe("not_found");
   });
 
-  it("ユーザーIDが空の場合、例外になり、更新しないこと", async () => {
-    const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: false });
-    const usecase = new UpdateUserUsecase(repository, testConfig);
-
-    await expect(usecase.execute("", "renamed", "20000101")).rejects.toThrow();
-    expect(repository.updateUserWithLogin).not.toHaveBeenCalled();
-  });
 
   it("名前が空の場合、例外になり、更新しないこと", async () => {
     const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: false });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    await expect(usecase.execute(USER_ID, "", "20000101")).rejects.toThrow();
+    await expect(usecase.execute(UserId.of(USER_ID), "", "20000101")).rejects.toThrow();
     expect(repository.updateUserWithLogin).not.toHaveBeenCalled();
   });
 
@@ -88,7 +81,7 @@ describe("UpdateUserUsecase", () => {
     const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: false });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    await expect(usecase.execute(USER_ID, "renamed", "20000431")).rejects.toThrow();
+    await expect(usecase.execute(UserId.of(USER_ID), "renamed", "20000431")).rejects.toThrow();
     expect(repository.updateUserWithLogin).not.toHaveBeenCalled();
   });
 });

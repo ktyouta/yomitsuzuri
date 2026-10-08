@@ -1,7 +1,7 @@
 import type { EnvConfig } from "../../../../config";
 import { Pepper } from "../../../../domain/auth";
 import type { IUserPasswordRepository } from "../../../../domain/auth";
-import { UserId } from "../../../../domain/shared";
+import type { UserId } from "../../../../domain/shared";
 
 /**
  * パスワード更新ユースケース
@@ -15,9 +15,8 @@ export class UpdatePasswordUsecase {
   /**
    * @returns 更新に成功したか
    */
-  async execute(userId: string, nowPassword: string, newPassword: string): Promise<boolean> {
-    const userIdObj = UserId.of(userId);
-    const credential = await this.repository.getLoginUser(userIdObj);
+  async execute(userId: UserId, nowPassword: string, newPassword: string): Promise<boolean> {
+    const credential = await this.repository.getLoginUser(userId);
     if (!credential) {
       return false;
     }
@@ -29,6 +28,6 @@ export class UpdatePasswordUsecase {
     }
 
     const newPasswordHash = await credential.hashNewPassword(newPassword, pepper);
-    return await this.repository.updateLoginUser(userIdObj, newPasswordHash);
+    return await this.repository.updateLoginUser(userId, newPasswordHash);
   }
 }

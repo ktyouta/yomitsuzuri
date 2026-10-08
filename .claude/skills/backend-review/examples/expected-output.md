@@ -15,7 +15,7 @@
 ### 違反あり
 - **ファイル**: backend/src/presentation/item/controller/create-item/create-item.controller.ts:18
 - **違反内容**: 「同名のアイテムが既に存在するか」の判定ロジックが Controller に直書きされている
-- **修正方針**: Usecase メソッド `findByName()` に切り出し、Controller は呼び出し結果で分岐する
+- **修正方針**: 判定を Usecase の `execute` 内に移し、重複時は保存せずに `err({ type: "DUPLICATE_NAME" })` を返す。Controller はエラー種別でレスポンスを分けるだけにする
 ```
 
 ---

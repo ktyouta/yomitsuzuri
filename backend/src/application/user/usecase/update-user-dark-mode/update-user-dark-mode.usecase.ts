@@ -1,4 +1,4 @@
-import { UserId } from "../../../../domain/shared";
+import type { UserId } from "../../../../domain/shared";
 import type { IUpdateUserDarkModeRepository } from "../../../../domain/user";
 import { UpdateUserDarkModeResultDto } from "../../dto";
 
@@ -11,10 +11,8 @@ export class UpdateUserDarkModeUsecase {
   /**
    * @returns 更新結果。対象ユーザーが存在しない場合は null
    */
-  async execute(userId: string, darkMode: boolean): Promise<UpdateUserDarkModeResultDto | null> {
-    const userIdObj = UserId.of(userId);
-
-    const updated = await this.repository.updateDarkMode(userIdObj, darkMode);
+  async execute(userId: UserId, darkMode: boolean): Promise<UpdateUserDarkModeResultDto | null> {
+    const updated = await this.repository.updateDarkMode(userId, darkMode);
     if (!updated) {
       return null;
     }

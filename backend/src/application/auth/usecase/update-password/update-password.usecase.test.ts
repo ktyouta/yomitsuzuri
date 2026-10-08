@@ -40,7 +40,7 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(credential, true);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(USER_ID, NOW_PASSWORD, NEW_PASSWORD);
+    const result = await usecase.execute(UserId.of(USER_ID), NOW_PASSWORD, NEW_PASSWORD);
 
     expect(result).toBe(true);
     expect(repository.updateLoginUser).toHaveBeenCalledTimes(1);
@@ -53,7 +53,7 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(await createCredential(), false);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(USER_ID, NOW_PASSWORD, NEW_PASSWORD);
+    const result = await usecase.execute(UserId.of(USER_ID), NOW_PASSWORD, NEW_PASSWORD);
 
     expect(result).toBe(false);
   });
@@ -62,7 +62,7 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(undefined, true);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(USER_ID, NOW_PASSWORD, NEW_PASSWORD);
+    const result = await usecase.execute(UserId.of(USER_ID), NOW_PASSWORD, NEW_PASSWORD);
 
     expect(result).toBe(false);
     expect(repository.updateLoginUser).not.toHaveBeenCalled();
@@ -72,17 +72,9 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(await createCredential(), true);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(USER_ID, "wrong-password", NEW_PASSWORD);
+    const result = await usecase.execute(UserId.of(USER_ID), "wrong-password", NEW_PASSWORD);
 
     expect(result).toBe(false);
-    expect(repository.updateLoginUser).not.toHaveBeenCalled();
-  });
-
-  it("ユーザーIDが空の場合、例外になり、パスワードを更新しないこと", async () => {
-    const repository = createRepository(await createCredential(), true);
-    const usecase = new UpdatePasswordUsecase(repository, testConfig);
-
-    await expect(usecase.execute("", NOW_PASSWORD, NEW_PASSWORD)).rejects.toThrow();
     expect(repository.updateLoginUser).not.toHaveBeenCalled();
   });
 });

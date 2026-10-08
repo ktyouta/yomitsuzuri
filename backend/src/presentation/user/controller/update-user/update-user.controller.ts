@@ -30,7 +30,7 @@ const updateUser = new Hono<AppEnv>().patch(
         const repository = new UpdateUserRepository(db);
         const usecase = new UpdateUserUsecase(repository, config);
 
-        const result = await usecase.execute(user.userId.value, body.name, body.birthday);
+        const result = await usecase.execute(user.userId, body.name, body.birthday);
 
         if (result.status === "duplicate") {
             return c.json({ message: "既にユーザーが存在しています。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);

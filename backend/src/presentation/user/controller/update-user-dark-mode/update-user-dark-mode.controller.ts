@@ -27,7 +27,7 @@ const updateUserDarkMode = new Hono<AppEnv>().patch(
         const repository = new UpdateUserDarkModeRepository(db);
         const usecase = new UpdateUserDarkModeUsecase(repository);
 
-        const result = await usecase.execute(user.userId.value, body.darkMode);
+        const result = await usecase.execute(user.userId, body.darkMode);
 
         if (!result) {
             return c.json({ message: "ユーザーが見つかりません。" }, HTTP_STATUS.NOT_FOUND);

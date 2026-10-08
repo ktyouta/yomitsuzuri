@@ -37,19 +37,13 @@ version: 2.1.0
   - DTO は `application/{機能グループ名}/dto/` に定義し、Usecase が生成して返す。Controller で DTO を `new` していたら Usecase への漏れとして指摘する
 - Controller が Repository・Drizzle・domain の Entity/VO 生成ロジックに直接触れていないか（触れる場合は Usecase への漏れとして指摘する）
 - 処理の流れが上から順に読めるか（コメントや命名で各ステップの概要が把握できるか）
-- Usecase 呼び出しの順序でエンドポイントの処理概要が理解できるか
 
 ### Usecase メソッド設計（Application層）
-- Controller から呼ばれる処理単位でメソッドに切り出されているか
-- DB に触れない純粋なビジネスロジック（バリデーション・計算処理等）もメソッドとして定義されているか
-- Repository を直接呼ぶだけのメソッドであっても、名前付きメソッドとして切り出されているか
-- Controller が単一の `usecase.xxx()` 呼び出しで完結していないか確認する
-  - アンチパターン: `usecase.checkout()` 1つがデータ取得・エンティティ構築・分岐・DB操作をすべて担っている
-  - 正しいパターン: `getCurrentState` / `insert` / `update` に分割し、Controller の呼び出し順でフローが読める
-- ロジックを含まない処理が Usecase メソッドになっていないか
-  - ロジックの例（例示であって網羅ではない）: 条件分岐・ループ・計算・DB アクセス
-  - アンチパターン: `usecase.buildEntity()` のような、内部で単に `new Entity(...)` するだけのメソッドを Usecase に定義している
-  - 正しいパターン: Controller で直接 `new SomeEntity(...)` する（ロジックを含まない単純な構築・変換は Controller で直接行う）
+- 1エンドポイント（ユースケース）につき Usecase の public メソッドは `execute` 1つとし、処理の流れ（VO・集約の生成、判定、業務上の分岐、永続化）を Usecase 内で完結させているか
+  - アンチパターン: Controller が `usecase.checkIcon()` → `usecase.checkDuplicate()` → `usecase.create()` を順に呼び、処理の順序や「エラー時は保存しない」ことの保証を Controller が担っている
+  - 正しいパターン: Controller は `usecase.execute()` を1回呼び、返された Result / DTO をレスポンスに変換するだけにする。業務上の分岐と「エラー時は保存しない」ことは Usecase の契約テストで保証する
+- `execute` の処理の流れが、コメントや命名で上から順に読めるか（長くなる場合は private メソッドやドメインサービスに切り出しているか）
+- DB に触れない純粋なビジネスロジック（バリデーション・計算処理等）を Usecase に直書きせず、ドメイン層・`util/` に置いているか
 - Usecase が Drizzle のクエリビルダー（`db.insert(...)` 等）やテーブルスキーマを直接importしていないか（Infrastructure層の詳細はRepository経由でのみ扱う）
 - **モジュール跨ぎの依存は許可される**: Usecase が自モジュール以外の `domain/{他モジュール}/repository` interface に依存すること自体は違反ではない（例: `application/user/usecase/create-user/create-user.usecase.ts` が `domain/auth` の `IUserLoginRepository` に依存する）。ただし domain 層の Entity/VO 同士が直接依存するのは違反として指摘する
 
