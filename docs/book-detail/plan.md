@@ -14,8 +14,8 @@
 
 ### Claudeの提案（ユーザーは「案Aで進めて」と指示。以下の項目は個別の明示的な承認なし）
 
-- P1: 返却項目
-  - book: id, title, publishedDate, readingStatusId, readingStatusLabel, currentPage, memo, iconId, icon（絵文字）, updatedAt
+- P1: 返却項目（書籍の項目はトップレベルに並べ、作品一覧を works に持つ。当初の `book: {...}` の入れ子から、ユーザーの実装でフラットな形に変更）
+  - id, title, publishedDate, readingStatusId, readingStatusLabel, currentPage, memo, iconId, icon（絵文字）, updatedAt
   - works: id, title, sort, memo
 - P2: 論理削除された読書状況は readingStatusLabel を null、論理削除されたアイコンは icon を null にする（書籍一覧と同じ扱い）。iconId は書籍に保存されている値をそのまま返す
 - P3: 作品は論理削除されていないものだけを sort の昇順で返す

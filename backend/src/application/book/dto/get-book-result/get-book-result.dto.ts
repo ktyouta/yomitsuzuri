@@ -1,18 +1,16 @@
 import type { BookItem, WorkItem } from "../../../../domain/book";
 
 export type GetBookResultType = {
-  book: {
-    id: string;
-    title: string;
-    publishedDate: string | null;
-    readingStatusId: number;
-    readingStatusLabel: string | null;
-    currentPage: number | null;
-    memo: string | null;
-    iconId: number;
-    icon: string | null;
-    updatedAt: string;
-  };
+  id: string;
+  title: string;
+  publishedDate: string | null;
+  readingStatusId: number;
+  readingStatusLabel: string | null;
+  currentPage: number | null;
+  memo: string | null;
+  iconId: number;
+  icon: string | null;
+  updatedAt: string;
   works: {
     id: string;
     title: string;
@@ -33,18 +31,16 @@ export class GetBookResultDto {
    */
   constructor(book: BookItem, works: WorkItem[]) {
     this._value = {
-      book: {
-        id: book.id,
-        title: book.title,
-        publishedDate: book.publishedDate,
-        readingStatusId: book.readingStatusId,
-        readingStatusLabel: book.readingStatusLabel,
-        currentPage: book.currentPage,
-        memo: book.memo,
-        iconId: book.iconId,
-        icon: book.icon,
-        updatedAt: book.updatedAt,
-      },
+      id: book.id,
+      title: book.title,
+      publishedDate: book.publishedDate,
+      readingStatusId: book.readingStatusId,
+      readingStatusLabel: book.readingStatusLabel,
+      currentPage: book.currentPage,
+      memo: book.memo,
+      iconId: book.iconId,
+      icon: book.icon,
+      updatedAt: book.updatedAt,
       works: works.map((e) => ({
         id: e.id,
         title: e.title,

@@ -36,7 +36,7 @@ describe("GetBookUsecase", () => {
 
     const result = await usecase.execute(USER_ID, BOOK_ID);
 
-    expect(result._unsafeUnwrap().value).toEqual({ book: BOOK, works: WORKS });
+    expect(result._unsafeUnwrap().value).toEqual({ ...BOOK, works: WORKS });
   });
 
   it("書籍が取得できない場合、NOT_FOUND を返すこと", async () => {
