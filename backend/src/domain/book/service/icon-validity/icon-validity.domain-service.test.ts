@@ -11,13 +11,13 @@ describe("IconValidityDomainService", () => {
   it.each([true, false])("Repository の判定が%sの場合、そのまま返すこと", async (exists) => {
     const service = new IconValidityDomainService(createRepository(exists));
 
-    expect(await service.isValid(new IconId(1))).toBe(exists);
+    expect(await service.isValid(IconId.of(1))).toBe(exists);
   });
 
   it("渡したアイコンIDで Repository に問い合わせること", async () => {
     const repository = createRepository(true);
     const service = new IconValidityDomainService(repository);
-    const iconId = new IconId(3);
+    const iconId = IconId.of(3);
 
     await service.isValid(iconId);
 

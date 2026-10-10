@@ -2,77 +2,35 @@ import { describe, it, expect } from "vitest";
 import { PublishedDate } from "../../..";
 
 describe("PublishedDate", () => {
-  it("年のみ（YYYY）で生成できること", () => {
-    expect(new PublishedDate("2024").value).toBe("2024");
+  describe("create", () => {
+    it.each(["2024", "2024-05", "2024-05-01", "2024-02-29"])("「%s」で生成できること", (date) => {
+      expect(PublishedDate.create(date)._unsafeUnwrap().value).toBe(date);
+    });
+
+    it("前後の空白を除去して保持すること", () => {
+      expect(PublishedDate.create(" 2024-05 ")._unsafeUnwrap().value).toBe("2024-05");
+    });
+
+    it.each([null, undefined, "", "   "])("%j の場合は null を保持すること", (date) => {
+      expect(PublishedDate.create(date)._unsafeUnwrap().value).toBeNull();
+    });
+
+    it.each(["2024/05/01", "20240501", "2024-5", "2024-13", "2024-01-32"])("「%s」の場合、PUBLISHED_DATE_INVALID_FORMAT を返すこと", (date) => {
+      expect(PublishedDate.create(date)._unsafeUnwrapErr()).toEqual({ type: "PUBLISHED_DATE_INVALID_FORMAT" });
+    });
+
+    it.each(["2023-02-29", "2024-04-31"])("「%s」の場合、PUBLISHED_DATE_NOT_EXIST を返すこと", (date) => {
+      expect(PublishedDate.create(date)._unsafeUnwrapErr()).toEqual({ type: "PUBLISHED_DATE_NOT_EXIST" });
+    });
   });
 
-  it("年月（YYYY-MM）で生成できること", () => {
-    expect(new PublishedDate("2024-05").value).toBe("2024-05");
-  });
+  describe("of", () => {
+    it("制約を満たす値で生成できること", () => {
+      expect(PublishedDate.of("2024-05").value).toBe("2024-05");
+    });
 
-  it("年月日（YYYY-MM-DD）で生成できること", () => {
-    expect(new PublishedDate("2024-05-01").value).toBe("2024-05-01");
-  });
-
-  it("うるう年の2月29日でも生成できること", () => {
-    expect(new PublishedDate("2024-02-29").value).toBe("2024-02-29");
-  });
-
-  it("前後の空白を除去して保持すること", () => {
-    expect(new PublishedDate(" 2024-05 ").value).toBe("2024-05");
-  });
-
-  it("nullの場合はnullを保持すること", () => {
-    expect(new PublishedDate(null).value).toBeNull();
-  });
-
-  it("undefinedの場合はnullを保持すること", () => {
-    expect(new PublishedDate(undefined).value).toBeNull();
-  });
-
-  it("空文字の場合はnullを保持すること", () => {
-    expect(new PublishedDate("").value).toBeNull();
-  });
-
-  it("空白のみの場合はnullを保持すること", () => {
-    expect(new PublishedDate("   ").value).toBeNull();
-  });
-
-  it("うるう年以外の2月29日でエラーになること", () => {
-    expect(() => new PublishedDate("2023-02-29")).toThrow("出版日が正しくありません。");
-  });
-
-  it("存在しない日付（4月31日）でエラーになること", () => {
-    expect(() => new PublishedDate("2024-04-31")).toThrow("出版日が正しくありません。");
-  });
-
-  it("スラッシュ形式でエラーになること", () => {
-    expect(() => new PublishedDate("2024/05/01")).toThrow(
-      "出版日の形式が不正です（YYYY / YYYY-MM / YYYY-MM-DD）。"
-    );
-  });
-
-  it("区切りなし（YYYYMMDD）でエラーになること", () => {
-    expect(() => new PublishedDate("20240501")).toThrow(
-      "出版日の形式が不正です（YYYY / YYYY-MM / YYYY-MM-DD）。"
-    );
-  });
-
-  it("月が1桁の場合にエラーになること", () => {
-    expect(() => new PublishedDate("2024-5")).toThrow(
-      "出版日の形式が不正です（YYYY / YYYY-MM / YYYY-MM-DD）。"
-    );
-  });
-
-  it("月が13の場合にエラーになること", () => {
-    expect(() => new PublishedDate("2024-13")).toThrow(
-      "出版日の形式が不正です（YYYY / YYYY-MM / YYYY-MM-DD）。"
-    );
-  });
-
-  it("日が32の場合にエラーになること", () => {
-    expect(() => new PublishedDate("2024-01-32")).toThrow(
-      "出版日の形式が不正です（YYYY / YYYY-MM / YYYY-MM-DD）。"
-    );
+    it("制約を満たさない値の場合は throw すること", () => {
+      expect(() => PublishedDate.of("2024/05")).toThrow();
+    });
   });
 });

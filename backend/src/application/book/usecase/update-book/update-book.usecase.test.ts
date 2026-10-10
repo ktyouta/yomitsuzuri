@@ -30,12 +30,12 @@ function createBook(): BookAggregate {
   return BookAggregate.reconstruct({
     id: BOOK_ID,
     userId: USER_ID,
-    title: new BookTitle("更新前タイトル"),
-    publishedDate: new PublishedDate(null),
+    title: BookTitle.of("更新前タイトル"),
+    publishedDate: PublishedDate.of(null),
     readingStatusId: ReadingStatusId.initial(),
-    currentPage: new CurrentPage(null),
-    memo: new BookMemo(null),
-    iconId: new IconId(1),
+    currentPage: CurrentPage.of(null),
+    memo: BookMemo.of(null),
+    iconId: IconId.of(1),
     deleteFlg: false,
     works: [
       new WorkEntity(WorkId.of(WORK_ID_1), new WorkTitle("作品1"), WorkSort.of(1), new WorkMemo(null), false),
@@ -217,7 +217,7 @@ describe("UpdateBookUsecase", () => {
   it("タイトルが空白のみの場合、例外になり、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
-    await expect(usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: { ...BODY, title: "   " } })).rejects.toThrow("書籍タイトルが設定されていません。");
+    await expect(usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: { ...BODY, title: "   " } })).rejects.toThrow("書籍タイトルが不正です。");
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 });

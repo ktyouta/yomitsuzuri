@@ -1,10 +1,21 @@
-import { err, ok, type Result } from "neverthrow";
-import type { BookTitleUniquenessDomainService, ICreateBookRepository, IconValidityDomainService } from "../../../../domain/book";
+import { err, ok, Result } from "neverthrow";
+import type { BookMemoError, BookTitleError, BookTitleUniquenessDomainService, CurrentPageError, ICreateBookRepository, IconIdError, IconValidityDomainService, PublishedDateError } from "../../../../domain/book";
 import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import { CreateBookResultDto } from "../../dto";
 
+/**
+ * 書籍作成の入力値の制約違反（field は入力値の項目名）
+ */
+export type CreateBookInputError =
+  | { field: "title"; error: BookTitleError }
+  | { field: "publishedDate"; error: PublishedDateError }
+  | { field: "currentPage"; error: CurrentPageError }
+  | { field: "memo"; error: BookMemoError }
+  | { field: "icon"; error: IconIdError };
+
 export type CreateBookError =
+  | { type: "INVALID_INPUT"; errors: CreateBookInputError[] }
   | { type: "DUPLICATE_TITLE" }
   | { type: "INVALID_ICON" };
 
@@ -35,16 +46,23 @@ export class CreateBookUsecase {
    * 書籍タイトルと同名の作品を1件、あわせて作成する。
    * @param userId 書籍を所有するユーザーID
    * @param body 書籍の登録内容
-   * @returns 成功時は作成した書籍と作品の DTO、アイコンが無効・同名書籍が存在する場合はエラー（いずれも保存しない）
-   * @throws body が値オブジェクトの制約を満たさない場合（保存しない）
+   * @returns 成功時は作成した書籍と作品の DTO。
+   * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・アイコンが無効・同名書籍が存在する場合はエラー（いずれも保存しない）
    */
   async execute({ userId, body }: PropsType): Promise<Result<CreateBookResultDto, CreateBookError>> {
 
-    const title = new BookTitle(body.title);
-    const publishedDate = new PublishedDate(body.publishedDate);
-    const currentPage = new CurrentPage(body.currentPage);
-    const memo = new BookMemo(body.memo);
-    const iconId = new IconId(body.icon);
+    // 入力値の制約チェック（違反は項目名を付けてすべて収集する）
+    const input = Result.combineWithAllErrors([
+      BookTitle.create(body.title).mapErr((error): CreateBookInputError => ({ field: "title", error })),
+      PublishedDate.create(body.publishedDate).mapErr((error): CreateBookInputError => ({ field: "publishedDate", error })),
+      CurrentPage.create(body.currentPage).mapErr((error): CreateBookInputError => ({ field: "currentPage", error })),
+      BookMemo.create(body.memo).mapErr((error): CreateBookInputError => ({ field: "memo", error })),
+      IconId.create(body.icon).mapErr((error): CreateBookInputError => ({ field: "icon", error })),
+    ]);
+    if (input.isErr()) {
+      return err({ type: "INVALID_INPUT", errors: input.error });
+    }
+    const [title, publishedDate, currentPage, memo, iconId] = input.value;
 
     // アイコンの実在・有効性チェック（icon_master が唯一の真実源のため、値オブジェクトではなくここで判定する）
     if (!(await this.iconValidityService.isValid(iconId))) {

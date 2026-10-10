@@ -52,12 +52,12 @@ export class UpdateBookRepository implements IUpdateBookRepository {
 
     return BookAggregate.reconstruct({
       id: BookId.of(book.id),
-      title: new BookTitle(book.title),
-      publishedDate: new PublishedDate(book.publishedDate),
+      title: BookTitle.of(book.title),
+      publishedDate: PublishedDate.of(book.publishedDate),
       readingStatusId: ReadingStatusId.of(book.readingStatusId),
-      currentPage: new CurrentPage(book.currentPage),
-      iconId: new IconId(book.iconId),
-      memo: new BookMemo(book.memo),
+      currentPage: CurrentPage.of(book.currentPage),
+      iconId: IconId.of(book.iconId),
+      memo: BookMemo.of(book.memo),
       userId,
       deleteFlg: book.deleteFlg,
       works: workResult.map((e) =>

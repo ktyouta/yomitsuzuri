@@ -4,7 +4,7 @@ import { UserId } from "../../../shared";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const BOOK_ID = BookId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ");
-const BOOK_TITLE = new BookTitle("テスト書籍");
+const BOOK_TITLE = BookTitle.of("テスト書籍");
 
 function createRepository(result: { id: string }[]) {
   return {

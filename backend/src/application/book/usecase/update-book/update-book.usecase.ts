@@ -57,7 +57,7 @@ export class UpdateBookUsecase {
         }
 
         // アイコンチェック
-        const iconId = new IconId(body.iconId);
+        const iconId = IconId.of(body.iconId);
         if (!(await this.iconValidityService.isValid(iconId))) {
             return err({ type: "INVALID_ICON" });
         }
@@ -69,7 +69,7 @@ export class UpdateBookUsecase {
         }
 
         // タイトルの重複チェック
-        const title = new BookTitle(body.title);
+        const title = BookTitle.of(body.title);
         if (await this.uniquenessService.isDuplicated(userId, bookId, title)) {
             return err({ type: "DUPLICATE_TITLE" });
         }
@@ -77,10 +77,10 @@ export class UpdateBookUsecase {
         // 書籍・作品情報更新
         const updatedBook = book.update({
             title,
-            publishedDate: new PublishedDate(body.publishedDate),
+            publishedDate: PublishedDate.of(body.publishedDate),
             readingStatus: readingStatusId,
-            currentPage: new CurrentPage(body.currentPage),
-            memo: new BookMemo(body.memo),
+            currentPage: CurrentPage.of(body.currentPage),
+            memo: BookMemo.of(body.memo),
             iconId,
             works: body.works.map((work) => ({
                 id: work.id ? WorkId.of(work.id) : null,

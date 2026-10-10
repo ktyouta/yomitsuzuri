@@ -8,12 +8,12 @@ describe("UpdateBookResultDto", () => {
     const book = BookAggregate.reconstruct({
       id: BookId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ"),
       userId: UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
-      title: new BookTitle("テスト書籍"),
-      publishedDate: new PublishedDate("2026-10"),
+      title: BookTitle.of("テスト書籍"),
+      publishedDate: PublishedDate.of("2026-10"),
       readingStatusId: ReadingStatusId.of(2),
-      currentPage: new CurrentPage(120),
-      memo: new BookMemo("書籍メモ"),
-      iconId: new IconId(3),
+      currentPage: CurrentPage.of(120),
+      memo: BookMemo.of("書籍メモ"),
+      iconId: IconId.of(3),
       deleteFlg: false,
       works: [
         new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS0"), new WorkTitle("作品1"), WorkSort.of(1), new WorkMemo(null), false),

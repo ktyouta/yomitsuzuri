@@ -9,6 +9,9 @@ const VALID_BODY = {
   icon: 2,
 };
 
+/**
+ * 型・構造のみを検証する（値の制約は値オブジェクトのテストで検証する）
+ */
 describe("CreateBookSchema", () => {
   it("タイトルとアイコンのみの場合、通ること", () => {
     const result = CreateBookSchema.safeParse({ title: "容疑者Xの献身", icon: 1 });
@@ -25,33 +28,29 @@ describe("CreateBookSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it.each(["", "   ", "あ".repeat(101)])("タイトルが「%s」の場合、エラーになること", (title) => {
-    const result = CreateBookSchema.safeParse({ ...VALID_BODY, title });
-    expect(result.success).toBe(false);
-  });
-
-  it("タイトルが100文字の場合、通ること", () => {
-    const result = CreateBookSchema.safeParse({ ...VALID_BODY, title: "あ".repeat(100) });
+  it("値の制約を満たさなくても、型が正しければ通ること（制約はドメインで判定する）", () => {
+    const result = CreateBookSchema.safeParse({ ...VALID_BODY, title: "", currentPage: -1, icon: 0 });
     expect(result.success).toBe(true);
   });
 
-  it.each(["2005/08", "2005-13", "2025-02-30"])("出版日が「%s」の場合、エラーになること", (publishedDate) => {
-    const result = CreateBookSchema.safeParse({ ...VALID_BODY, publishedDate });
+  it("タイトルがない場合、エラーになること", () => {
+    const result = CreateBookSchema.safeParse({ icon: 1 });
     expect(result.success).toBe(false);
   });
 
-  it.each([-1, 1.5])("現在のページ数が%sの場合、エラーになること", (currentPage) => {
-    const result = CreateBookSchema.safeParse({ ...VALID_BODY, currentPage });
+  it("アイコンがない場合、エラーになること", () => {
+    const result = CreateBookSchema.safeParse({ title: "容疑者Xの献身" });
     expect(result.success).toBe(false);
   });
 
-  it("メモが2001文字の場合、エラーになること", () => {
-    const result = CreateBookSchema.safeParse({ ...VALID_BODY, memo: "あ".repeat(2001) });
-    expect(result.success).toBe(false);
-  });
-
-  it.each([0, 1.5])("アイコンが%sの場合、エラーになること", (icon) => {
-    const result = CreateBookSchema.safeParse({ ...VALID_BODY, icon });
+  it.each([
+    { title: 1 },
+    { publishedDate: 2005 },
+    { currentPage: "120" },
+    { memo: 1 },
+    { icon: "2" },
+  ])("型が異なる場合（%j）、エラーになること", (override) => {
+    const result = CreateBookSchema.safeParse({ ...VALID_BODY, ...override });
     expect(result.success).toBe(false);
   });
 });

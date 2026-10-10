@@ -36,7 +36,7 @@ function createUsecase({ iconExists = true, duplicatedIds = [] }: Options = {}) 
     new IconValidityDomainService(iconValidityRepository),
   );
 
-  return { usecase, createBookRepository, uniquenessRepository };
+  return { usecase, createBookRepository, uniquenessRepository, iconValidityRepository };
 }
 
 describe("CreateBookUsecase", () => {
@@ -115,10 +115,43 @@ describe("CreateBookUsecase", () => {
     expect(bookTitle?.value).toBe("容疑者Xの献身");
   });
 
-  it("タイトルが空白のみの場合、例外になり、保存しないこと", async () => {
-    const { usecase, createBookRepository } = createUsecase();
+  it("入力値が制約を満たさない場合、INVALID_INPUT で違反をすべて項目名とともに返し、DB を問い合わせず保存しないこと", async () => {
+    const { usecase, createBookRepository, uniquenessRepository, iconValidityRepository } = createUsecase();
 
-    await expect(usecase.execute({ userId: USER_ID, body: { ...BODY, title: "   " } })).rejects.toThrow("書籍タイトルが設定されていません。");
+    const result = await usecase.execute({
+      userId: USER_ID,
+      body: {
+        title: "   ",
+        publishedDate: "2024-04-31",
+        currentPage: -1,
+        memo: "あ".repeat(2001),
+        icon: 0,
+      },
+    });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [
+        { field: "title", error: { type: "BOOK_TITLE_EMPTY" } },
+        { field: "publishedDate", error: { type: "PUBLISHED_DATE_NOT_EXIST" } },
+        { field: "currentPage", error: { type: "CURRENT_PAGE_INVALID", min: 0 } },
+        { field: "memo", error: { type: "BOOK_MEMO_TOO_LONG", max: 2000 } },
+        { field: "icon", error: { type: "ICON_ID_INVALID" } },
+      ],
+    });
+    expect(iconValidityRepository.exists).not.toHaveBeenCalled();
+    expect(uniquenessRepository.findBook).not.toHaveBeenCalled();
     expect(createBookRepository.createBook).not.toHaveBeenCalled();
+  });
+
+  it("違反している項目だけを INVALID_INPUT で返すこと", async () => {
+    const { usecase } = createUsecase();
+
+    const result = await usecase.execute({ userId: USER_ID, body: { ...BODY, title: "   " } });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [{ field: "title", error: { type: "BOOK_TITLE_EMPTY" } }],
+    });
   });
 });

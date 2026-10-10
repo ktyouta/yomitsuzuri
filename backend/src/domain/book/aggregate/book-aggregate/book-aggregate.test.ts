@@ -14,11 +14,11 @@ describe("BookAggregate", () => {
   it("generate で作成した集約のスナップショットが、渡した値と初期値を返すこと", () => {
     const book = BookAggregate.generate({
       userId: UserId.of(USER_ID),
-      title: new BookTitle("容疑者Xの献身"),
-      publishedDate: new PublishedDate("2005-08"),
-      currentPage: new CurrentPage(120),
-      memo: new BookMemo("メモ"),
-      iconId: new IconId(2),
+      title: BookTitle.of("容疑者Xの献身"),
+      publishedDate: PublishedDate.of("2005-08"),
+      currentPage: CurrentPage.of(120),
+      memo: BookMemo.of("メモ"),
+      iconId: IconId.of(2),
     });
 
     const snapshot = book.toSnapshot();
@@ -48,11 +48,11 @@ describe("BookAggregate", () => {
   it("未入力の項目はスナップショットで null になること", () => {
     const book = BookAggregate.generate({
       userId: UserId.of(USER_ID),
-      title: new BookTitle("容疑者Xの献身"),
-      publishedDate: new PublishedDate(null),
-      currentPage: new CurrentPage(null),
-      memo: new BookMemo(null),
-      iconId: new IconId(1),
+      title: BookTitle.of("容疑者Xの献身"),
+      publishedDate: PublishedDate.of(null),
+      currentPage: CurrentPage.of(null),
+      memo: BookMemo.of(null),
+      iconId: IconId.of(1),
     });
 
     const snapshot = book.toSnapshot();
@@ -65,11 +65,11 @@ describe("BookAggregate", () => {
   it("書籍IDと自動作成する作品のIDが異なること", () => {
     const book = BookAggregate.generate({
       userId: UserId.of(USER_ID),
-      title: new BookTitle("容疑者Xの献身"),
-      publishedDate: new PublishedDate(null),
-      currentPage: new CurrentPage(null),
-      memo: new BookMemo(null),
-      iconId: new IconId(1),
+      title: BookTitle.of("容疑者Xの献身"),
+      publishedDate: PublishedDate.of(null),
+      currentPage: CurrentPage.of(null),
+      memo: BookMemo.of(null),
+      iconId: IconId.of(1),
     });
 
     const snapshot = book.toSnapshot();
@@ -81,12 +81,12 @@ describe("BookAggregate", () => {
     const book = BookAggregate.reconstruct({
       id: BookId.of(BOOK_ID),
       userId: UserId.of(USER_ID),
-      title: new BookTitle("短編集"),
-      publishedDate: new PublishedDate("2005-08"),
+      title: BookTitle.of("短編集"),
+      publishedDate: PublishedDate.of("2005-08"),
       readingStatusId: ReadingStatusId.of(2),
-      currentPage: new CurrentPage(120),
-      memo: new BookMemo("メモ"),
-      iconId: new IconId(2),
+      currentPage: CurrentPage.of(120),
+      memo: BookMemo.of("メモ"),
+      iconId: IconId.of(2),
       deleteFlg: true,
       works: [
         new WorkEntity(WorkId.of(WORK_ID_1), new WorkTitle("作品1"), WorkSort.of(1), new WorkMemo("作品メモ"), false),
@@ -118,12 +118,12 @@ describe("BookAggregate", () => {
     return BookAggregate.reconstruct({
       id: BookId.of(BOOK_ID),
       userId: UserId.of(USER_ID),
-      title: new BookTitle("短編集"),
-      publishedDate: new PublishedDate(null),
+      title: BookTitle.of("短編集"),
+      publishedDate: PublishedDate.of(null),
       readingStatusId: ReadingStatusId.of(1),
-      currentPage: new CurrentPage(null),
-      memo: new BookMemo(null),
-      iconId: new IconId(1),
+      currentPage: CurrentPage.of(null),
+      memo: BookMemo.of(null),
+      iconId: IconId.of(1),
       deleteFlg,
       works: [
         new WorkEntity(WorkId.of(WORK_ID_1), new WorkTitle("作品1"), WorkSort.of(1), new WorkMemo(null), false),
@@ -184,12 +184,12 @@ describe("BookAggregate", () => {
     /** 書籍情報を固定値で更新するパラメータ（作品一覧のみ指定する） */
     function updateParam(works: ReturnType<typeof workParam>[]) {
       return {
-        title: new BookTitle("短編集改"),
-        publishedDate: new PublishedDate("2005-08"),
+        title: BookTitle.of("短編集改"),
+        publishedDate: PublishedDate.of("2005-08"),
         readingStatus: ReadingStatusId.of(2),
-        currentPage: new CurrentPage(120),
-        memo: new BookMemo("メモ"),
-        iconId: new IconId(3),
+        currentPage: CurrentPage.of(120),
+        memo: BookMemo.of("メモ"),
+        iconId: IconId.of(3),
         works,
       };
     }
