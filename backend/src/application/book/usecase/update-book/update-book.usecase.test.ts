@@ -184,14 +184,33 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
-  it("既存の作品が含まれていない場合、例外になり、保存しないこと", async () => {
+  it("作品の指定が既存の作品と一致しない場合、WORKS_MISMATCH を返し、保存しないこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase();
+
+    const result = await usecase.execute({
+      userId: USER_ID,
+      bookId: BOOK_ID,
+      body: { ...BODY, works: [{ id: WORK_ID_1, title: "作品1", sort: 1, memo: "", deleteFlg: false }] },
+    });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
+    expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
+  });
+
+  it("作品 ID が重複している場合、例外になり、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
     await expect(usecase.execute({
       userId: USER_ID,
       bookId: BOOK_ID,
-      body: { ...BODY, works: [{ id: WORK_ID_1, title: "作品1", sort: 1, memo: "", deleteFlg: false }] },
-    })).rejects.toThrow("作品の指定が既存の作品と一致しません。");
+      body: {
+        ...BODY,
+        works: [
+          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", deleteFlg: false },
+          { id: WORK_ID_1, title: "作品2", sort: 2, memo: "", deleteFlg: false },
+        ],
+      },
+    })).rejects.toThrow("作品IDが重複しています。");
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 

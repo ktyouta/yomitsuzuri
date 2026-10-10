@@ -74,6 +74,8 @@ const updateBook = new Hono<AppEnv>().put(
             return c.json({ message: "入力エラー", data: [{ field: "iconId", message: "指定されたアイコンは存在しません。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           case "INVALID_READING_STATUS":
             return c.json({ message: "入力エラー", data: [{ field: "readingStatus", message: "指定された読書状況は存在しません。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+          case "WORKS_MISMATCH":
+            return c.json({ message: "作品が他の画面で変更されています。最新の情報を読み込み直してください。" }, HTTP_STATUS.CONFLICT);
           case "INVALID_WORKS":
             return c.json({ message: "入力エラー", data: error.errors.map((e) => ({ field: "works", message: toWorkErrorMessage(e) })) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           default: {

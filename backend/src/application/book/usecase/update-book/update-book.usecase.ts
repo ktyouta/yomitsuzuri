@@ -1,5 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import { BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle, type BookId, type BookTitleUniquenessDomainService, type BookValidationError, type IconValidityDomainService, type IUpdateBookRepository, type ReadingStatusValidityDomainService, type UserId } from "../../../../domain";
+import { BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle, type BookId, type BookTitleUniquenessDomainService, type IconValidityDomainService, type IUpdateBookRepository, type ReadingStatusValidityDomainService, type UpdateWorkError, type UserId } from "../../../../domain";
 import { UpdateBookResultDto } from "../../dto";
 
 export type UpdateBookError =
@@ -7,7 +7,7 @@ export type UpdateBookError =
     | { type: "NOT_FOUND" }
     | { type: "INVALID_ICON" }
     | { type: "INVALID_READING_STATUS" }
-    | { type: "INVALID_WORKS"; errors: BookValidationError[] };
+    | UpdateWorkError;
 
 type UpdateBookBody = {
     title: string;
@@ -45,7 +45,7 @@ export class UpdateBookUsecase {
      * @param bookId 更新対象の書籍ID
      * @param body 書籍・作品の更新内容
      * @returns 成功時は更新後の書籍と作品の DTO（削除済みの作品は含まない）。
-     * 書籍が存在しない・アイコンが無効・読書状況が無効・同名書籍が存在する（自身を除く）・作品が不変条件に違反する場合はエラー（いずれも保存しない）
+     * 書籍が存在しない・アイコンが無効・読書状況が無効・同名書籍が存在する（自身を除く）・作品の指定が既存の作品と一致しない・作品が不変条件に違反する場合はエラー（いずれも保存しない）
      * @throws body が値オブジェクトの制約や作品更新の事前条件を満たさない場合（保存しない）
      */
     async execute({ userId, bookId, body }: PropsType): Promise<Result<UpdateBookResultDto, UpdateBookError>> {
@@ -68,35 +68,34 @@ export class UpdateBookUsecase {
             return err({ type: "INVALID_READING_STATUS" });
         }
 
-        // 書籍情報更新
-        const updatedBook = book.updateBook({
-            title: new BookTitle(body.title),
+        // タイトルの重複チェック
+        const title = new BookTitle(body.title);
+        if (await this.uniquenessService.isDuplicated(userId, bookId, title)) {
+            return err({ type: "DUPLICATE_TITLE" });
+        }
+
+        // 書籍・作品情報更新
+        const updatedBook = book.update({
+            title,
             publishedDate: new PublishedDate(body.publishedDate),
             readingStatus: readingStatusId,
             currentPage: new CurrentPage(body.currentPage),
             memo: new BookMemo(body.memo),
-            iconId: iconId
+            iconId,
+            works: body.works.map((work) => ({
+                id: work.id ? WorkId.of(work.id) : null,
+                title: new WorkTitle(work.title),
+                memo: new WorkMemo(work.memo),
+                sort: WorkSort.of(work.sort),
+                deleteFlg: work.deleteFlg,
+            })),
         });
-
-        // タイトルの重複チェック
-        if (await this.uniquenessService.isDuplicated(userId, bookId, updatedBook.title)) {
-            return err({ type: "DUPLICATE_TITLE" });
-        }
-
-        // 作品情報更新
-        const updatedWork = updatedBook.updateWork(body.works.map((work) => ({
-            id: work.id ? WorkId.of(work.id) : null,
-            title: new WorkTitle(work.title),
-            memo: new WorkMemo(work.memo),
-            sort: WorkSort.of(work.sort),
-            deleteFlg: work.deleteFlg,
-        })));
-        if (updatedWork.isErr()) {
-            return err({ type: "INVALID_WORKS", errors: updatedWork.error });
+        if (updatedBook.isErr()) {
+            return err(updatedBook.error);
         }
 
         // 更新
-        await this.updateBookRepository.updateBook(updatedWork.value);
-        return ok(new UpdateBookResultDto(updatedWork.value));
+        await this.updateBookRepository.updateBook(updatedBook.value);
+        return ok(new UpdateBookResultDto(updatedBook.value));
     };
 }

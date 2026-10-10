@@ -25,15 +25,6 @@ type BookAggregateReconstructParamType = {
     works: WorkEntity[];
 };
 
-type UpdateBookParamType = {
-    title: BookTitle;
-    publishedDate: PublishedDate;
-    readingStatus: ReadingStatusId;
-    currentPage: CurrentPage;
-    memo: BookMemo;
-    iconId: IconId;
-};
-
 type UpdateWorkParamType = {
     id: WorkId | null;
     title: WorkTitle;
@@ -42,12 +33,30 @@ type UpdateWorkParamType = {
     deleteFlg: boolean;
 }
 
+type UpdateBookParamType = {
+    title: BookTitle;
+    publishedDate: PublishedDate;
+    readingStatus: ReadingStatusId;
+    currentPage: CurrentPage;
+    memo: BookMemo;
+    iconId: IconId;
+    works: UpdateWorkParamType[];
+};
+
 /**
  * 作品情報更新時の不変条件の違反
  */
 export type BookValidationError = { type: "DUPLICATE_WORK_TITLE"; title: string }
     | { type: "DUPLICATE_WORK_SORT"; sort: number }
     | { type: "ALL_DELETED"; };
+
+/**
+ * 作品情報更新の失敗
+ * - WORKS_MISMATCH: 作品の指定が既存の作品と一致しない（画面の表示後に作品が変更された等）
+ * - INVALID_WORKS: 不変条件の違反
+ */
+export type UpdateWorkError = { type: "WORKS_MISMATCH" }
+    | { type: "INVALID_WORKS"; errors: BookValidationError[] };
 
 type BookSnapshotType = {
     id: string;
@@ -118,14 +127,34 @@ export class BookAggregate {
     }
 
     /**
-     * 書籍情報更新
-     * @param params 
+     * 書籍更新（書籍情報と、削除済みを含む作品の全件をまとめて置き換える）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 書籍が削除されていないこと
+     * - 作品 ID が重複していないこと
+     * - 新規の作品（id が null）が削除済みでないこと
+     *
+     * 作品の指定が既存の作品と一致しない場合（既存の作品が欠けている・既存にない ID が含まれる）は WORKS_MISMATCH を err で返す。
+     * 画面の表示後に作品が変更された場合など、利用者が再読み込みで復帰できるため throw にしない。
+     *
+     * 不変条件（違反はすべて収集して INVALID_WORKS の err で返す）:
+     * - 削除されていない作品が1件以上あること
+     * - 削除されていない作品同士でタイトルが重複しないこと
+     * - 削除されていない作品同士で表示順が重複しないこと
+     *
+     * 事後条件:
+     * - ok の場合: 書籍情報と作品一覧を引数の内容に置き換え、新規の作品に ID を採番した集約を返す
+     * - いずれの場合も自身は変更しない
+     * @param params 更新後の書籍情報と作品一覧（作品は削除済みを含む全件）
+     * @returns 成功時は更新後の書籍集約、作品の不一致・不変条件の違反時はその内容を持つ Result
+     * @throws 事前条件を満たさない場合
      */
-    updateBook(params: UpdateBookParamType): BookAggregate {
+    update(params: UpdateBookParamType): Result<BookAggregate, UpdateWorkError> {
         if (this._deleteFlg) {
             throw new Error(`既に削除済みの書籍です。`);
         }
-        return new BookAggregate(
+
+        return this.replaceWorks(params.works).map((works) => new BookAggregate(
             this._id,
             this._userId,
             params.title,
@@ -134,68 +163,44 @@ export class BookAggregate {
             params.currentPage,
             params.memo,
             params.iconId,
-            false,
-            this._works,
-        );
+            this._deleteFlg,
+            works,
+        ));
     }
 
     /**
-     * 作品情報更新（削除済みを含む全件を渡して置き換える）
-     *
-     * 事前条件（満たさない場合は throw）:
-     * - 書籍が削除されていないこと
-     * - 既存の作品をすべて、ID を重複させずに含めること（既存にない ID は含めない）
-     * - 新規の作品（id が null）が削除済みでないこと
-     *
-     * 不変条件（違反はすべて収集して err で返し、作品は変更しない）:
-     * - 削除されていない作品が1件以上あること
-     * - 削除されていない作品同士でタイトルが重複しないこと
-     * - 削除されていない作品同士で表示順が重複しないこと
-     *
-     * 事後条件（ok の場合）: 作品一覧を引数の内容に置き換え、新規の作品に ID を採番した集約を返す（自身は変更しない）
+     * 作品一覧を検証し、置き換え後の作品エンティティを作成する（新規の作品には ID を採番する）
+     * 事前条件・err の条件は update を参照
      * @param works 更新後の作品一覧（削除済みを含む全件）
-     * @returns 成功時は更新後の書籍集約、不変条件の違反時は違反一覧を持つ Result
-     * @throws 事前条件を満たさない場合
+     * @returns 成功時は置き換え後の作品エンティティ、作品の不一致・不変条件の違反時はその内容を持つ Result
+     * @throws 作品 ID が重複している・新規の作品が削除済みの場合
      */
-    updateWork(works: UpdateWorkParamType[]): Result<BookAggregate, BookValidationError[]> {
-        if (this._deleteFlg) {
-            throw new Error(`既に削除済みの書籍です。`);
-        }
-
-        if (!this.isAllExistingWorksIncluded(works)) {
-            throw new Error(`作品の指定が既存の作品と一致しません。`);
+    private replaceWorks(works: UpdateWorkParamType[]): Result<WorkEntity[], UpdateWorkError> {
+        if (BookAggregate.hasDuplicateWorkIds(works)) {
+            throw new Error(`作品IDが重複しています。`);
         }
 
         if (works.some((work) => !work.id && work.deleteFlg)) {
             throw new Error(`新規の作品を削除済みにすることはできません。`);
         }
 
-        const errors = BookAggregate.collectWorkErrors(works);
-        if (errors.length > 0) {
-            return err(errors);
+        // 作品の存在チェック
+        if (!this.matchesExistingWorks(works)) {
+            return err({ type: "WORKS_MISMATCH" });
         }
 
-        return ok(new BookAggregate(
-            this._id,
-            this._userId,
-            this._title,
-            this._publishedDate,
-            this._readingStatusId,
-            this._currentPage,
-            this._memo,
-            this._iconId,
-            this._deleteFlg,
-            works.map((work) => {
-                const workId = work.id ?? WorkId.generate();
-                return new WorkEntity(
-                    workId,
-                    work.title,
-                    work.sort,
-                    work.memo,
-                    work.deleteFlg
-                );
-            }),
-        ));
+        const errors = BookAggregate.collectWorkErrors(works);
+        if (errors.length > 0) {
+            return err({ type: "INVALID_WORKS", errors });
+        }
+
+        return ok(works.map((work) => new WorkEntity(
+            work.id ?? WorkId.generate(),
+            work.title,
+            work.sort,
+            work.memo,
+            work.deleteFlg,
+        )));
     }
 
     /**
@@ -219,16 +224,25 @@ export class BookAggregate {
     }
 
     /**
-     * 引数の作品 ID（新規を除く）が、既存の作品 ID と過不足・重複なく一致するか判定する
+     * 作品 ID（新規を除く）に重複があるか判定する
+     * @param works 更新後の作品一覧
+     * @returns 重複がある場合は true
+     */
+    private static hasDuplicateWorkIds(works: UpdateWorkParamType[]): boolean {
+        const paramIds = works.flatMap((work) => work.id ? [work.id.value] : []);
+        return new Set(paramIds).size !== paramIds.length;
+    }
+
+    /**
+     * 引数の作品 ID（新規を除く）が、既存の作品 ID と過不足なく一致するか判定する（重複がないことが前提）
      * @param works 更新後の作品一覧
      * @returns 一致する場合は true
      */
-    private isAllExistingWorksIncluded(works: UpdateWorkParamType[]): boolean {
+    private matchesExistingWorks(works: UpdateWorkParamType[]): boolean {
         const existingIds = new Set(this._works.map((work) => work.id));
         const paramIds = works.flatMap((work) => work.id ? [work.id.value] : []);
 
         return paramIds.length === existingIds.size
-            && new Set(paramIds).size === paramIds.length
             && paramIds.every((id) => existingIds.has(id));
     }
 
