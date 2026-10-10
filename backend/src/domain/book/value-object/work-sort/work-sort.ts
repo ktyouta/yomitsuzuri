@@ -4,7 +4,6 @@
 export class WorkSort {
 
     static readonly FIRST = 1;
-
     private readonly _value: number;
 
     /**

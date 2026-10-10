@@ -20,7 +20,7 @@ export class GetBookRepository implements IGetBookRepository {
         readingStatusLabel: readingStatusMaster.label,
         currentPage: bookTransaction.currentPage,
         memo: bookTransaction.memo,
-        iconId: bookTransaction.icon,
+        iconId: bookTransaction.iconId,
         icon: iconMaster.emoji,
         updatedAt: bookTransaction.updatedAt,
       })
@@ -37,7 +37,7 @@ export class GetBookRepository implements IGetBookRepository {
       .leftJoin(
         iconMaster,
         and(
-          eq(bookTransaction.icon, iconMaster.id),
+          eq(bookTransaction.iconId, iconMaster.id),
           eq(iconMaster.deleteFlg, false)
         )
       )

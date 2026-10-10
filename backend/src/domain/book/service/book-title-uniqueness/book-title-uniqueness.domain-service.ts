@@ -2,12 +2,6 @@ import type { UserId } from "../../../shared";
 import type { IBookTitleUniquenessRepository } from "../../repository";
 import type { BookId, BookTitle } from "../../value-object";
 
-type PropsType = {
-    userId: UserId;
-    bookId: BookId;
-    bookTitle: BookTitle;
-}
-
 /**
  * 書籍タイトル一意性判定ドメインサービス
  */
@@ -23,7 +17,7 @@ export class BookTitleUniquenessDomainService {
      * @param bookTitle 書籍タイトル
      * @returns 同一ユーザー内に同名の書籍（未削除・bookId 以外）が存在する場合 true
      */
-    async isDuplicated({ userId, bookTitle, bookId }: PropsType): Promise<boolean> {
+    async isDuplicated(userId: UserId, bookId: BookId, bookTitle: BookTitle): Promise<boolean> {
         const result = await this.bookTitleUniquenessRepository.findBook(userId, bookId, bookTitle);
         return result.length > 0;
     }

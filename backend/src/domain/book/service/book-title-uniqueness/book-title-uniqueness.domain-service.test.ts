@@ -16,20 +16,20 @@ describe("BookTitleUniquenessDomainService", () => {
   it("同名書籍が1件以上ある場合、true を返すこと", async () => {
     const service = new BookTitleUniquenessDomainService(createRepository([{ id: "01HZZZZZZZZZZZZZZZZZZZZZZZ" }]));
 
-    expect(await service.isDuplicated({ userId: USER_ID, bookId: BOOK_ID, bookTitle: BOOK_TITLE })).toBe(true);
+    expect(await service.isDuplicated(USER_ID, BOOK_ID, BOOK_TITLE)).toBe(true);
   });
 
   it("同名書籍が0件の場合、false を返すこと", async () => {
     const service = new BookTitleUniquenessDomainService(createRepository([]));
 
-    expect(await service.isDuplicated({ userId: USER_ID, bookId: BOOK_ID, bookTitle: BOOK_TITLE })).toBe(false);
+    expect(await service.isDuplicated(USER_ID, BOOK_ID, BOOK_TITLE)).toBe(false);
   });
 
   it("渡したユーザーID・書籍ID・タイトルで Repository に問い合わせること", async () => {
     const repository = createRepository([]);
     const service = new BookTitleUniquenessDomainService(repository);
 
-    await service.isDuplicated({ userId: USER_ID, bookId: BOOK_ID, bookTitle: BOOK_TITLE });
+    await service.isDuplicated(USER_ID, BOOK_ID, BOOK_TITLE);
 
     expect(repository.findBook).toHaveBeenCalledWith(USER_ID, BOOK_ID, BOOK_TITLE);
   });

@@ -87,7 +87,7 @@ export class BookAggregate {
     }
 
     get title() {
-        return this._title.value;
+        return this._title;
     }
 
     /**

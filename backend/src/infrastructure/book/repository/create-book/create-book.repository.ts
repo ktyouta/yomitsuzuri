@@ -28,7 +28,7 @@ export class CreateBookRepository implements ICreateBookRepository {
         readingStatusId: snapshot.readingStatusId,
         currentPage: snapshot.currentPage,
         memo: snapshot.memo,
-        icon: snapshot.iconId,
+        iconId: snapshot.iconId,
         deleteFlg: snapshot.deleteFlg,
         createdAt: now,
         updatedAt: now,

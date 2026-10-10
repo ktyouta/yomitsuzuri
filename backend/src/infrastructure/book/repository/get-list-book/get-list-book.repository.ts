@@ -37,7 +37,7 @@ export class GetListBookRepository implements IGetListBookRepository {
       .leftJoin(
         iconMaster,
         and(
-          eq(bookTransaction.icon, iconMaster.id),
+          eq(bookTransaction.iconId, iconMaster.id),
           eq(iconMaster.deleteFlg, false)
         )
       )

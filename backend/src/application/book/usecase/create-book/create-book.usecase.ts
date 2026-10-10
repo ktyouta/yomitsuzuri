@@ -55,7 +55,7 @@ export class CreateBookUsecase {
     const book = BookAggregate.generate({ userId, title, publishedDate, currentPage, memo, iconId });
 
     // タイトル重複（bookId は未使用の新規 ID のため自己除外は実質的に無効）
-    if (await this.uniquenessService.isDuplicated({ userId, bookId: book.id, bookTitle: title })) {
+    if (await this.uniquenessService.isDuplicated(userId, book.id, title)) {
       return err({ type: "DUPLICATE_TITLE" });
     }
 

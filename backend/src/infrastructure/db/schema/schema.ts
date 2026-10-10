@@ -74,7 +74,7 @@ export const bookTransaction = sqliteTable(
     readingStatusId: integer("reading_status_id").notNull().default(ReadingStatusId.INITIAL).references(() => readingStatusMaster.id, { onDelete: "restrict" }),
     currentPage: integer("current_page"),
     memo: text("memo"),
-    icon: integer("icon").notNull().default(1).references(() => iconMaster.id, { onDelete: "restrict" }),
+    iconId: integer("icon_id").notNull().default(1).references(() => iconMaster.id, { onDelete: "restrict" }),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
