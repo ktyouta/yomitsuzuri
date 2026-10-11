@@ -6,6 +6,7 @@ import {
   UserSalt,
   UserPassword,
   Pepper,
+  RawPassword,
 } from "../../..";
 
 describe("UserLoginEntity", () => {
@@ -38,7 +39,7 @@ describe("UserLoginEntity", () => {
       salt
     );
 
-    expect(await entity.verifyPassword("password123", pepper)).toBe(true);
+    expect(await entity.verifyPassword(RawPassword.create("password123")._unsafeUnwrap(), pepper)).toBe(true);
   });
 
   it("verifyPasswordで誤ったパスワードを拒否すること", async () => {
@@ -52,6 +53,6 @@ describe("UserLoginEntity", () => {
       salt
     );
 
-    expect(await entity.verifyPassword("wrong-password", pepper)).toBe(false);
+    expect(await entity.verifyPassword(RawPassword.create("wrong-password")._unsafeUnwrap(), pepper)).toBe(false);
   });
 });

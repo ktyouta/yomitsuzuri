@@ -1,17 +1,14 @@
 import { z } from "zod";
 
-export const UserPasswordSchema = z
-  .object({
-    nowPassword: z.string().min(1, "現在のパスワードを入力してください"),
-    newPassword: z
-      .string()
-      .min(8, "パスワードは8文字以上で入力してください")
-      .regex(/^[\x21-\x7E]+$/, "パスワードは半角英数記号で入力してください"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "確認用パスワードが一致しません。",
-    path: ["confirmPassword"],
-  });
+/**
+ * パスワード変更リクエストスキーマ
+ *
+ * 型・構造のみを検証する。値の制約は値オブジェクト、確認用パスワードの一致は Usecase で判定する。
+ */
+export const UserPasswordSchema = z.object({
+  nowPassword: z.string(),
+  newPassword: z.string(),
+  confirmPassword: z.string(),
+});
 
 export type UserPasswordSchemaType = z.infer<typeof UserPasswordSchema>;

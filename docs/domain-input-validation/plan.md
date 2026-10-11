@@ -25,10 +25,14 @@
 - U2（書籍更新 API）: トップの `message` は作成 API と同じ「入力エラー」にそろえる（zod のエラーフックを含む）
 - U8: パスパラメータの `bookId` は形式（ULID）を判定しない。`BookIdParamSchema` は `z.string()` のみとし、形式が不正・存在しない書籍IDは書籍の取得で見つからないため 404 になる。空の ID はルーティングで一致せず 404 になる。`BookId` は「空でない」のみを不変条件とする
 - 作品IDの空文字は新規作品（id が null）として扱う（`UpdateBookUsecase` の `!work.id` 判定）
+- U10: 作品IDも形式（ULID）を判定しない（U8 の書籍IDにそろえる）。`WorkId` は「空でない」のみを不変条件とし（`create`・`WORK_ID_INVALID` は削除）、`UpdateBookUsecase` は `WorkId.of` を使う。形式が不正な作品IDは既存作品と一致せず `WORKS_MISMATCH` になる
 
 - U6: 確認用パスワードの一致はサーバーでも判定する。置き場所は Usecase（ユースケースへの入力の約束であり、パスワードの不変条件でも型・構造の検証でもないため）。違反は `INVALID_INPUT`（`field: "confirmPassword"`、`PASSWORD_CONFIRMATION_MISMATCH`）で他の違反とまとめて返す
 - パスワードの方針の文言は user と auth の変換関数で重複することを許容する（変換関数はコンテキストごとに置く）
 - 本番データはまだないため、`UserName` に 3〜30 文字の制約を入れても既存データの確認は不要
+- U3: ログインのユーザー名は `LoginName`（auth ドメイン。「空でない」のみ）を新設して判定する
+- U4: 照合用のパスワード（ログイン・パスワード変更の現在のパスワード）は `RawPassword`（auth ドメイン。ハッシュ化前の平文で「空でない」のみ）を新設し、両方で使う
+- `RAW_PASSWORD_EMPTY` の文言はログイン・パスワード変更とも「パスワードを入力してください」にそろえる（どの項目かは `field` で分かる）
 
 ### Claudeの提案をユーザーが承認したもの
 
@@ -44,16 +48,18 @@
   - トップの `message` は「入力エラー」にそろえる
   - `CreateUserUsecase.execute` の引数はオブジェクト（`{ name, birthday, password, confirmPassword }`）にする
   - `UserName` の `of` は Repository が DB の値から生成するため置く。`UserBirthday`・`NewPassword` は DB の値から生成する箇所がないため `of` を置かない
-  - Phase 4 の間、`LoginUsecase` は `UserName.create` が err なら DB を問い合わせずに認証失敗（401）を返す（`of` だと 2 文字以下のユーザー名で 500 になるため）
+  - Phase 4 の間、`LoginUsecase` は `UserName.create` が err なら DB を問い合わせずに認証失敗（401）を返す（`of` だと 2 文字以下のユーザー名で 500 になるため）。Phase 5 で `LoginName` に置き換える
+- auth（Phase 5）:
+  - `UserLoginEntity.verifyPassword` は `RawPassword`、`hashNewPassword` は `NewPassword` を受け取る（平文の取り違えを型で防ぐため）
+  - `IUserLoginRepository.getLoginUser` は `LoginName` を受け取る
+  - `LoginUsecase` は `INVALID_INPUT`（空の入力）・`AUTHENTICATION_FAILED`（ユーザーなし・パスワード不一致・プロフィールなし。応答は従来どおり 401）を返す
+  - `UpdatePasswordUsecase` は `INVALID_INPUT`（現在のパスワードの空・`NewPassword` の違反・確認用パスワードの不一致）・`CURRENT_PASSWORD_MISMATCH`・`NOT_FOUND`（応答はどちらも従来どおり 401）を返す
 
 ### 未決定（次回以降に決める）
 
 | # | 事項 | 選択肢 / Claudeの提案 |
 |---|---|---|
 | U2 | トップの `message`（書籍作成・更新以外の API） | 提案: 「入力エラー」に統一（「バリデーション」は開発者向けの語のため）。書籍作成・更新 API は「入力エラー」で決定済み。全体適用は未確認 |
-| U3 | ログインのユーザー名の非空判定の VO | 提案: `LoginName`（auth ドメイン。「空でない」のみ） |
-| U4 | 照合用のパスワード（ログイン・パスワード変更の現在のパスワード）の非空判定の VO | 提案: `RawPassword`（auth ドメイン。ハッシュ化前の平文で「空でない」のみ）。ログインとパスワード変更で共用する |
-| U10 | 作品IDの形式判定 | 現在は `WorkId.create` で ULID 形式を判定している（`WORK_ID_INVALID`）。提案: U8 の書籍IDに揃えて形式判定を外し、「空でない」のみにする（形式が不正な ID は既存作品と一致せず `WORKS_MISMATCH` になるため結果は変わらない） |
 | U9 | throw / err の基準・zod の役割をプロジェクトのルールとして CLAUDE.md に明記するか | 提案: 明記する |
 
 ## 設計
@@ -154,11 +160,15 @@ class WorkTitle {
 
 ### Phase 5: auth
 
-- [ ] U3・U4 を決める
-- [ ] ログイン: `LoginUsecase` は `new UserName(name)` をやめ、ログイン用の VO を使う。`IUserLoginRepository.getLoginUser` の引数型も変更する
-- [ ] パスワード変更: 新しいパスワードは `NewPassword`（Phase 4 で新設）を使い、確認用パスワードの一致を Usecase で判定し、`UpdatePasswordUsecase` で `INVALID_INPUT` を返す
-- [ ] `UserLoginSchema`・`UserPasswordSchema` を型・構造のみにする
-- [ ] Controller の対応、テスト（`user-password.controller.test.ts` を含む）
+- [x] U3・U4 を決める
+- [x] `LoginName`・`RawPassword` を新設する
+- [x] `UserLoginEntity` の `verifyPassword`・`hashNewPassword` の引数を VO にする
+- [x] ログイン: `LoginUsecase` は `LoginName`・`RawPassword` を使い Result を返す。`IUserLoginRepository.getLoginUser` の引数を `LoginName` にする
+- [x] パスワード変更: 新しいパスワードは `NewPassword`（Phase 4 で新設）を使い、確認用パスワードの一致を Usecase で判定し、`UpdatePasswordUsecase` で `INVALID_INPUT` を返す
+- [x] `UserLoginSchema`・`UserPasswordSchema` を型・構造のみにする
+- [x] `presentation/auth/error-message/input/` に `toInputErrorMessage` を置き、Controller で `INVALID_INPUT` を返す（message は「入力エラー」）
+- [x] テスト（`user-login.schema.test.ts`・`user-password.controller.test.ts` を含む）
+- [ ] コミット
 
 ### Phase 6: 仕上げ
 
@@ -188,7 +198,7 @@ class WorkTitle {
 | `WorkTitle.create` | 事後条件 | 前後の空白を除去し、空なら `WORK_TITLE_EMPTY`、上限文字数超過なら `WORK_TITLE_TOO_LONG`（`max`）、それ以外は ok |
 | `WorkMemo.create` | 事後条件 | 前後の空白を除去し、空なら null として ok、上限文字数超過なら `WORK_MEMO_TOO_LONG`（`max`）、それ以外は ok |
 | `WorkSort.create` | 事後条件 | `FIRST` 以上の整数なら ok、それ以外は `WORK_SORT_INVALID`（`min`） |
-| `WorkId.create` | 事後条件 | ULID 形式（Crockford's Base32 の26文字。I・L・O・U を含まない）なら ok、それ以外は `WORK_ID_INVALID` |
+| `WorkId.of` | 事後条件 | 空でなければその値を保持し、空なら throw（U10 で ULID 形式の判定と `create` を削除） |
 | 上記 VO の `of` | 事後条件 | `create` が ok ならその値を返し、err なら throw（呼び出し側の不具合） |
 | `WorkTitle.initial` | 事前条件 | 書籍タイトルの上限文字数 ≤ 作品タイトルの上限文字数（テストで保証）。満たさない場合は `of` が throw |
 | `BookAggregate.update` | 事前条件（throw） | 書籍が削除されていないこと |
@@ -213,3 +223,13 @@ class WorkTitle {
 | `CreateUserUsecase.execute` | 事後条件 | 入力値の違反（確認用パスワードの不一致を含む）はすべて `field` 付きで `INVALID_INPUT` として返し、DB は問い合わせない・保存しない。ユーザー名が重複していれば `DUPLICATE_NAME`（保存しない）。それ以外は作成してトークンを含む DTO を返す |
 | `UpdateUserUsecase.execute` | 事後条件 | 入力値の違反はすべて `INVALID_INPUT` として返し、DB は問い合わせない。重複は `DUPLICATE_NAME`、対象が存在しなければ `NOT_FOUND`。それ以外は更新して DTO を返す |
 | `LoginUsecase.execute` | 事後条件 | ユーザー名が `UserName` の制約を満たさない場合は DB を問い合わせずに認証失敗（null）を返す |
+
+### Phase 5（auth）
+
+| クラス・メソッド | 契約の種類 | 内容 |
+|---|---|---|
+| `LoginName.create` | 事後条件 | 空なら `LOGIN_NAME_EMPTY`、それ以外は ok |
+| `RawPassword.create` | 事後条件 | 空なら `RAW_PASSWORD_EMPTY`、それ以外は ok |
+| `UserLoginEntity.verifyPassword` | 事後条件 | 平文を自身のソルトとペッパーでハッシュ化し、登録済みのハッシュと一致すれば true |
+| `LoginUsecase.execute` | 事後条件 | 入力値の違反はすべて `INVALID_INPUT` として返し、DB は問い合わせない。ユーザーなし・パスワード不一致・プロフィールなしは `AUTHENTICATION_FAILED`（最終ログイン日時は更新しない）。それ以外はトークンとプロフィールの DTO を返し、最終ログイン日時を更新する |
+| `UpdatePasswordUsecase.execute` | 事後条件 | 入力値の違反（確認用パスワードの不一致を含む）はすべて `INVALID_INPUT` として返し、DB は問い合わせない。資格情報がない・更新対象がない場合は `NOT_FOUND`、現在のパスワードが一致しない場合は `CURRENT_PASSWORD_MISMATCH`（いずれも更新しない）。それ以外は新しいパスワードで更新する |

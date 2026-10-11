@@ -7,13 +7,14 @@ import { RefreshToken } from "../../../../domain";
 import { GetUserProfileRepository, UserLoginRepository } from "../../../../infrastructure";
 import type { AppEnv } from "../../../../types";
 import { formatZodErrors } from "../../../../util";
+import { toInputErrorMessage } from "../../error-message";
 import { UserLoginSchema } from "../../schema";
 
 const userLogin = new Hono<AppEnv>().post(
     API_ENDPOINT.USER_LOGIN,
     zValidator("json", UserLoginSchema, (result, c) => {
         if (!result.success) {
-            return c.json({ message: "バリデーションエラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+            return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
         }
     }),
     async (c) => {
@@ -26,11 +27,22 @@ const userLogin = new Hono<AppEnv>().post(
 
         const result = await usecase.execute(body.name, body.password);
 
-        if (!result) {
-            return c.json({ message: "IDかパスワードが間違っています。" }, HTTP_STATUS.UNAUTHORIZED);
+        if (result.isErr()) {
+            const error = result.error;
+            switch (error.type) {
+                case "INVALID_INPUT":
+                    return c.json({ message: "入力エラー", data: error.errors.map((e) => ({ field: e.field, message: toInputErrorMessage(e.error) })) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+                case "AUTHENTICATION_FAILED":
+                    return c.json({ message: "IDかパスワードが間違っています。" }, HTTP_STATUS.UNAUTHORIZED);
+                default: {
+                    // 全てのエラー種別を網羅していることを型で保証する
+                    error satisfies never;
+                    return c.json({ message: "サーバーエラー" }, HTTP_STATUS.INTERNAL_SERVER_ERROR);
+                }
+            }
         }
 
-        const { accessToken, refreshToken, user } = result.value;
+        const { accessToken, refreshToken, user } = result.value.value;
 
         setCookie(c, RefreshToken.COOKIE_KEY, refreshToken, RefreshToken.getCookieSetOption(config));
 

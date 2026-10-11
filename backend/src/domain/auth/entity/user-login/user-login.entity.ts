@@ -1,5 +1,5 @@
 import type { UserId, UserName } from "../../../shared";
-import type { Pepper, UserSalt } from "../../value-object";
+import type { NewPassword, Pepper, RawPassword, UserSalt } from "../../value-object";
 import { UserPassword } from "../../value-object";
 
 /**
@@ -48,16 +48,22 @@ export class UserLoginEntity {
 
   /**
    * 入力パスワードが登録済みパスワードと一致するか検証する
+   * @param rawPassword 照合用のパスワード（平文）
+   * @param pepper ペッパー
+   * @returns 一致する場合は true
    */
-  async verifyPassword(inputPassword: string, pepper: Pepper): Promise<boolean> {
-    const hashed = await UserPassword.hash(inputPassword, this._salt, pepper);
+  async verifyPassword(rawPassword: RawPassword, pepper: Pepper): Promise<boolean> {
+    const hashed = await UserPassword.hash(rawPassword.value, this._salt, pepper);
     return hashed.equals(this._passwordHash);
   }
 
   /**
    * 登録時と同じソルトで新しいパスワードをハッシュ化する
+   * @param newPassword 新しく設定するパスワード
+   * @param pepper ペッパー
+   * @returns ハッシュ済みのパスワード
    */
-  async hashNewPassword(newPassword: string, pepper: Pepper): Promise<UserPassword> {
-    return await UserPassword.hash(newPassword, this._salt, pepper);
+  async hashNewPassword(newPassword: NewPassword, pepper: Pepper): Promise<UserPassword> {
+    return await UserPassword.hash(newPassword.value, this._salt, pepper);
   }
 }

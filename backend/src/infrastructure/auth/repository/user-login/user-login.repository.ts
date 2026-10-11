@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { UserLoginEntity, UserPassword, UserSalt } from "../../../../domain/auth";
-import type { IUserLoginRepository } from "../../../../domain/auth";
+import type { IUserLoginRepository, LoginName } from "../../../../domain/auth";
 import { UserId, UserName } from "../../../../domain/shared";
 import type { Database } from "../../../db";
 import { userLoginMaster, userMaster } from "../../../db";
@@ -11,13 +11,13 @@ import { userLoginMaster, userMaster } from "../../../db";
 export class UserLoginRepository implements IUserLoginRepository {
   constructor(private readonly db: Database) { }
 
-  async getLoginUser(loginId: UserName): Promise<UserLoginEntity | undefined> {
+  async getLoginUser(loginName: LoginName): Promise<UserLoginEntity | undefined> {
     const result = await this.db
       .select()
       .from(userLoginMaster)
       .where(
         and(
-          eq(userLoginMaster.loginId, loginId.value),
+          eq(userLoginMaster.loginId, loginName.value),
           eq(userLoginMaster.deleteFlg, false)
         )
       );

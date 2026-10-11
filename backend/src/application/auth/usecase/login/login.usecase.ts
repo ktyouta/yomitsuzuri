@@ -1,9 +1,21 @@
+import { err, ok, Result } from "neverthrow";
 import type { EnvConfig } from "../../../../config";
-import { AccessToken, Pepper, RefreshToken } from "../../../../domain/auth";
+import { AccessToken, LoginName, Pepper, RawPassword, RefreshToken, type LoginNameError, type RawPasswordError } from "../../../../domain/auth";
 import type { IUserLoginRepository } from "../../../../domain/auth";
-import { UserId, UserName } from "../../../../domain/shared";
+import { UserId } from "../../../../domain/shared";
 import type { IGetUserProfileRepository } from "../../../../domain/user";
 import { LoginResultDto } from "../../dto";
+
+/**
+ * ログインの入力値の制約違反（field は入力値の項目名）
+ */
+export type LoginInputError =
+  | { field: "name"; error: LoginNameError }
+  | { field: "password"; error: RawPasswordError };
+
+export type LoginError =
+  | { type: "INVALID_INPUT"; errors: LoginInputError[] }
+  | { type: "AUTHENTICATION_FAILED" };
 
 /**
  * ログインユースケース
@@ -19,31 +31,36 @@ export class LoginUsecase {
    * ログインする
    * @param name ユーザー名
    * @param password 平文のパスワード
-   * @returns 成功時はトークンとプロフィールの DTO。
-   * ユーザー名が制約を満たさない（DB は問い合わせない）・ユーザーが存在しない・パスワードが一致しない・プロフィールが存在しない場合は null（最終ログイン日時は更新しない）
+   * @returns 成功時はトークンとプロフィールの DTO（最終ログイン日時を更新する）。
+   * 入力値が空の場合は INVALID_INPUT（違反はすべて返し、DB は問い合わせない）。
+   * ユーザーが存在しない・パスワードが一致しない・プロフィールが存在しない場合は AUTHENTICATION_FAILED（最終ログイン日時は更新しない）
    */
-  async execute(name: string, password: string): Promise<LoginResultDto | null> {
-    // ユーザー名の制約を満たさない名前のユーザーは存在しないため、問い合わせずに認証失敗とする
-    const loginId = UserName.create(name);
-    if (loginId.isErr()) {
-      return null;
+  async execute(name: string, password: string): Promise<Result<LoginResultDto, LoginError>> {
+    // 入力値の制約チェック
+    const input = Result.combineWithAllErrors([
+      LoginName.create(name).mapErr((error): LoginInputError => ({ field: "name", error })),
+      RawPassword.create(password).mapErr((error): LoginInputError => ({ field: "password", error })),
+    ]);
+    if (input.isErr()) {
+      return err({ type: "INVALID_INPUT", errors: input.error });
     }
+    const [loginName, rawPassword] = input.value;
 
-    const credential = await this.loginRepository.getLoginUser(loginId.value);
+    const credential = await this.loginRepository.getLoginUser(loginName);
     if (!credential) {
-      return null;
+      return err({ type: "AUTHENTICATION_FAILED" });
     }
 
     const pepper = new Pepper(this.config.pepper);
-    const isValid = await credential.verifyPassword(password, pepper);
+    const isValid = await credential.verifyPassword(rawPassword, pepper);
     if (!isValid) {
-      return null;
+      return err({ type: "AUTHENTICATION_FAILED" });
     }
 
     const userId = UserId.of(credential.userId);
     const userInfo = await this.userProfileRepository.findById(userId);
     if (!userInfo) {
-      return null;
+      return err({ type: "AUTHENTICATION_FAILED" });
     }
 
     const accessToken = await AccessToken.create(userId, this.config);
@@ -51,6 +68,6 @@ export class LoginUsecase {
 
     await this.loginRepository.updateLastLoginDate(userId);
 
-    return new LoginResultDto(userInfo, accessToken, refreshToken);
+    return ok(new LoginResultDto(userInfo, accessToken, refreshToken));
   }
 }
