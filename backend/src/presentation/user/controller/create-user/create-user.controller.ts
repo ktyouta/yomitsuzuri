@@ -8,6 +8,7 @@ import { CreateUserRepository } from "../../../../infrastructure";
 import { userOperationGuardMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
 import { formatZodErrors } from "../../../../util";
+import { toInputErrorMessage } from "../../error-message";
 import { CreateUserSchema } from "../../schema";
 
 const createUser = new Hono<AppEnv>().post(
@@ -15,7 +16,7 @@ const createUser = new Hono<AppEnv>().post(
     userOperationGuardMiddleware,
     zValidator("json", CreateUserSchema, (result, c) => {
         if (!result.success) {
-            return c.json({ message: "バリデーションエラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+            return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
         }
     }),
     async (c) => {
@@ -25,12 +26,23 @@ const createUser = new Hono<AppEnv>().post(
         const repository = new CreateUserRepository(db);
         const usecase = new CreateUserUsecase(repository, config);
 
-        const result = await usecase.execute(body.name, body.birthday, body.password);
-        if (!result) {
-            return c.json({ message: "既にユーザーが存在しています。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+        const result = await usecase.execute(body);
+        if (result.isErr()) {
+            const error = result.error;
+            switch (error.type) {
+                case "INVALID_INPUT":
+                    return c.json({ message: "入力エラー", data: error.errors.map((e) => ({ field: e.field, message: toInputErrorMessage(e.error) })) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+                case "DUPLICATE_NAME":
+                    return c.json({ message: "既にユーザーが存在しています。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+                default: {
+                    // 全てのエラー種別を網羅していることを型で保証する
+                    error satisfies never;
+                    return c.json({ message: "サーバーエラー" }, HTTP_STATUS.INTERNAL_SERVER_ERROR);
+                }
+            }
         }
 
-        const { accessToken, refreshToken, user } = result.value;
+        const { accessToken, refreshToken, user } = result.value.value;
 
         setCookie(c, RefreshToken.COOKIE_KEY, refreshToken, RefreshToken.getCookieSetOption(config));
 

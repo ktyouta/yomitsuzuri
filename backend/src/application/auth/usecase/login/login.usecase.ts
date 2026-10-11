@@ -15,9 +15,21 @@ export class LoginUsecase {
     private readonly config: EnvConfig
   ) { }
 
+  /**
+   * ログインする
+   * @param name ユーザー名
+   * @param password 平文のパスワード
+   * @returns 成功時はトークンとプロフィールの DTO。
+   * ユーザー名が制約を満たさない（DB は問い合わせない）・ユーザーが存在しない・パスワードが一致しない・プロフィールが存在しない場合は null（最終ログイン日時は更新しない）
+   */
   async execute(name: string, password: string): Promise<LoginResultDto | null> {
-    const loginId = new UserName(name);
-    const credential = await this.loginRepository.getLoginUser(loginId);
+    // ユーザー名の制約を満たさない名前のユーザーは存在しないため、問い合わせずに認証失敗とする
+    const loginId = UserName.create(name);
+    if (loginId.isErr()) {
+      return null;
+    }
+
+    const credential = await this.loginRepository.getLoginUser(loginId.value);
     if (!credential) {
       return null;
     }

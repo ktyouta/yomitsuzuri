@@ -29,59 +29,56 @@ function createRepository(
 }
 
 function createUpdatedEntity() {
-  return new UserEntity(UserId.of(USER_ID), new UserName("renamed"), new UserBirthday("20000101"));
+  return new UserEntity(UserId.of(USER_ID), UserName.of("renamed"), UserBirthday.create("20000101")._unsafeUnwrap());
 }
 
 describe("UpdateUserUsecase", () => {
-  it("名前が重複しておらずユーザーが存在する場合、successと更新後のユーザー・リフレッシュトークンを返すこと", async () => {
+  it("名前が重複しておらずユーザーが存在する場合、更新後のユーザー・リフレッシュトークンを返すこと", async () => {
     const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: true });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
     const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
 
-    expect(result.status).toBe("success");
-    if (result.status !== "success") {
-      return;
-    }
-    expect(result.dto.value.user.name).toBe("renamed");
-    expect(result.dto.value.user.birthday).toBe("20000101");
-    expect(result.dto.value.user.darkMode).toBe(true);
-    expect(result.dto.value.refreshToken).toBeTruthy();
+    const dto = result._unsafeUnwrap();
+    expect(dto.value.user.name).toBe("renamed");
+    expect(dto.value.user.birthday).toBe("20000101");
+    expect(dto.value.user.darkMode).toBe(true);
+    expect(dto.value.refreshToken).toBeTruthy();
   });
 
-  it("名前が重複している場合、duplicateを返し、更新しないこと", async () => {
+  it("名前が重複している場合、DUPLICATE_NAME を返し、更新しないこと", async () => {
     const repository = createRepository(true, { entity: createUpdatedEntity(), darkMode: false });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
     const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
 
-    expect(result.status).toBe("duplicate");
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_NAME" });
     expect(repository.updateUserWithLogin).not.toHaveBeenCalled();
   });
 
-  it("ユーザーが存在しない場合、not_foundを返すこと", async () => {
+  it("ユーザーが存在しない場合、NOT_FOUND を返すこと", async () => {
     const repository = createRepository(false, undefined);
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
     const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
 
-    expect(result.status).toBe("not_found");
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "NOT_FOUND" });
   });
 
-
-  it("名前が空の場合、例外になり、更新しないこと", async () => {
+  it("入力値が制約を満たさない場合、INVALID_INPUT で違反をすべて項目名とともに返し、DB を問い合わせず更新しないこと", async () => {
     const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: false });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    await expect(usecase.execute(UserId.of(USER_ID), "", "20000101")).rejects.toThrow();
-    expect(repository.updateUserWithLogin).not.toHaveBeenCalled();
-  });
+    const result = await usecase.execute(UserId.of(USER_ID), "", "20000431");
 
-  it("生年月日が不正な場合、例外になり、更新しないこと", async () => {
-    const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: false });
-    const usecase = new UpdateUserUsecase(repository, testConfig);
-
-    await expect(usecase.execute(UserId.of(USER_ID), "renamed", "20000431")).rejects.toThrow();
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [
+        { field: "name", error: { type: "USER_NAME_TOO_SHORT", min: 3 } },
+        { field: "birthday", error: { type: "USER_BIRTHDAY_NOT_EXIST" } },
+      ],
+    });
+    expect(repository.checkUserNameExists).not.toHaveBeenCalled();
     expect(repository.updateUserWithLogin).not.toHaveBeenCalled();
   });
 });

@@ -14,6 +14,8 @@ const testConfig: EnvConfig = {
   allowUserOperation: true,
 };
 
+const BODY = { name: "testuser", birthday: "19900101", password: "password", confirmPassword: "password" };
+
 function createRepository(exists: boolean) {
   return {
     existsByUserName: vi.fn<ICreateUserRepository["existsByUserName"]>().mockResolvedValue(exists),
@@ -26,39 +28,55 @@ describe("CreateUserUsecase", () => {
     const repository = createRepository(false);
     const usecase = new CreateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute("testuser", "19900101", "password");
+    const result = await usecase.execute(BODY);
 
-    expect(result).not.toBeNull();
-    expect(result?.value.user.name).toBe("testuser");
-    expect(result?.value.user.birthday).toBe("19900101");
-    expect(result?.value.accessToken).toBeTruthy();
-    expect(result?.value.refreshToken).toBeTruthy();
+    const dto = result._unsafeUnwrap();
+    expect(dto.value.user.name).toBe("testuser");
+    expect(dto.value.user.birthday).toBe("19900101");
+    expect(dto.value.accessToken).toBeTruthy();
+    expect(dto.value.refreshToken).toBeTruthy();
     expect(repository.createUserWithLogin).toHaveBeenCalledTimes(1);
   });
 
-  it("名前が重複している場合、nullを返し、ユーザーを作成しないこと", async () => {
+  it("名前が重複している場合、DUPLICATE_NAME を返し、ユーザーを作成しないこと", async () => {
     const repository = createRepository(true);
     const usecase = new CreateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute("testuser", "19900101", "password");
+    const result = await usecase.execute(BODY);
 
-    expect(result).toBeNull();
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_NAME" });
     expect(repository.createUserWithLogin).not.toHaveBeenCalled();
   });
 
-  it("名前が空の場合、例外になり、ユーザーを作成しないこと", async () => {
+  it("入力値が制約を満たさない場合、INVALID_INPUT で違反をすべて項目名とともに返し、DB を問い合わせず作成しないこと", async () => {
     const repository = createRepository(false);
     const usecase = new CreateUserUsecase(repository, testConfig);
 
-    await expect(usecase.execute("", "19900101", "password")).rejects.toThrow();
+    const result = await usecase.execute({ name: "ab", birthday: "19990229", password: "short", confirmPassword: "other" });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [
+        { field: "name", error: { type: "USER_NAME_TOO_SHORT", min: 3 } },
+        { field: "birthday", error: { type: "USER_BIRTHDAY_NOT_EXIST" } },
+        { field: "password", error: { type: "NEW_PASSWORD_TOO_SHORT", min: 8 } },
+        { field: "confirmPassword", error: { type: "PASSWORD_CONFIRMATION_MISMATCH" } },
+      ],
+    });
+    expect(repository.existsByUserName).not.toHaveBeenCalled();
     expect(repository.createUserWithLogin).not.toHaveBeenCalled();
   });
 
-  it("生年月日が不正な場合、例外になり、ユーザーを作成しないこと", async () => {
+  it("確認用パスワードだけが一致しない場合も、INVALID_INPUT を返し作成しないこと", async () => {
     const repository = createRepository(false);
     const usecase = new CreateUserUsecase(repository, testConfig);
 
-    await expect(usecase.execute("testuser", "19990229", "password")).rejects.toThrow();
+    const result = await usecase.execute({ ...BODY, confirmPassword: "password2" });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [{ field: "confirmPassword", error: { type: "PASSWORD_CONFIRMATION_MISMATCH" } }],
+    });
     expect(repository.createUserWithLogin).not.toHaveBeenCalled();
   });
 });

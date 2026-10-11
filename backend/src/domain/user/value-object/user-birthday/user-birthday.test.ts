@@ -2,58 +2,20 @@ import { describe, it, expect } from "vitest";
 import { UserBirthday } from "../../..";
 
 describe("UserBirthday", () => {
-  it("正常な日付でインスタンスを生成できること", () => {
-    const birthday = new UserBirthday("19900101");
-    expect(birthday.value).toBe("19900101");
-  });
+  describe("create", () => {
+    it.each(["19900101", "20001231", "20000229"])("%s で生成できること", (birthday) => {
+      expect(UserBirthday.create(birthday)._unsafeUnwrap().value).toBe(birthday);
+    });
 
-  it("月末日でも生成できること", () => {
-    const birthday = new UserBirthday("20001231");
-    expect(birthday.value).toBe("20001231");
-  });
+    it.each(["19990229", "20000431"])("実在しない日付（%s）の場合、USER_BIRTHDAY_NOT_EXIST を返すこと", (birthday) => {
+      expect(UserBirthday.create(birthday)._unsafeUnwrapErr()).toEqual({ type: "USER_BIRTHDAY_NOT_EXIST" });
+    });
 
-  it("うるう年の2月29日でも生成できること", () => {
-    const birthday = new UserBirthday("20000229");
-    expect(birthday.value).toBe("20000229");
-  });
-
-  it("うるう年以外の2月29日でエラーになること", () => {
-    expect(() => new UserBirthday("19990229")).toThrow("生年月日が正しくありません");
-  });
-
-  it("存在しない日付（4月31日）でエラーになること", () => {
-    expect(() => new UserBirthday("20000431")).toThrow("生年月日が正しくありません");
-  });
-
-  it("ハイフン形式でエラーになること", () => {
-    expect(() => new UserBirthday("1990-01-01")).toThrow("日付形式が不正です（yyyyMMdd）");
-  });
-
-  it("スラッシュ形式でエラーになること", () => {
-    expect(() => new UserBirthday("1990/01/01")).toThrow("日付形式が不正です（yyyyMMdd）");
-  });
-
-  it("桁数が足りない場合にエラーになること", () => {
-    expect(() => new UserBirthday("1990101")).toThrow("日付形式が不正です（yyyyMMdd）");
-  });
-
-  it("月が00の場合にエラーになること", () => {
-    expect(() => new UserBirthday("19900001")).toThrow("日付形式が不正です（yyyyMMdd）");
-  });
-
-  it("月が13の場合にエラーになること", () => {
-    expect(() => new UserBirthday("19901301")).toThrow("日付形式が不正です（yyyyMMdd）");
-  });
-
-  it("日が00の場合にエラーになること", () => {
-    expect(() => new UserBirthday("19900100")).toThrow("日付形式が不正です（yyyyMMdd）");
-  });
-
-  it("日が32の場合にエラーになること", () => {
-    expect(() => new UserBirthday("19900132")).toThrow("日付形式が不正です（yyyyMMdd）");
-  });
-
-  it("アルファベットが含まれる場合にエラーになること", () => {
-    expect(() => new UserBirthday("1990010a")).toThrow("日付形式が不正です（yyyyMMdd）");
+    it.each(["1990-01-01", "1990/01/01", "1990101", "19900001", "19901301", "19900100", "19900132", "1990010a", ""])(
+      "yyyyMMdd 形式でない場合（%s）、USER_BIRTHDAY_INVALID_FORMAT を返すこと",
+      (birthday) => {
+        expect(UserBirthday.create(birthday)._unsafeUnwrapErr()).toEqual({ type: "USER_BIRTHDAY_INVALID_FORMAT" });
+      },
+    );
   });
 });

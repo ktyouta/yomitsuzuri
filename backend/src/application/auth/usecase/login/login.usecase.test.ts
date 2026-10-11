@@ -29,7 +29,7 @@ const PROFILE: UserProfile = {
 async function createCredential() {
   const salt = UserSalt.generate();
   const passwordHash = await UserPassword.hash(PASSWORD, salt, new Pepper(testConfig.pepper));
-  return new UserLoginEntity(UserId.of(LOGIN_ID), UserId.of(PROFILE.id), new UserName(PROFILE.name), passwordHash, salt);
+  return new UserLoginEntity(UserId.of(LOGIN_ID), UserId.of(PROFILE.id), UserName.of(PROFILE.name), passwordHash, salt);
 }
 
 function createRepositories(credential: UserLoginEntity | undefined, profile: UserProfile | undefined) {
@@ -86,11 +86,14 @@ describe("LoginUsecase", () => {
     expect(loginRepository.updateLastLoginDate).not.toHaveBeenCalled();
   });
 
-  it("名前が空の場合、例外になり、最終ログイン日時を更新しないこと", async () => {
+  it.each(["", "ab", "あ".repeat(31)])("名前がユーザー名の制約を満たさない場合（%s）、DB を問い合わせずに null を返すこと", async (name) => {
     const { loginRepository, userProfileRepository } = createRepositories(await createCredential(), PROFILE);
     const usecase = new LoginUsecase(loginRepository, userProfileRepository, testConfig);
 
-    await expect(usecase.execute("", PASSWORD)).rejects.toThrow();
+    const result = await usecase.execute(name, PASSWORD);
+
+    expect(result).toBeNull();
+    expect(loginRepository.getLoginUser).not.toHaveBeenCalled();
     expect(loginRepository.updateLastLoginDate).not.toHaveBeenCalled();
   });
 });

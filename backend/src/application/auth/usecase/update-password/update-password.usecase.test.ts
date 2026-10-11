@@ -24,7 +24,7 @@ const NEW_PASSWORD = "new-password";
 async function createCredential() {
   const salt = UserSalt.generate();
   const passwordHash = await UserPassword.hash(NOW_PASSWORD, salt, new Pepper(testConfig.pepper));
-  return new UserLoginEntity(UserId.of(LOGIN_ID), UserId.of(USER_ID), new UserName("testuser"), passwordHash, salt);
+  return new UserLoginEntity(UserId.of(LOGIN_ID), UserId.of(USER_ID), UserName.of("testuser"), passwordHash, salt);
 }
 
 function createRepository(credential: UserLoginEntity | undefined, updated: boolean) {

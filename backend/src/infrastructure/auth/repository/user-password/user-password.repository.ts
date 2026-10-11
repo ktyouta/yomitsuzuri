@@ -28,7 +28,7 @@ export class UserPasswordRepository implements IUserPasswordRepository {
     return new UserLoginEntity(
       UserId.of(row.id),
       UserId.of(row.userId),
-      new UserName(row.loginId),
+      UserName.of(row.loginId),
       UserPassword.of(row.passwordHash),
       UserSalt.of(row.salt)
     );

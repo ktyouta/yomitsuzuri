@@ -4,8 +4,8 @@ import { UserEntity, UserId, UserName, UserBirthday } from "../../..";
 describe("UserEntity", () => {
   it("エンティティを生成できること", () => {
     const userId = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
-    const userName = new UserName("testuser");
-    const userBirthday = new UserBirthday("19900101");
+    const userName = UserName.of("testuser");
+    const userBirthday = UserBirthday.create("19900101")._unsafeUnwrap();
 
     const entity = new UserEntity(userId, userName, userBirthday);
 

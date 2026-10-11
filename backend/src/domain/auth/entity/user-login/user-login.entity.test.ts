@@ -14,7 +14,7 @@ describe("UserLoginEntity", () => {
   it("エンティティを生成できること", async () => {
     const loginId = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
     const userId = UserId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ");
-    const loginName = new UserName("testuser");
+    const loginName = UserName.of("testuser");
     const salt = UserSalt.generate();
     const password = await UserPassword.hash("password123", salt, pepper);
 
@@ -33,7 +33,7 @@ describe("UserLoginEntity", () => {
     const entity = new UserLoginEntity(
       UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
       UserId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ"),
-      new UserName("testuser"),
+      UserName.of("testuser"),
       password,
       salt
     );
@@ -47,7 +47,7 @@ describe("UserLoginEntity", () => {
     const entity = new UserLoginEntity(
       UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
       UserId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ"),
-      new UserName("testuser"),
+      UserName.of("testuser"),
       password,
       salt
     );
