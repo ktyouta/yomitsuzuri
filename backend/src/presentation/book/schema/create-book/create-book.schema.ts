@@ -11,7 +11,7 @@ export const CreateBookSchema = z.object({
   publishedDate: z.string().nullish(),
   currentPage: z.number().nullish(),
   memo: z.string().nullish(),
-  icon: z.number(),
+  iconId: z.number(),
 });
 
 export type CreateBookSchemaType = z.infer<typeof CreateBookSchema>;

@@ -14,7 +14,8 @@ export type UpdateBookInputError =
     | { field: "iconId"; error: IconIdError }
     | { field: `works.${number}.title`; error: WorkTitleError }
     | { field: `works.${number}.sort`; error: WorkSortError }
-    | { field: `works.${number}.memo`; error: WorkMemoError };
+    | { field: `works.${number}.memo`; error: WorkMemoError }
+    | { field: `works.${number}.iconId`; error: IconIdError };
 
 export type UpdateBookError =
     | { type: "INVALID_INPUT"; errors: UpdateBookInputError[] }
@@ -29,6 +30,7 @@ type UpdateWorkBody = {
     title: string;
     sort: number;
     memo?: string | null;
+    iconId: number;
     deleteFlg: boolean;
 };
 
@@ -59,16 +61,17 @@ function createWorkParam(work: UpdateWorkBody, index: number) {
         WorkTitle.create(work.title).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.title`, error })),
         WorkSort.create(work.sort).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.sort`, error })),
         WorkMemo.create(work.memo).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.memo`, error })),
+        IconId.create(work.iconId).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.iconId`, error })),
     ]);
     if (input.isErr()) {
         return err(input.error);
     }
-    const [title, sort, memo] = input.value;
+    const [title, sort, memo, iconId] = input.value;
 
     // 空の作品IDは新規の作品として扱う。形式は判定せず、存在しない ID は集約の作品の照合で検出する
     const id = work.id ? WorkId.of(work.id) : null;
 
-    return ok({ id, title, memo, sort, deleteFlg: work.deleteFlg });
+    return ok({ id, title, memo, sort, iconId, deleteFlg: work.deleteFlg });
 }
 
 export class UpdateBookUsecase {
@@ -85,7 +88,7 @@ export class UpdateBookUsecase {
      * @param bookId 更新対象の書籍ID
      * @param body 書籍・作品の更新内容
      * @returns 成功時は更新後の書籍と作品の DTO（削除済みの作品は含まない）。
-     * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・書籍が存在しない・アイコンが無効・読書状況が無効・同名書籍が存在する（自身を除く）・
+     * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・書籍が存在しない・書籍または作品のアイコンが無効・読書状況が無効・同名書籍が存在する（自身を除く）・
      * 作品の指定に誤りがある・作品の指定が既存の作品と一致しない・作品が不変条件に違反する場合はエラー（いずれも保存しない）
      * @throws bookId が空の場合（DB は問い合わせない）
      */
@@ -115,8 +118,9 @@ export class UpdateBookUsecase {
             return err({ type: "NOT_FOUND" });
         }
 
-        // アイコンチェック
-        if (!(await this.iconValidityService.isValid(iconId))) {
+        // アイコンチェック（書籍と作品のアイコンをまとめて確認する）
+        const invalidIconIds = await this.iconValidityService.findInvalid([iconId, ...works.map((work) => work.iconId)]);
+        if (invalidIconIds.length > 0) {
             return err({ type: "INVALID_ICON" });
         }
 

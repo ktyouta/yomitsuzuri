@@ -6,7 +6,7 @@ const VALID_BODY = {
   publishedDate: "2005-08",
   currentPage: 120,
   memo: "メモ",
-  icon: 2,
+  iconId: 2,
 };
 
 /**
@@ -14,7 +14,7 @@ const VALID_BODY = {
  */
 describe("CreateBookSchema", () => {
   it("タイトルとアイコンのみの場合、通ること", () => {
-    const result = CreateBookSchema.safeParse({ title: "容疑者Xの献身", icon: 1 });
+    const result = CreateBookSchema.safeParse({ title: "容疑者Xの献身", iconId: 1 });
     expect(result.success).toBe(true);
   });
 
@@ -29,16 +29,16 @@ describe("CreateBookSchema", () => {
   });
 
   it("値の制約を満たさなくても、型が正しければ通ること（制約はドメインで判定する）", () => {
-    const result = CreateBookSchema.safeParse({ ...VALID_BODY, title: "", currentPage: -1, icon: 0 });
+    const result = CreateBookSchema.safeParse({ ...VALID_BODY, title: "", currentPage: -1, iconId: 0 });
     expect(result.success).toBe(true);
   });
 
   it("タイトルがない場合、エラーになること", () => {
-    const result = CreateBookSchema.safeParse({ icon: 1 });
+    const result = CreateBookSchema.safeParse({ iconId: 1 });
     expect(result.success).toBe(false);
   });
 
-  it("アイコンがない場合、エラーになること", () => {
+  it("アイコンIDがない場合、エラーになること", () => {
     const result = CreateBookSchema.safeParse({ title: "容疑者Xの献身" });
     expect(result.success).toBe(false);
   });
@@ -48,7 +48,7 @@ describe("CreateBookSchema", () => {
     { publishedDate: 2005 },
     { currentPage: "120" },
     { memo: 1 },
-    { icon: "2" },
+    { iconId: "2" },
   ])("型が異なる場合（%j）、エラーになること", (override) => {
     const result = CreateBookSchema.safeParse({ ...VALID_BODY, ...override });
     expect(result.success).toBe(false);

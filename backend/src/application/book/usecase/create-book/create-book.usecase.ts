@@ -12,7 +12,7 @@ export type CreateBookInputError =
   | { field: "publishedDate"; error: PublishedDateError }
   | { field: "currentPage"; error: CurrentPageError }
   | { field: "memo"; error: BookMemoError }
-  | { field: "icon"; error: IconIdError };
+  | { field: "iconId"; error: IconIdError };
 
 export type CreateBookError =
   | { type: "INVALID_INPUT"; errors: CreateBookInputError[] }
@@ -24,7 +24,7 @@ type CreateBookBody = {
   publishedDate?: string | null;
   currentPage?: number | null;
   memo?: string | null;
-  icon: number;
+  iconId: number;
 };
 
 type PropsType = {
@@ -43,7 +43,7 @@ export class CreateBookUsecase {
 
   /**
    * 書籍作成
-   * 書籍タイトルと同名の作品を1件、あわせて作成する。
+   * 書籍タイトルと同名・書籍と同じアイコンの作品を1件、あわせて作成する。
    * @param userId 書籍を所有するユーザーID
    * @param body 書籍の登録内容
    * @returns 成功時は作成した書籍と作品の DTO。
@@ -57,7 +57,7 @@ export class CreateBookUsecase {
       PublishedDate.create(body.publishedDate).mapErr((error): CreateBookInputError => ({ field: "publishedDate", error })),
       CurrentPage.create(body.currentPage).mapErr((error): CreateBookInputError => ({ field: "currentPage", error })),
       BookMemo.create(body.memo).mapErr((error): CreateBookInputError => ({ field: "memo", error })),
-      IconId.create(body.icon).mapErr((error): CreateBookInputError => ({ field: "icon", error })),
+      IconId.create(body.iconId).mapErr((error): CreateBookInputError => ({ field: "iconId", error })),
     ]);
     if (input.isErr()) {
       return err({ type: "INVALID_INPUT", errors: input.error });

@@ -8,6 +8,7 @@ const UpdateWorkSchema = z.object({
   title: z.string(),
   sort: z.number(),
   memo: z.string().nullish(),
+  iconId: z.number(),
   deleteFlg: z.boolean(),
 });
 

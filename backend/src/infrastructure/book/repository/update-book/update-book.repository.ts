@@ -45,6 +45,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
         title: workTransaction.title,
         sortOrder: workTransaction.sortOrder,
         memo: workTransaction.memo,
+        iconId: workTransaction.iconId,
         deleteFlg: workTransaction.deleteFlg,
       })
       .from(workTransaction)
@@ -66,6 +67,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
           WorkTitle.of(e.title),
           WorkSort.of(e.sortOrder),
           WorkMemo.of(e.memo),
+          IconId.of(e.iconId),
           e.deleteFlg,
         )
       ),
@@ -104,6 +106,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
             title: e.title,
             sortOrder: e.sort,
             memo: e.memo,
+            iconId: e.iconId,
             deleteFlg: e.deleteFlg,
             createdAt: now,
             updatedAt: now,
@@ -114,6 +117,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
               title: e.title,
               sortOrder: e.sort,
               memo: e.memo,
+              iconId: e.iconId,
               deleteFlg: e.deleteFlg,
               updatedAt: now,
             },

@@ -13,6 +13,7 @@ export type UpdateBookResultType = {
     title: string;
     sort: number;
     memo: string | null;
+    iconId: number;
   }[];
 };
 
@@ -46,6 +47,7 @@ export class UpdateBookResultDto {
           title: e.title,
           sort: e.sort,
           memo: e.memo,
+          iconId: e.iconId,
         })),
     };
   }

@@ -11,7 +11,7 @@ const BODY = {
   publishedDate: "2005-08",
   currentPage: 120,
   memo: "メモ",
-  icon: 2,
+  iconId: 2,
 };
 
 type Options = {
@@ -27,7 +27,7 @@ function createUsecase({ iconExists = true, duplicatedIds = [] }: Options = {}) 
     findBook: vi.fn<IBookTitleUniquenessRepository["findBook"]>().mockResolvedValue(duplicatedIds),
   } satisfies IBookTitleUniquenessRepository;
   const iconValidityRepository = {
-    exists: vi.fn<IIconValidityRepository["exists"]>().mockResolvedValue(iconExists),
+    findValidIds: vi.fn<IIconValidityRepository["findValidIds"]>().mockImplementation(async (iconIds) => iconExists ? iconIds.map((e) => e.value) : []),
   } satisfies IIconValidityRepository;
 
   const usecase = new CreateBookUsecase(
@@ -40,7 +40,7 @@ function createUsecase({ iconExists = true, duplicatedIds = [] }: Options = {}) 
 }
 
 describe("CreateBookUsecase", () => {
-  it("書籍と、書籍タイトルと同名の作品1件を保存し、その内容を返すこと", async () => {
+  it("書籍と、書籍タイトル・アイコンを引き継いだ作品1件を保存し、その内容を返すこと", async () => {
     const { usecase, createBookRepository } = createUsecase();
 
     const result = await usecase.execute({ userId: USER_ID, body: BODY });
@@ -63,6 +63,7 @@ describe("CreateBookUsecase", () => {
           title: "容疑者Xの献身",
           sort: 1,
           memo: null,
+          iconId: 2,
           deleteFlg: false,
         },
       ],
@@ -79,7 +80,7 @@ describe("CreateBookUsecase", () => {
   it("出版日・現在のページ数・メモが未指定の場合、null で保存されること", async () => {
     const { usecase, createBookRepository } = createUsecase();
 
-    await usecase.execute({ userId: USER_ID, body: { title: "容疑者Xの献身", icon: 1 } });
+    await usecase.execute({ userId: USER_ID, body: { title: "容疑者Xの献身", iconId: 1 } });
 
     const snapshot = createBookRepository.createBook.mock.calls[0]?.[0].toSnapshot();
     expect(snapshot?.publishedDate).toBeNull();
@@ -125,7 +126,7 @@ describe("CreateBookUsecase", () => {
         publishedDate: "2024-04-31",
         currentPage: -1,
         memo: "あ".repeat(2001),
-        icon: 0,
+        iconId: 0,
       },
     });
 
@@ -136,10 +137,10 @@ describe("CreateBookUsecase", () => {
         { field: "publishedDate", error: { type: "PUBLISHED_DATE_NOT_EXIST" } },
         { field: "currentPage", error: { type: "CURRENT_PAGE_INVALID", min: 0 } },
         { field: "memo", error: { type: "BOOK_MEMO_TOO_LONG", max: 2000 } },
-        { field: "icon", error: { type: "ICON_ID_INVALID" } },
+        { field: "iconId", error: { type: "ICON_ID_INVALID" } },
       ],
     });
-    expect(iconValidityRepository.exists).not.toHaveBeenCalled();
+    expect(iconValidityRepository.findValidIds).not.toHaveBeenCalled();
     expect(uniquenessRepository.findBook).not.toHaveBeenCalled();
     expect(createBookRepository.createBook).not.toHaveBeenCalled();
   });

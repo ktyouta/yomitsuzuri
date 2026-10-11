@@ -1,4 +1,4 @@
-import type { WorkId, WorkMemo, WorkSort, WorkTitle } from "../../value-object";
+import type { IconId, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../value-object";
 
 export class WorkEntity {
 
@@ -6,6 +6,7 @@ export class WorkEntity {
         private readonly _title: WorkTitle,
         private readonly _sort: WorkSort,
         private readonly _memo: WorkMemo,
+        private readonly _iconId: IconId,
         private readonly _deleteFlg: boolean,
     ) { }
 
@@ -23,6 +24,10 @@ export class WorkEntity {
 
     get memo() {
         return this._memo.value;
+    }
+
+    get iconId() {
+        return this._iconId.value;
     }
 
     get deleteFlg() {

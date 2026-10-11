@@ -7,12 +7,13 @@ export type CreateBookResultType = {
   readingStatusId: number;
   currentPage: number | null;
   memo: string | null;
-  icon: number;
+  iconId: number;
   works: {
     id: string;
     title: string;
     sort: number;
     memo: string | null;
+    iconId: number;
   }[];
 };
 
@@ -36,12 +37,13 @@ export class CreateBookResultDto {
       readingStatusId: snapshot.readingStatusId,
       currentPage: snapshot.currentPage,
       memo: snapshot.memo,
-      icon: snapshot.iconId,
+      iconId: snapshot.iconId,
       works: snapshot.works.map((e) => ({
         id: e.id,
         title: e.title,
         sort: e.sort,
         memo: e.memo,
+        iconId: e.iconId,
       })),
     };
   }

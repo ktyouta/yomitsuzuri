@@ -5,9 +5,9 @@ import type { IconId } from "../../value-object";
  */
 export interface IIconValidityRepository {
   /**
-   * 指定したアイコンが icon_master に存在し、有効（未削除）かを判定する
-   * @param iconId アイコンID
-   * @returns 存在し未削除の場合 true
+   * 指定したアイコンのうち、icon_master に存在し有効（未削除）なものの ID を取得する
+   * @param iconIds アイコンID（重複なし）
+   * @returns 存在し未削除のアイコンの ID
    */
-  exists(iconId: IconId): Promise<boolean>;
+  findValidIds(iconIds: IconId[]): Promise<number[]>;
 }

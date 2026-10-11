@@ -20,7 +20,7 @@ const BOOK: BookItem = {
 };
 
 const WORKS: WorkItem[] = [
-  { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "テスト書籍", sort: 1, memo: null },
+  { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "テスト書籍", sort: 1, memo: null, iconId: 1, icon: "📘" },
 ];
 
 function createRepository(book: BookItem | null, works: WorkItem[]) {

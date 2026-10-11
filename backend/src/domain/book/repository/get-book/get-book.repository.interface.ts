@@ -27,6 +27,9 @@ export type WorkItem = {
   title: string;
   sort: number;
   memo: string | null;
+  iconId: number;
+  // 論理削除されたアイコンの場合は null
+  icon: string | null;
 };
 
 /**

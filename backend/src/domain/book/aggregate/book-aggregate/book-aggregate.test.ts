@@ -11,7 +11,7 @@ const WORK_ID_2 = "01ARZ3NDEKTSV4RRFFQ69G5FAY";
 const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
 describe("BookAggregate", () => {
-  it("generate で作成した集約のスナップショットが、渡した値と初期値を返すこと", () => {
+  it("generate で作成した集約のスナップショットが、渡した値と初期値を返すこと（自動作成する作品は書籍のタイトル・アイコンを引き継ぐ）", () => {
     const book = BookAggregate.generate({
       userId: UserId.of(USER_ID),
       title: BookTitle.of("容疑者Xの献身"),
@@ -39,6 +39,7 @@ describe("BookAggregate", () => {
           title: "容疑者Xの献身",
           sort: 1,
           memo: null,
+          iconId: 2,
           deleteFlg: false,
         },
       ],
@@ -89,8 +90,8 @@ describe("BookAggregate", () => {
       iconId: IconId.of(2),
       deleteFlg: true,
       works: [
-        new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of("作品メモ"), false),
-        new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), true),
+        new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of("作品メモ"), IconId.of(4), false),
+        new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), IconId.of(5), true),
       ],
     });
 
@@ -107,8 +108,8 @@ describe("BookAggregate", () => {
       iconId: 2,
       deleteFlg: true,
       works: [
-        { id: WORK_ID_1, title: "作品1", sort: 1, memo: "作品メモ", deleteFlg: false },
-        { id: WORK_ID_2, title: "作品2", sort: 2, memo: null, deleteFlg: true },
+        { id: WORK_ID_1, title: "作品1", sort: 1, memo: "作品メモ", iconId: 4, deleteFlg: false },
+        { id: WORK_ID_2, title: "作品2", sort: 2, memo: null, iconId: 5, deleteFlg: true },
       ],
     });
   });
@@ -126,8 +127,8 @@ describe("BookAggregate", () => {
       iconId: IconId.of(1),
       deleteFlg,
       works: [
-        new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), false),
-        new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), false),
+        new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), IconId.of(1), false),
+        new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), IconId.of(1), false),
       ],
     });
   }
@@ -171,12 +172,13 @@ describe("BookAggregate", () => {
   describe("update", () => {
     const WORK_ID_3 = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
 
-    function workParam(id: string | null, title: string, sort: number, deleteFlg = false) {
+    function workParam(id: string | null, title: string, sort: number, deleteFlg = false, iconId = 1) {
       return {
         id: id ? WorkId.of(id) : null,
         title: WorkTitle.of(title),
         memo: WorkMemo.of(null),
         sort: WorkSort.of(sort),
+        iconId: IconId.of(iconId),
         deleteFlg,
       };
     }
@@ -199,9 +201,9 @@ describe("BookAggregate", () => {
       const before = book.toSnapshot();
 
       const result = book.update(updateParam([
-        workParam(WORK_ID_1, "作品1改", 2),
+        workParam(WORK_ID_1, "作品1改", 2, false, 4),
         workParam(WORK_ID_2, "作品2", 1, true),
-        workParam(null, "作品3", 1),
+        workParam(null, "作品3", 1, false, 6),
       ]));
 
       expect(result._unsafeUnwrap().toSnapshot()).toEqual({
@@ -215,9 +217,9 @@ describe("BookAggregate", () => {
         iconId: 3,
         deleteFlg: false,
         works: [
-          { id: WORK_ID_1, title: "作品1改", sort: 2, memo: null, deleteFlg: false },
-          { id: WORK_ID_2, title: "作品2", sort: 1, memo: null, deleteFlg: true },
-          { id: expect.stringMatching(ULID_PATTERN), title: "作品3", sort: 1, memo: null, deleteFlg: false },
+          { id: WORK_ID_1, title: "作品1改", sort: 2, memo: null, iconId: 4, deleteFlg: false },
+          { id: WORK_ID_2, title: "作品2", sort: 1, memo: null, iconId: 1, deleteFlg: true },
+          { id: expect.stringMatching(ULID_PATTERN), title: "作品3", sort: 1, memo: null, iconId: 6, deleteFlg: false },
         ],
       });
       expect(book.toSnapshot()).toEqual(before);

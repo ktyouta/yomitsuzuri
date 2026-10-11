@@ -24,13 +24,14 @@ describe("CreateBookResultDto", () => {
       readingStatusId: 1,
       currentPage: 120,
       memo: "メモ",
-      icon: 2,
+      iconId: 2,
       works: [
         {
           id: snapshot.works[0]?.id,
           title: "容疑者Xの献身",
           sort: 1,
           memo: null,
+          iconId: 2,
         },
       ],
     });

@@ -53,10 +53,20 @@ export class GetBookRepository implements IGetBookRepository {
         title: workTransaction.title,
         sort: workTransaction.sortOrder,
         memo: workTransaction.memo,
+        iconId: workTransaction.iconId,
+        icon: iconMaster.emoji,
       })
       .from(workTransaction)
       // 他ユーザー・論理削除済みの書籍の作品を返さないため、書籍側の条件で絞り込む
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
+      // 論理削除されたアイコンは null として返し、表示側でデフォルトアイコンに差し替える
+      .leftJoin(
+        iconMaster,
+        and(
+          eq(workTransaction.iconId, iconMaster.id),
+          eq(iconMaster.deleteFlg, false)
+        )
+      )
       .where(and(
         this.buildBookCondition(userId, bookId),
         eq(workTransaction.deleteFlg, false)

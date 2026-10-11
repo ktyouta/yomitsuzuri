@@ -30,6 +30,7 @@ type UpdateWorkParamType = {
     title: WorkTitle;
     memo: WorkMemo;
     sort: WorkSort;
+    iconId: IconId;
     deleteFlg: boolean;
 }
 
@@ -75,6 +76,7 @@ type BookSnapshotType = {
         title: string;
         sort: number;
         memo: string | null;
+        iconId: number;
         deleteFlg: boolean;
     }[];
 }
@@ -103,7 +105,7 @@ export class BookAggregate {
 
     /**
      * 新規登録する書籍集約を作成する
-     * 書籍タイトルと同名の作品を1件、表示順の先頭として自動で作成する
+     * 書籍タイトルと同名・書籍と同じアイコンの作品を1件、表示順の先頭として自動で作成する（以降は書籍と連動しない）
      * @param params 書籍の登録内容
      * @returns 読書状況が初期値（未読）の書籍集約
      */
@@ -123,6 +125,7 @@ export class BookAggregate {
                 WorkTitle.initial(params.title),
                 WorkSort.first(),
                 WorkMemo.of(null),
+                params.iconId,
                 false,
             )]
         );
@@ -205,6 +208,7 @@ export class BookAggregate {
             work.title,
             work.sort,
             work.memo,
+            work.iconId,
             work.deleteFlg,
         )));
     }
@@ -326,6 +330,7 @@ export class BookAggregate {
                 title: work.title,
                 sort: work.sort,
                 memo: work.memo,
+                iconId: work.iconId,
                 deleteFlg: work.deleteFlg,
             })),
         };

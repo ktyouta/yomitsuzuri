@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { UpdateBookSchema } from "..";
 
-const WORK = { id: "01ARZ3NDEKTSV4RRFFQ69G5FAX", title: "作品1", sort: 1, memo: "メモ", deleteFlg: false };
+const WORK = { id: "01ARZ3NDEKTSV4RRFFQ69G5FAX", title: "作品1", sort: 1, memo: "メモ", iconId: 3, deleteFlg: false };
 
 const VALID_BODY = {
   title: "容疑者Xの献身",
@@ -23,7 +23,7 @@ describe("UpdateBookSchema", () => {
   });
 
   it("作品IDが null（新規の作品）・作品メモが未指定の場合、通ること", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ id: null, title: "作品1", sort: 1, deleteFlg: false }] });
+    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ id: null, title: "作品1", sort: 1, iconId: 3, deleteFlg: false }] });
     expect(result.success).toBe(true);
   });
 
@@ -56,7 +56,7 @@ describe("UpdateBookSchema", () => {
     expect(UpdateBookSchema.safeParse(body).success).toBe(false);
   });
 
-  it.each(["id", "title", "sort", "deleteFlg"])("作品の %s がない場合、エラーになること", (key) => {
+  it.each(["id", "title", "sort", "iconId", "deleteFlg"])("作品の %s がない場合、エラーになること", (key) => {
     const work: Record<string, unknown> = { ...WORK };
     delete work[key];
     expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [work] }).success).toBe(false);
@@ -80,6 +80,7 @@ describe("UpdateBookSchema", () => {
     { title: 1 },
     { sort: "1" },
     { memo: 1 },
+    { iconId: "3" },
     { deleteFlg: "false" },
   ])("作品の型が異なる場合（%j）、エラーになること", (override) => {
     const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, ...override }] });

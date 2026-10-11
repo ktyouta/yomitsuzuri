@@ -53,7 +53,7 @@ const updateBook = new Hono<AppEnv>().put(
           case "DUPLICATE_TITLE":
             return c.json({ message: "同名の書籍が既に登録されています。" }, HTTP_STATUS.CONFLICT);
           case "INVALID_ICON":
-            return c.json({ message: "入力エラー", data: [{ field: "iconId", message: "指定されたアイコンは存在しません。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+            return c.json({ message: "指定されたアイコンは存在しません。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           case "INVALID_READING_STATUS":
             return c.json({ message: "入力エラー", data: [{ field: "readingStatus", message: "指定された読書状況は存在しません。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           case "WORKS_MISMATCH":

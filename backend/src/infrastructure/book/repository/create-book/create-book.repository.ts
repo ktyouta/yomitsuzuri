@@ -40,6 +40,7 @@ export class CreateBookRepository implements ICreateBookRepository {
           title: e.title,
           sortOrder: e.sort,
           memo: e.memo,
+          iconId: e.iconId,
           deleteFlg: e.deleteFlg,
           createdAt: now,
           updatedAt: now,

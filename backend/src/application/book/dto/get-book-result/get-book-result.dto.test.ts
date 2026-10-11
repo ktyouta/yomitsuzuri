@@ -17,8 +17,8 @@ describe("GetBookResultDto", () => {
       updatedAt: "2026-10-01T00:00:00.000Z",
     };
     const works: WorkItem[] = [
-      { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "作品1", sort: 1, memo: null },
-      { id: "01BX5ZZKBKACTAV9WEVGEMMVS1", title: "作品2", sort: 2, memo: "作品メモ" },
+      { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "作品1", sort: 1, memo: null, iconId: 4, icon: "📗" },
+      { id: "01BX5ZZKBKACTAV9WEVGEMMVS1", title: "作品2", sort: 2, memo: "作品メモ", iconId: 5, icon: null },
     ];
 
     const dto = new GetBookResultDto(book, works);
@@ -35,8 +35,8 @@ describe("GetBookResultDto", () => {
       icon: "📕",
       updatedAt: "2026-10-01T00:00:00.000Z",
       works: [
-        { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "作品1", sort: 1, memo: null },
-        { id: "01BX5ZZKBKACTAV9WEVGEMMVS1", title: "作品2", sort: 2, memo: "作品メモ" },
+        { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "作品1", sort: 1, memo: null, iconId: 4, icon: "📗" },
+        { id: "01BX5ZZKBKACTAV9WEVGEMMVS1", title: "作品2", sort: 2, memo: "作品メモ", iconId: 5, icon: null },
       ],
     });
   });

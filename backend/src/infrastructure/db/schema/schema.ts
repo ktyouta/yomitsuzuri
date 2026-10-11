@@ -100,6 +100,7 @@ export const workTransaction = sqliteTable(
     title: text("title").notNull(),
     sortOrder: integer("sort_order").notNull(),
     memo: text("memo"),
+    iconId: integer("icon_id").notNull().default(1).references(() => iconMaster.id, { onDelete: "restrict" }),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),

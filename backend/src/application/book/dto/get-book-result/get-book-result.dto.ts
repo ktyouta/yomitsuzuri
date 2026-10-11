@@ -16,6 +16,8 @@ export type GetBookResultType = {
     title: string;
     sort: number;
     memo: string | null;
+    iconId: number;
+    icon: string | null;
   }[];
 };
 
@@ -46,6 +48,8 @@ export class GetBookResultDto {
         title: e.title,
         sort: e.sort,
         memo: e.memo,
+        iconId: e.iconId,
+        icon: e.icon,
       })),
     };
   }

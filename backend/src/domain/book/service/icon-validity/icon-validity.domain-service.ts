@@ -14,6 +14,18 @@ export class IconValidityDomainService {
      * @returns 存在し未削除の場合 true
      */
     async isValid(iconId: IconId): Promise<boolean> {
-        return this.iconValidityRepository.exists(iconId);
+        return (await this.findInvalid([iconId])).length === 0;
+    }
+
+    /**
+     * 指定したアイコンのうち、icon_master に存在しない・削除済みのものを抽出する（問い合わせは1回）
+     * @param iconIds アイコンID（重複を含んでもよい）
+     * @returns 無効なアイコンID（同じ ID は1件にまとめる。すべて有効なら空配列）
+     */
+    async findInvalid(iconIds: IconId[]): Promise<IconId[]> {
+        const uniqueIconIds = [...new Map(iconIds.map((e) => [e.value, e])).values()];
+        const validIds = new Set(await this.iconValidityRepository.findValidIds(uniqueIconIds));
+
+        return uniqueIconIds.filter((e) => !validIds.has(e.value));
     }
 }
