@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { BookMemoError, BookTitleError, BookTitleUniquenessDomainService, CurrentPageError, ICreateBookRepository, IconIdError, IconValidityDomainService, PublishedDateError } from "../../../../domain/book";
+import type { BookMemoError, BookTitleError, BookTitleUniquenessDomainService, CurrentPageError, IconIdError, IconValidityDomainService, ICreateBookRepository, PublishedDateError } from "../../../../domain/book";
 import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import { CreateBookResultDto } from "../../dto";
@@ -51,7 +51,7 @@ export class CreateBookUsecase {
    */
   async execute({ userId, body }: PropsType): Promise<Result<CreateBookResultDto, CreateBookError>> {
 
-    // 入力値の制約チェック（違反は項目名を付けてすべて収集する）
+    // 入力値の制約チェック
     const input = Result.combineWithAllErrors([
       BookTitle.create(body.title).mapErr((error): CreateBookInputError => ({ field: "title", error })),
       PublishedDate.create(body.publishedDate).mapErr((error): CreateBookInputError => ({ field: "publishedDate", error })),

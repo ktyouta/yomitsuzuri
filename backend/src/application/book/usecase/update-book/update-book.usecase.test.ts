@@ -38,8 +38,8 @@ function createBook(): BookAggregate {
     iconId: IconId.of(1),
     deleteFlg: false,
     works: [
-      new WorkEntity(WorkId.of(WORK_ID_1), new WorkTitle("作品1"), WorkSort.of(1), new WorkMemo(null), false),
-      new WorkEntity(WorkId.of(WORK_ID_2), new WorkTitle("作品2"), WorkSort.of(2), new WorkMemo(null), false),
+      new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), false),
+      new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), false),
     ],
   });
 }
@@ -73,14 +73,14 @@ function createUsecase({ book = createBook(), iconExists = true, readingStatusEx
     new ReadingStatusValidityDomainService(readingStatusValidityRepository),
   );
 
-  return { usecase, updateBookRepository, uniquenessRepository };
+  return { usecase, updateBookRepository, uniquenessRepository, iconValidityRepository, readingStatusValidityRepository };
 }
 
 describe("UpdateBookUsecase", () => {
   it("書籍と作品を更新内容で保存し、削除されていない作品だけを含む内容を返すこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
-    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: BODY });
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(updateBookRepository.updateBook).toHaveBeenCalledTimes(1);
     const savedBook = updateBookRepository.updateBook.mock.calls[0]?.[0];
@@ -110,7 +110,7 @@ describe("UpdateBookUsecase", () => {
   it("指定したユーザー・書籍IDで更新対象を取得すること", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
-    await usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: BODY });
+    await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(updateBookRepository.findBook).toHaveBeenCalledWith(USER_ID, BOOK_ID);
   });
@@ -118,7 +118,7 @@ describe("UpdateBookUsecase", () => {
   it("更新対象の書籍が存在しない場合、NOT_FOUND を返し、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase({ book: null });
 
-    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: BODY });
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "NOT_FOUND" });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
@@ -127,7 +127,7 @@ describe("UpdateBookUsecase", () => {
   it("アイコンが無効な場合、INVALID_ICON を返し、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase({ iconExists: false });
 
-    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: BODY });
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "INVALID_ICON" });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
@@ -136,7 +136,7 @@ describe("UpdateBookUsecase", () => {
   it("読書状況が無効な場合、INVALID_READING_STATUS を返し、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase({ readingStatusExists: false });
 
-    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: BODY });
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "INVALID_READING_STATUS" });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
@@ -145,7 +145,7 @@ describe("UpdateBookUsecase", () => {
   it("同名の書籍が存在する場合、DUPLICATE_TITLE を返し、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVRZ" }] });
 
-    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: BODY });
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_TITLE" });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
@@ -154,11 +154,11 @@ describe("UpdateBookUsecase", () => {
   it("更新対象の書籍自身を除外し、更新後のタイトルで同名書籍を問い合わせること", async () => {
     const { usecase, uniquenessRepository } = createUsecase();
 
-    await usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: { ...BODY, title: "  容疑者Xの献身  " } });
+    await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: { ...BODY, title: "  容疑者Xの献身  " } });
 
     const [userId, bookId, bookTitle] = uniquenessRepository.findBook.mock.calls[0] ?? [];
     expect(userId).toBe(USER_ID);
-    expect(bookId).toBe(BOOK_ID);
+    expect(bookId?.value).toBe(BOOK_ID.value);
     expect(bookTitle?.value).toBe("容疑者Xの献身");
   });
 
@@ -167,7 +167,7 @@ describe("UpdateBookUsecase", () => {
 
     const result = await usecase.execute({
       userId: USER_ID,
-      bookId: BOOK_ID,
+      bookId: BOOK_ID.value,
       body: {
         ...BODY,
         works: [
@@ -189,7 +189,7 @@ describe("UpdateBookUsecase", () => {
 
     const result = await usecase.execute({
       userId: USER_ID,
-      bookId: BOOK_ID,
+      bookId: BOOK_ID.value,
       body: { ...BODY, works: [{ id: WORK_ID_1, title: "作品1", sort: 1, memo: "", deleteFlg: false }] },
     });
 
@@ -197,12 +197,12 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
-  it("作品 ID が重複している場合、例外になり、保存しないこと", async () => {
+  it("作品 ID が重複している場合、INVALID_WORKS で DUPLICATE_WORK_ID を返し、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
-    await expect(usecase.execute({
+    const result = await usecase.execute({
       userId: USER_ID,
-      bookId: BOOK_ID,
+      bookId: BOOK_ID.value,
       body: {
         ...BODY,
         works: [
@@ -210,14 +210,67 @@ describe("UpdateBookUsecase", () => {
           { id: WORK_ID_1, title: "作品2", sort: 2, memo: "", deleteFlg: false },
         ],
       },
-    })).rejects.toThrow("作品IDが重複しています。");
+    });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "INVALID_WORKS", errors: [{ type: "DUPLICATE_WORK_ID", id: WORK_ID_1 }] });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
-  it("タイトルが空白のみの場合、例外になり、保存しないこと", async () => {
+  it("入力値が制約を満たさない場合、INVALID_INPUT で書籍・作品の違反をすべて項目名とともに返し、DB を問い合わせず保存しないこと", async () => {
+    const { usecase, updateBookRepository, uniquenessRepository, iconValidityRepository, readingStatusValidityRepository } = createUsecase();
+
+    const result = await usecase.execute({
+      userId: USER_ID,
+      bookId: BOOK_ID.value,
+      body: {
+        title: "   ",
+        publishedDate: "2024-04-31",
+        readingStatus: 0,
+        currentPage: -1,
+        memo: "あ".repeat(2001),
+        iconId: 0,
+        works: [
+          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", deleteFlg: false },
+          { id: "invalid", title: "", sort: 0, memo: "あ".repeat(2001), deleteFlg: false },
+        ],
+      },
+    });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [
+        { field: "title", error: { type: "BOOK_TITLE_EMPTY" } },
+        { field: "publishedDate", error: { type: "PUBLISHED_DATE_NOT_EXIST" } },
+        { field: "readingStatus", error: { type: "READING_STATUS_ID_INVALID" } },
+        { field: "currentPage", error: { type: "CURRENT_PAGE_INVALID", min: 0 } },
+        { field: "memo", error: { type: "BOOK_MEMO_TOO_LONG", max: 2000 } },
+        { field: "iconId", error: { type: "ICON_ID_INVALID" } },
+        { field: "works.1.id", error: { type: "WORK_ID_INVALID" } },
+        { field: "works.1.title", error: { type: "WORK_TITLE_EMPTY" } },
+        { field: "works.1.sort", error: { type: "WORK_SORT_INVALID", min: 1 } },
+        { field: "works.1.memo", error: { type: "WORK_MEMO_TOO_LONG", max: 2000 } },
+      ],
+    });
+    expect(updateBookRepository.findBook).not.toHaveBeenCalled();
+    expect(iconValidityRepository.exists).not.toHaveBeenCalled();
+    expect(readingStatusValidityRepository.exists).not.toHaveBeenCalled();
+    expect(uniquenessRepository.findBook).not.toHaveBeenCalled();
+    expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
+  });
+
+  it("作品の項目だけが制約を満たさない場合も、INVALID_INPUT を返すこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
-    await expect(usecase.execute({ userId: USER_ID, bookId: BOOK_ID, body: { ...BODY, title: "   " } })).rejects.toThrow("書籍タイトルが不正です。");
+    const result = await usecase.execute({
+      userId: USER_ID,
+      bookId: BOOK_ID.value,
+      body: { ...BODY, works: [{ id: null, title: "あ".repeat(101), sort: 1, deleteFlg: false }] },
+    });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [{ field: "works.0.title", error: { type: "WORK_TITLE_TOO_LONG", max: 100 } }],
+    });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 });

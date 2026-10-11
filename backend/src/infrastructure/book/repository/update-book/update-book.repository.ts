@@ -63,9 +63,9 @@ export class UpdateBookRepository implements IUpdateBookRepository {
       works: workResult.map((e) =>
         new WorkEntity(
           WorkId.of(e.id),
-          new WorkTitle(e.title),
+          WorkTitle.of(e.title),
           WorkSort.of(e.sortOrder),
-          new WorkMemo(e.memo),
+          WorkMemo.of(e.memo),
           e.deleteFlg,
         )
       ),

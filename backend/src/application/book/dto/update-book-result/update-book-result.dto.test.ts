@@ -16,9 +16,9 @@ describe("UpdateBookResultDto", () => {
       iconId: IconId.of(3),
       deleteFlg: false,
       works: [
-        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS0"), new WorkTitle("作品1"), WorkSort.of(1), new WorkMemo(null), false),
-        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS1"), new WorkTitle("作品2"), WorkSort.of(2), new WorkMemo("作品メモ"), false),
-        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS2"), new WorkTitle("削除済み作品"), WorkSort.of(3), new WorkMemo(null), true),
+        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS0"), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), false),
+        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS1"), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of("作品メモ"), false),
+        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS2"), WorkTitle.of("削除済み作品"), WorkSort.of(3), WorkMemo.of(null), true),
       ],
     });
 

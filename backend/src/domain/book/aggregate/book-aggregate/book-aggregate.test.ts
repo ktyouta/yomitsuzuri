@@ -89,8 +89,8 @@ describe("BookAggregate", () => {
       iconId: IconId.of(2),
       deleteFlg: true,
       works: [
-        new WorkEntity(WorkId.of(WORK_ID_1), new WorkTitle("作品1"), WorkSort.of(1), new WorkMemo("作品メモ"), false),
-        new WorkEntity(WorkId.of(WORK_ID_2), new WorkTitle("作品2"), WorkSort.of(2), new WorkMemo(null), true),
+        new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of("作品メモ"), false),
+        new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), true),
       ],
     });
 
@@ -126,8 +126,8 @@ describe("BookAggregate", () => {
       iconId: IconId.of(1),
       deleteFlg,
       works: [
-        new WorkEntity(WorkId.of(WORK_ID_1), new WorkTitle("作品1"), WorkSort.of(1), new WorkMemo(null), false),
-        new WorkEntity(WorkId.of(WORK_ID_2), new WorkTitle("作品2"), WorkSort.of(2), new WorkMemo(null), false),
+        new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), false),
+        new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), false),
       ],
     });
   }
@@ -174,8 +174,8 @@ describe("BookAggregate", () => {
     function workParam(id: string | null, title: string, sort: number, deleteFlg = false) {
       return {
         id: id ? WorkId.of(id) : null,
-        title: new WorkTitle(title),
-        memo: new WorkMemo(null),
+        title: WorkTitle.of(title),
+        memo: WorkMemo.of(null),
         sort: WorkSort.of(sort),
         deleteFlg,
       };
@@ -278,23 +278,43 @@ describe("BookAggregate", () => {
       expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
     });
 
-    it("同じ作品 ID が重複して含まれる場合は throw すること", () => {
+    it("同じ作品 ID が重複して含まれる場合は DUPLICATE_WORK_ID を返すこと（作品の不一致より優先する）", () => {
       const book = createBook();
 
-      expect(() => book.update(updateParam([
+      const result = book.update(updateParam([
         workParam(WORK_ID_1, "作品1", 1),
         workParam(WORK_ID_1, "作品1", 1),
-      ]))).toThrow();
+        workParam(WORK_ID_2, "作品2", 2),
+      ]));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "INVALID_WORKS", errors: [{ type: "DUPLICATE_WORK_ID", id: WORK_ID_1 }] });
     });
 
-    it("新規の作品が削除済みの場合は throw すること", () => {
+    it("新規の作品が削除済みの場合は NEW_WORK_DELETED を返すこと", () => {
       const book = createBook();
 
-      expect(() => book.update(updateParam([
+      const result = book.update(updateParam([
         workParam(WORK_ID_1, "作品1", 1),
         workParam(WORK_ID_2, "作品2", 2),
         workParam(null, "作品3", 3, true),
-      ]))).toThrow();
+      ]));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "INVALID_WORKS", errors: [{ type: "NEW_WORK_DELETED" }] });
+    });
+
+    it("作品 ID の重複と新規作品の削除済み指定が両方ある場合はすべて返すこと", () => {
+      const book = createBook();
+
+      const result = book.update(updateParam([
+        workParam(WORK_ID_1, "作品1", 1),
+        workParam(WORK_ID_1, "作品1", 1),
+        workParam(null, "作品3", 3, true),
+      ]));
+
+      expect(result._unsafeUnwrapErr()).toEqual({
+        type: "INVALID_WORKS",
+        errors: [{ type: "DUPLICATE_WORK_ID", id: WORK_ID_1 }, { type: "NEW_WORK_DELETED" }],
+      });
     });
 
     it("削除されていない作品が0件の場合は ALL_DELETED を返すこと", () => {

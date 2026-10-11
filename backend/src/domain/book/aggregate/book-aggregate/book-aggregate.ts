@@ -44,16 +44,18 @@ type UpdateBookParamType = {
 };
 
 /**
- * 作品情報更新時の不変条件の違反
+ * 作品情報更新時の作品の指定の誤り・不変条件の違反
  */
-export type BookValidationError = { type: "DUPLICATE_WORK_TITLE"; title: string }
+export type BookValidationError = { type: "DUPLICATE_WORK_ID"; id: string }
+    | { type: "NEW_WORK_DELETED" }
+    | { type: "DUPLICATE_WORK_TITLE"; title: string }
     | { type: "DUPLICATE_WORK_SORT"; sort: number }
     | { type: "ALL_DELETED"; };
 
 /**
  * 作品情報更新の失敗
  * - WORKS_MISMATCH: 作品の指定が既存の作品と一致しない（画面の表示後に作品が変更された等）
- * - INVALID_WORKS: 不変条件の違反
+ * - INVALID_WORKS: 作品の指定の誤り・不変条件の違反
  */
 export type UpdateWorkError = { type: "WORKS_MISMATCH" }
     | { type: "INVALID_WORKS"; errors: BookValidationError[] };
@@ -118,9 +120,9 @@ export class BookAggregate {
             false,
             [new WorkEntity(
                 WorkId.generate(),
-                new WorkTitle(params.title.value),
+                WorkTitle.initial(params.title),
                 WorkSort.first(),
-                new WorkMemo(null),
+                WorkMemo.of(null),
                 false,
             )]
         );
@@ -131,8 +133,10 @@ export class BookAggregate {
      *
      * 事前条件（満たさない場合は throw）:
      * - 書籍が削除されていないこと
-     * - 作品 ID が重複していないこと
-     * - 新規の作品（id が null）が削除済みでないこと
+     *
+     * 作品の指定の誤り（違反はすべて収集して INVALID_WORKS の err で返す。この場合は以降の判定を行わない）:
+     * - 作品 ID が重複していること
+     * - 新規の作品（id が null）が削除済みであること
      *
      * 作品の指定が既存の作品と一致しない場合（既存の作品が欠けている・既存にない ID が含まれる）は WORKS_MISMATCH を err で返す。
      * 画面の表示後に作品が変更された場合など、利用者が再読み込みで復帰できるため throw にしない。
@@ -146,7 +150,7 @@ export class BookAggregate {
      * - ok の場合: 書籍情報と作品一覧を引数の内容に置き換え、新規の作品に ID を採番した集約を返す
      * - いずれの場合も自身は変更しない
      * @param params 更新後の書籍情報と作品一覧（作品は削除済みを含む全件）
-     * @returns 成功時は更新後の書籍集約、作品の不一致・不変条件の違反時はその内容を持つ Result
+     * @returns 成功時は更新後の書籍集約、作品の指定の誤り・不一致・不変条件の違反時はその内容を持つ Result
      * @throws 事前条件を満たさない場合
      */
     update(params: UpdateBookParamType): Result<BookAggregate, UpdateWorkError> {
@@ -154,7 +158,12 @@ export class BookAggregate {
             throw new Error(`既に削除済みの書籍です。`);
         }
 
-        return this.replaceWorks(params.works).map((works) => new BookAggregate(
+        const works = this.replaceWorks(params.works);
+        if (works.isErr()) {
+            return err(works.error);
+        }
+
+        return ok(new BookAggregate(
             this._id,
             this._userId,
             params.title,
@@ -164,24 +173,21 @@ export class BookAggregate {
             params.memo,
             params.iconId,
             this._deleteFlg,
-            works,
+            works.value,
         ));
     }
 
     /**
      * 作品一覧を検証し、置き換え後の作品エンティティを作成する（新規の作品には ID を採番する）
-     * 事前条件・err の条件は update を参照
+     * err の条件は update を参照
      * @param works 更新後の作品一覧（削除済みを含む全件）
-     * @returns 成功時は置き換え後の作品エンティティ、作品の不一致・不変条件の違反時はその内容を持つ Result
-     * @throws 作品 ID が重複している・新規の作品が削除済みの場合
+     * @returns 成功時は置き換え後の作品エンティティ、作品の指定の誤り・不一致・不変条件の違反時はその内容を持つ Result
      */
     private replaceWorks(works: UpdateWorkParamType[]): Result<WorkEntity[], UpdateWorkError> {
-        if (BookAggregate.hasDuplicateWorkIds(works)) {
-            throw new Error(`作品IDが重複しています。`);
-        }
-
-        if (works.some((work) => !work.id && work.deleteFlg)) {
-            throw new Error(`新規の作品を削除済みにすることはできません。`);
+        // 不一致の判定は作品 ID の重複がないことを前提とするため、先に判定する
+        const specErrors = BookAggregate.collectWorkSpecErrors(works);
+        if (specErrors.length > 0) {
+            return err({ type: "INVALID_WORKS", errors: specErrors });
         }
 
         // 作品の存在チェック
@@ -224,13 +230,22 @@ export class BookAggregate {
     }
 
     /**
-     * 作品 ID（新規を除く）に重複があるか判定する
+     * 作品の指定の誤り（作品 ID の重複・新規の作品の削除済み指定）をすべて収集する
      * @param works 更新後の作品一覧
-     * @returns 重複がある場合は true
+     * @returns 誤りの一覧（誤りがなければ空配列）
      */
-    private static hasDuplicateWorkIds(works: UpdateWorkParamType[]): boolean {
-        const paramIds = works.flatMap((work) => work.id ? [work.id.value] : []);
-        return new Set(paramIds).size !== paramIds.length;
+    private static collectWorkSpecErrors(works: UpdateWorkParamType[]): BookValidationError[] {
+        const errors: BookValidationError[] = [];
+
+        for (const id of BookAggregate.findDuplicates(works.flatMap((work) => work.id ? [work.id.value] : []))) {
+            errors.push({ type: "DUPLICATE_WORK_ID", id });
+        }
+
+        if (works.some((work) => !work.id && work.deleteFlg)) {
+            errors.push({ type: "NEW_WORK_DELETED" });
+        }
+
+        return errors;
     }
 
     /**

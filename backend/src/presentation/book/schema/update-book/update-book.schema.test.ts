@@ -13,6 +13,9 @@ const VALID_BODY = {
   works: [WORK],
 };
 
+/**
+ * 型・構造のみを検証する（値の制約は値オブジェクト、作品の指定の妥当性は集約のテストで検証する）
+ */
 describe("UpdateBookSchema", () => {
   it("全項目を指定した場合、通ること", () => {
     const result = UpdateBookSchema.safeParse(VALID_BODY);
@@ -24,63 +27,62 @@ describe("UpdateBookSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("書籍項目は書籍作成と同じ規則で検証すること（タイトルが空白のみの場合、エラーになること）", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, title: "   " });
-    expect(result.success).toBe(false);
-  });
-
-  it.each([0, 1.5])("読書状況が%sの場合、エラーになること", (readingStatus) => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, readingStatus });
-    expect(result.success).toBe(false);
-  });
-
-  it.each([0, 1.5])("アイコンIDが%sの場合、エラーになること", (iconId) => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, iconId });
-    expect(result.success).toBe(false);
-  });
-
-  it("作品が0件の場合、エラーになること", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [] });
-    expect(result.success).toBe(false);
-  });
-
-  it("作品IDが ULID 形式でない場合、エラーになること", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, id: "invalid" }] });
-    expect(result.success).toBe(false);
-  });
-
-  it.each(["", "   ", "あ".repeat(101)])("作品タイトルが「%s」の場合、エラーになること", (title) => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, title }] });
-    expect(result.success).toBe(false);
-  });
-
-  it("作品タイトルが100文字の場合、通ること", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, title: "あ".repeat(100) }] });
+  it("出版日・現在のページ数・メモが null・未指定の場合、通ること", () => {
+    const { publishedDate: _publishedDate, ...body } = VALID_BODY;
+    const result = UpdateBookSchema.safeParse({ ...body, currentPage: null, memo: null });
     expect(result.success).toBe(true);
   });
 
-  it.each([0, 1.5])("表示順が%sの場合、エラーになること", (sort) => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, sort }] });
-    expect(result.success).toBe(false);
-  });
-
-  it("新規の作品（作品IDが null）が削除済みの場合、エラーになること", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [WORK, { ...WORK, id: null, deleteFlg: true }] });
-    expect(result.success).toBe(false);
-  });
-
-  it("作品IDが重複している場合、エラーになること", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [WORK, { ...WORK, title: "作品2", sort: 2 }] });
-    expect(result.success).toBe(false);
-  });
-
-  it("新規の作品が複数ある場合（作品IDが null 同士）、重複扱いにならないこと", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, id: null }, { ...WORK, id: null, title: "作品2", sort: 2 }] });
+  it("値の制約を満たさなくても、型が正しければ通ること（制約はドメインで判定する）", () => {
+    const result = UpdateBookSchema.safeParse({
+      ...VALID_BODY,
+      title: "",
+      readingStatus: 0,
+      iconId: 0,
+      works: [{ ...WORK, id: "invalid", title: "", sort: 0 }],
+    });
     expect(result.success).toBe(true);
   });
 
-  it("作品メモが2001文字の場合、エラーになること", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, memo: "あ".repeat(2001) }] });
+  it("作品の指定の妥当性（0件・ID重複・新規作品の削除済み指定）は判定しないこと（集約で判定する）", () => {
+    expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [] }).success).toBe(true);
+    expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [WORK, WORK] }).success).toBe(true);
+    expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, id: null, deleteFlg: true }] }).success).toBe(true);
+  });
+
+  it.each(["title", "readingStatus", "iconId", "works"])("%s がない場合、エラーになること", (key) => {
+    const body: Record<string, unknown> = { ...VALID_BODY };
+    delete body[key];
+    expect(UpdateBookSchema.safeParse(body).success).toBe(false);
+  });
+
+  it.each(["id", "title", "sort", "deleteFlg"])("作品の %s がない場合、エラーになること", (key) => {
+    const work: Record<string, unknown> = { ...WORK };
+    delete work[key];
+    expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [work] }).success).toBe(false);
+  });
+
+  it.each([
+    { title: 1 },
+    { publishedDate: 2005 },
+    { readingStatus: "2" },
+    { currentPage: "120" },
+    { memo: 1 },
+    { iconId: "2" },
+    { works: {} },
+  ])("型が異なる場合（%j）、エラーになること", (override) => {
+    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, ...override });
+    expect(result.success).toBe(false);
+  });
+
+  it.each([
+    { id: 1 },
+    { title: 1 },
+    { sort: "1" },
+    { memo: 1 },
+    { deleteFlg: "false" },
+  ])("作品の型が異なる場合（%j）、エラーになること", (override) => {
+    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, ...override }] });
     expect(result.success).toBe(false);
   });
 });

@@ -1,13 +1,12 @@
 import { z } from "zod";
 
-// ULID（Crockford's Base32 の26文字。I・L・O・U は含まない）
-const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
-
 /**
  * 書籍IDパラメータスキーマ
+ *
+ * 型のみを検証する。形式が不正・存在しない書籍IDは、書籍の取得で見つからないため 404 になる。
  */
 export const BookIdParamSchema = z.object({
-  bookId: z.string().regex(ULID_PATTERN, "書籍IDの形式が正しくありません"),
+  bookId: z.string(),
 });
 
 export type BookIdParamSchemaType = z.infer<typeof BookIdParamSchema>;

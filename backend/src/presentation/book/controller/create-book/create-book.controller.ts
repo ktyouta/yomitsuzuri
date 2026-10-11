@@ -1,42 +1,14 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { CreateBookUsecase, type CreateBookInputError } from "../../../../application";
+import { CreateBookUsecase } from "../../../../application";
 import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
 import { BookTitleUniquenessDomainService, IconValidityDomainService } from "../../../../domain";
 import { BookTitleUniquenessRepository, CreateBookRepository, IconValidityRepository } from "../../../../infrastructure";
 import { authMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
 import { formatZodErrors } from "../../../../util";
+import { toInputErrorMessage } from "../../error-message";
 import { CreateBookSchema } from "../../schema";
-
-/**
- * 入力値の制約違反を、利用者向けのメッセージに変換する
- * @param error 値オブジェクトが返した制約違反
- * @returns 利用者向けのメッセージ
- */
-function toInputErrorMessage(error: CreateBookInputError["error"]): string {
-  switch (error.type) {
-    case "BOOK_TITLE_EMPTY":
-      return "タイトルは必須です";
-    case "BOOK_TITLE_TOO_LONG":
-      return `タイトルは${error.max}文字以内で入力してください`;
-    case "PUBLISHED_DATE_INVALID_FORMAT":
-      return "出版日はYYYY / YYYY-MM / YYYY-MM-DDの形式で入力してください";
-    case "PUBLISHED_DATE_NOT_EXIST":
-      return "出版日は実在する日付を入力してください";
-    case "CURRENT_PAGE_INVALID":
-      return `現在のページ数は${error.min}以上の整数で入力してください`;
-    case "BOOK_MEMO_TOO_LONG":
-      return `メモは${error.max}文字以内で入力してください`;
-    case "ICON_ID_INVALID":
-      return "アイコンIDが不正です";
-    default: {
-      // 全てのエラー種別を網羅していることを型で保証する
-      error satisfies never;
-      return "入力内容が不正です";
-    }
-  }
-}
 
 /**
  * 書籍作成
