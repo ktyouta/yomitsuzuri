@@ -29,7 +29,7 @@
 - Usecase: `findBook` と `findWork` を `Promise.all` で並列実行する。書籍が null の場合は `err({ type: "NOT_FOUND" })`、それ以外は `ok(GetBookResultDto)` を返す
 - `BookItem` / `WorkItem` は表示用の読み取り結果のため、値オブジェクトで包まずプリミティブで返す
 - readingStatusLabel・icon: マスタを LEFT JOIN（結合条件に `delete_flg = false`）
-- bookId はパスパラメータを zod スキーマ `BookIdParamSchema`（`presentation/book/schema/book-id-param/`。ULID 形式でなければ拒否）で検証し、文字列のまま Usecase に渡す。Usecase が `BookId.of` で包む（Controller で VO を生成しないため）。検証エラーは既存エンドポイントに合わせて 422「バリデーションエラー」を返す（ユーザー指示で zod スキーマを追加）
+- bookId はパスパラメータを zod スキーマ `BookIdParamSchema`（`presentation/book/schema/book-id-param/`。型のみ）で受け取り、文字列のまま Usecase に渡す。Usecase が `BookId.of` で包む（Controller で VO を生成しないため）。形式が不正な書籍IDは書籍の取得で見つからないため 404 になる（当初は ULID 形式でなければ 422 としていたが、`docs/domain-input-validation/plan.md` の U8 で変更）
 
 ### 破綻ケース
 

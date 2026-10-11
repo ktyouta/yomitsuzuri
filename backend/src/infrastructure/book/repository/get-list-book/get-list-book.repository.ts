@@ -45,7 +45,7 @@ export class GetListBookRepository implements IGetListBookRepository {
       // 更新日時が同じ書籍の順序をページ間で固定するため id を第2キーにする
       .orderBy(desc(bookTransaction.updatedAt), desc(bookTransaction.id))
       .limit(pageSize)
-      .offset((pagination.page - 1) * pageSize);
+      .offset((pagination.value - 1) * pageSize);
   }
 
   async count(userId: UserId): Promise<number> {

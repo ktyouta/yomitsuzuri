@@ -1,14 +1,14 @@
 import { z } from "zod";
 import { BookListPagination } from "../../../../domain/book";
 
-const PAGE_ERROR_MESSAGE = "ページ番号は1以上の整数で指定してください";
-
+/**
+ * 書籍一覧取得クエリスキーマ
+ *
+ * クエリは文字列で届くため、数値への変換と省略時の既定値のみを行う。
+ * ページ番号として正しいか（数値に変換できない値を含む）は値オブジェクト（BookListPagination）で判定する。
+ */
 export const GetListBookQuerySchema = z.object({
-  page: z.coerce
-    .number({ invalid_type_error: PAGE_ERROR_MESSAGE })
-    .int(PAGE_ERROR_MESSAGE)
-    .min(BookListPagination.MIN_PAGE, PAGE_ERROR_MESSAGE)
-    .default(BookListPagination.MIN_PAGE),
+  page: z.string().default(String(BookListPagination.MIN_PAGE)).transform(Number),
 });
 
 export type GetListBookQuerySchemaType = z.infer<typeof GetListBookQuerySchema>;

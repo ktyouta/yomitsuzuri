@@ -28,9 +28,9 @@ describe("GetListBookUsecase", () => {
 
     const result = await usecase.execute(USER_ID, 1);
 
-    expect(result.value.list).toEqual([BOOK]);
-    expect(result.value.total).toBe(31);
-    expect(result.value.totalPages).toBe(2);
+    expect(result._unsafeUnwrap().value.list).toEqual([BOOK]);
+    expect(result._unsafeUnwrap().value.total).toBe(31);
+    expect(result._unsafeUnwrap().value.totalPages).toBe(2);
   });
 
   it("書籍が0件の場合、空の一覧と総ページ数0を返すこと", async () => {
@@ -38,9 +38,9 @@ describe("GetListBookUsecase", () => {
 
     const result = await usecase.execute(USER_ID, 1);
 
-    expect(result.value.list).toEqual([]);
-    expect(result.value.total).toBe(0);
-    expect(result.value.totalPages).toBe(0);
+    expect(result._unsafeUnwrap().value.list).toEqual([]);
+    expect(result._unsafeUnwrap().value.total).toBe(0);
+    expect(result._unsafeUnwrap().value.totalPages).toBe(0);
   });
 
   it("指定したユーザー・ページ番号と1ページ30件で一覧を問い合わせ、全件数も問い合わせること", async () => {
@@ -51,7 +51,7 @@ describe("GetListBookUsecase", () => {
 
     const [userId, pagination, pageSize] = repository.findList.mock.calls[0];
     expect(userId).toBe(USER_ID);
-    expect(pagination.page).toBe(2);
+    expect(pagination.value).toBe(2);
     expect(pageSize).toBe(30);
     expect(repository.count).toHaveBeenCalledWith(USER_ID);
   });
@@ -61,14 +61,19 @@ describe("GetListBookUsecase", () => {
 
     const result = await usecase.execute(USER_ID, 1);
 
-    expect(result.value.totalPages).toBe(1);
+    expect(result._unsafeUnwrap().value.totalPages).toBe(1);
   });
 
-  it("ページ番号が0の場合、例外になり、一覧も全件数も問い合わせないこと", async () => {
+  it.each([0, 1.5, NaN])("ページ番号が%sの場合、INVALID_INPUT を返し、一覧も全件数も問い合わせないこと", async (page) => {
     const repository = createRepository([], 0);
     const usecase = new GetListBookUsecase(repository);
 
-    await expect(usecase.execute(USER_ID, 0)).rejects.toThrow("ページ番号は1以上の整数で指定してください。");
+    const result = await usecase.execute(USER_ID, page);
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [{ field: "page", error: { type: "BOOK_LIST_PAGE_INVALID", min: 1 } }],
+    });
     expect(repository.findList).not.toHaveBeenCalled();
     expect(repository.count).not.toHaveBeenCalled();
   });

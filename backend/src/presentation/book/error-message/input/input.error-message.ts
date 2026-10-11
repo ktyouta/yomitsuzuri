@@ -1,4 +1,4 @@
-import type { BookMemoError, BookTitleError, BookValidationError, CurrentPageError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../../domain";
+import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CurrentPageError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../../domain";
 
 /**
  * 書籍コンテキストの入力値の違反（値オブジェクトの制約違反、集約の作品の指定の誤り・不変条件の違反）
@@ -14,7 +14,8 @@ type BookInputError =
   | WorkTitleError
   | WorkSortError
   | WorkMemoError
-  | BookValidationError;
+  | BookValidationError
+  | BookListPaginationError;
 
 /**
  * 入力値の違反を、利用者向けのメッセージに変換する
@@ -59,6 +60,8 @@ export function toInputErrorMessage(error: BookInputError): string {
       return `表示順「${error.sort}」が重複しています。`;
     case "ALL_DELETED":
       return "作品をすべて削除することはできません。";
+    case "BOOK_LIST_PAGE_INVALID":
+      return `ページ番号は${error.min}以上の整数で指定してください`;
     default: {
       // 全てのエラー種別を網羅していることを型で保証する
       error satisfies never;

@@ -14,13 +14,17 @@
 - throw / err の基準：
   - **err**: 原因が外部入力にあるもの（通常操作か、リクエスト改ざんかを問わない）
   - **throw**: 原因が自分たちのコードにあるもの（不具合・障害・自分たちの取得処理で除外済みのはずの状態）
-- 値オブジェクトは private コンストラクタ + `create`（Result）+ `of`（throw）の形にする
+- 値オブジェクトは private コンストラクタ + `create`（Result）の形にする。`of`（throw）は、DB 等の信頼できる値から生成する必要がある場合にのみ置く（形を揃えるためだけに置かない）
+- 書籍一覧 API のページ番号: zod はクエリの文字列を数値に変換するだけにし（判定しない）、ページ番号として正しいかは `BookListPagination.create` で判定する（数値に変換できない値も `NaN` として VO で違反になる）
+- 書籍一覧 API のトップの `message` も「入力エラー」にそろえる（zod のエラーフックを含む）
 - エラーは値オブジェクトごとにドメインの言葉（コード）で型定義し、利用者向けメッセージはプレゼンテーション層で決める（VO にメッセージを直書きしない）
 - 対象範囲は book・user・auth すべて
 - ログインは「〜を入力してください」のみを返し、ユーザー名の文字数（3〜30文字）は適用しない
 - コミットはコンテキストごとに分ける。最初は書籍作成 API のみで試す（実施済み・コミット済み）
 - U1: メッセージ変換関数は書籍コンテキストで1つにまとめる（案B）。書籍の全 VO エラーと集約の `BookValidationError` の和を受け取る。API ごとに決まる応答（`DUPLICATE_TITLE`・`NOT_FOUND` 等）は各 Controller に残す
 - U2（書籍更新 API）: トップの `message` は作成 API と同じ「入力エラー」にそろえる（zod のエラーフックを含む）
+- U8: パスパラメータの `bookId` は形式（ULID）を判定しない。`BookIdParamSchema` は `z.string()` のみとし、形式が不正・存在しない書籍IDは書籍の取得で見つからないため 404 になる。空の ID はルーティングで一致せず 404 になる。`BookId` は「空でない」のみを不変条件とする
+- 作品IDの空文字は新規作品（id が null）として扱う（`UpdateBookUsecase` の `!work.id` 判定）
 
 ### Claudeの提案をユーザーが承認したもの
 
@@ -41,7 +45,7 @@
 | U5 | 新しいパスワードの方針（8文字以上・半角英数記号）の VO | 提案: auth ドメインに新設（例: `PlainPassword`）。`UserPassword` はハッシュ済みの値を表すため流用しない |
 | U6 | 確認用パスワードの一致判定（`confirmPassword`） | 提案: 画面の都合の項目であり業務ルールではないため zod に残す。要確認 |
 | U7 | user・auth の Usecase の戻り値 | 現在は `{ status }`・`null`・`boolean` で、`INVALID_INPUT` を返せない。提案: book と同じ neverthrow の Result に揃える |
-| U8 | `bookId`（パス）の形式不正時のレスポンス | 現在は zod で 422。提案: `BookId.create` の err を `INVALID_INPUT`（422）で返す |
+| U10 | 作品IDの形式判定 | 現在は `WorkId.create` で ULID 形式を判定している（`WORK_ID_INVALID`）。提案: U8 の書籍IDに揃えて形式判定を外し、「空でない」のみにする（形式が不正な ID は既存作品と一致せず `WORKS_MISMATCH` になるため結果は変わらない） |
 | U9 | throw / err の基準・zod の役割をプロジェクトのルールとして CLAUDE.md に明記するか | 提案: 明記する |
 
 ## 設計
@@ -115,15 +119,17 @@ class WorkTitle {
 - [x] `UpdateBookSchema` を型・構造のみにする（Phase 1 で書き写した制約、作品の `ULID_PATTERN`・`.min(1)`・`refine` を削除。作品 0 件は集約の `WORKS_MISMATCH` になる）
 - [x] `updateBook` Controller の対応（zod エラーフックの message を「入力エラー」に、`INVALID_INPUT` の追加、`toWorkErrorMessage` の削除）
 - [x] テスト
-- [ ] コミット
+- [x] コミット
 
 ### Phase 3: 書籍の取得系 API（詳細・一覧）
 
-- [ ] `BookId` に ULID 形式の `create` を追加し、`bookId` パスパラメータの形式判定を移す（U8）。`BookIdParamSchema` は型のみにする
-  - 影響: `GetBookUsecase`（`BookId.of(bookId)`）、`updateBook` Controller（`BookId.of(param.bookId)`）
-- [ ] `BookListPagination` に `create` を追加し、`GetListBookUsecase` を Result を返す形にする（現在は DTO を直接返す）
-  - `GetListBookQuerySchema` は `z.coerce.number()`・`default` のみ残す（文字列→数値の変換は型の検証の一部）
-- [ ] テスト
+- [x] `BookIdParamSchema` を `z.string()` のみにする（U8。形式判定はせず、形式が不正な ID は 404 になる）
+- [x] `updateBook` Controller の `BookId.of(param.bookId)` を `UpdateBookUsecase` へ移す（`GetBookUsecase` と同じく文字列で受け取る）
+- [x] `BookListPagination` に `create` を追加し（`of` は使う箇所がないため置かない）、`GetListBookUsecase` を Result を返す形にする（現在は DTO を直接返す）
+- [x] `GetListBookQuerySchema` は文字列→数値の変換と省略時の既定値のみにする（`z.string().default(...).transform(Number)`。判定しない）
+- [x] `toInputErrorMessage` に `BOOK_LIST_PAGE_INVALID` を追加し、`getListBook` Controller で `INVALID_INPUT` を返す（zod エラーフックの message も「入力エラー」に）
+- [x] テスト
+- [ ] コミット
 
 ### Phase 4: user
 
@@ -177,3 +183,10 @@ class WorkTitle {
 | `BookAggregate.update` | 事前条件（throw） | 書籍が削除されていないこと |
 | `BookAggregate.update` | err | 作品IDの重複（`DUPLICATE_WORK_ID`）・新規作品の削除済み指定（`NEW_WORK_DELETED`）があれば `INVALID_WORKS`（この場合は不一致の判定を行わない）。作品の指定が既存の作品と一致しなければ `WORKS_MISMATCH`。不変条件の違反（全件削除・タイトル重複・表示順重複）はすべて収集して `INVALID_WORKS` |
 | `UpdateBookUsecase.execute` | 事後条件 | 入力値の制約違反はすべて `field` 付きで `INVALID_INPUT` として返し、DB は問い合わせない・保存しない。`@throws` はコードの不具合のみ |
+
+### Phase 3（書籍一覧 API）
+
+| クラス・メソッド | 契約の種類 | 内容 |
+|---|---|---|
+| `BookListPagination.create` | 事後条件 | `MIN_PAGE` 以上の整数なら ok、それ以外（`NaN` を含む）は `BOOK_LIST_PAGE_INVALID`（`min`） |
+| `GetListBookUsecase.execute` | 事後条件 | ページ番号が制約を満たさない場合は `field: "page"` 付きで `INVALID_INPUT` を返し、一覧・件数は問い合わせない。それ以外は指定ページの一覧・全件数・総ページ数を返す |
