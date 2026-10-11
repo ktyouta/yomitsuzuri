@@ -1,4 +1,4 @@
-import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CurrentPageError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../../domain";
+import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CurrentPageError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../../domain";
 
 /**
  * 書籍コンテキストの入力値の違反（値オブジェクトの制約違反、集約の作品の指定の誤り・不変条件の違反）
@@ -10,7 +10,6 @@ type BookInputError =
   | CurrentPageError
   | BookMemoError
   | IconIdError
-  | WorkIdError
   | WorkTitleError
   | WorkSortError
   | WorkMemoError
@@ -40,8 +39,6 @@ export function toInputErrorMessage(error: BookInputError): string {
       return `メモは${error.max}文字以内で入力してください`;
     case "ICON_ID_INVALID":
       return "アイコンIDが不正です";
-    case "WORK_ID_INVALID":
-      return "作品IDの形式が正しくありません";
     case "WORK_TITLE_EMPTY":
       return "作品タイトルは必須です";
     case "WORK_TITLE_TOO_LONG":

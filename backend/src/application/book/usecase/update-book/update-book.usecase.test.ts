@@ -197,6 +197,25 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
+  it("作品 ID の形式が不正な場合も判定せず、既存の作品と一致しないため WORKS_MISMATCH を返すこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase();
+
+    const result = await usecase.execute({
+      userId: USER_ID,
+      bookId: BOOK_ID.value,
+      body: {
+        ...BODY,
+        works: [
+          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", deleteFlg: false },
+          { id: "invalid", title: "作品2", sort: 2, memo: "", deleteFlg: false },
+        ],
+      },
+    });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
+    expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
+  });
+
   it("作品 ID が重複している場合、INVALID_WORKS で DUPLICATE_WORK_ID を返し、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
@@ -245,7 +264,6 @@ describe("UpdateBookUsecase", () => {
         { field: "currentPage", error: { type: "CURRENT_PAGE_INVALID", min: 0 } },
         { field: "memo", error: { type: "BOOK_MEMO_TOO_LONG", max: 2000 } },
         { field: "iconId", error: { type: "ICON_ID_INVALID" } },
-        { field: "works.1.id", error: { type: "WORK_ID_INVALID" } },
         { field: "works.1.title", error: { type: "WORK_TITLE_EMPTY" } },
         { field: "works.1.sort", error: { type: "WORK_SORT_INVALID", min: 1 } },
         { field: "works.1.memo", error: { type: "WORK_MEMO_TOO_LONG", max: 2000 } },

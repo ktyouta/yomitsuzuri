@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type UpdateWorkError, type UserId, type WorkIdError, type WorkMemoError, type WorkSortError, type WorkTitleError } from "../../../../domain";
+import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type UpdateWorkError, type UserId, type WorkMemoError, type WorkSortError, type WorkTitleError } from "../../../../domain";
 import { UpdateBookResultDto } from "../../dto";
 
 /**
@@ -12,7 +12,6 @@ export type UpdateBookInputError =
     | { field: "currentPage"; error: CurrentPageError }
     | { field: "memo"; error: BookMemoError }
     | { field: "iconId"; error: IconIdError }
-    | { field: `works.${number}.id`; error: WorkIdError }
     | { field: `works.${number}.title`; error: WorkTitleError }
     | { field: `works.${number}.sort`; error: WorkSortError }
     | { field: `works.${number}.memo`; error: WorkMemoError };
@@ -57,9 +56,6 @@ type PropsType = {
  */
 function createWorkParam(work: UpdateWorkBody, index: number) {
     const input = Result.combineWithAllErrors([
-        !work.id
-            ? ok(null)
-            : WorkId.create(work.id).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.id`, error })),
         WorkTitle.create(work.title).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.title`, error })),
         WorkSort.create(work.sort).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.sort`, error })),
         WorkMemo.create(work.memo).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.memo`, error })),
@@ -67,7 +63,10 @@ function createWorkParam(work: UpdateWorkBody, index: number) {
     if (input.isErr()) {
         return err(input.error);
     }
-    const [id, title, sort, memo] = input.value;
+    const [title, sort, memo] = input.value;
+
+    // 空の作品IDは新規の作品として扱う。形式は判定せず、存在しない ID は集約の作品の照合で検出する
+    const id = work.id ? WorkId.of(work.id) : null;
 
     return ok({ id, title, memo, sort, deleteFlg: work.deleteFlg });
 }
