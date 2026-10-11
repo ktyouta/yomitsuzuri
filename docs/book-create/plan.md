@@ -22,6 +22,7 @@
 - タイトル重複判定は、集約を生成した後に集約の書籍IDを渡して行う（新規 ID のため自己除外は実質的に無効。更新 API と同じサービスを使えるようにする）
 - DTO は `BookAggregate.toSnapshot()` から組み立てる（DB の再取得はしない）。userId・deleteFlg は返さない
 - zod スキーマは値オブジェクトと同じ制約をかけ、文字列は trim してから検証する（空白のみのタイトルが値オブジェクトの例外＝500 にならないようにするため）
+  - ※ この決定事項は `docs/domain-input-validation/plan.md`（入力値検証のドメイン移行）で置き換えた。現在は zod スキーマは型・構造のみを検証し、値の制約は値オブジェクトの `create` が Result（err）で返し、Usecase が `INVALID_INPUT` にまとめる。下記「CreateBookSchema（zod）」のテストケースも当時のもの
 
 ## 設計
 

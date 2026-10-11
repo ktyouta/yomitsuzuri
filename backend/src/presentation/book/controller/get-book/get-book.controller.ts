@@ -16,7 +16,7 @@ const getBook = new Hono<AppEnv>().get(
   authMiddleware,
   zValidator("param", BookIdParamSchema, (result, c) => {
     if (!result.success) {
-      return c.json({ message: "バリデーションエラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
     }
   }),
   async (c) => {
