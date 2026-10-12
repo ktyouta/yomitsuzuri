@@ -175,6 +175,7 @@ yomitsuzuri（よみつづり）は、小説を読みながら得た情報（登
 
 * zod スキーマは型・JSON 構造の検証のみを行う（値の制約は書かない）
 * zod スキーマによる検証は、コントローラーで `zValidator` を直接使わず `validatorMiddleware`（`middleware/validator/`）を使う。型・構造の違反は zod のメッセージを返さず、項目名（`field`。zod の path）と固定のメッセージで、値の制約違反と同じ形（422）で返す
+* `errorHandler` は Hono が投げる `HTTPException` のメッセージ（英語の開発者向け）を返さない。ステータスごとの文言を自分たちで決める（未登録のステータスは汎用のメッセージ）
 * 値の制約（文字数・形式・範囲など）は値オブジェクトの `create` で判定し、違反は Result（err）で返す。Usecase が違反を集めて項目名（`field`）を付け、`INVALID_INPUT` として返す
 * 利用者向けのメッセージはプレゼンテーション層（`presentation/{コンテキスト}/error-message/`）でエラーの種類から決める。値オブジェクトにメッセージを書かない
 * throw / err の基準

@@ -61,10 +61,14 @@
   - 違反は値の制約違反と同じ形（`{ message: "入力エラー", data: [{ field, message }] }`・422）で返す。`field` は zod の path（Usecase の `field` と同じ形式）、`message` は固定
   - 全 API で同じ処理のため、`zValidator` を固定のフックで包んだ `validatorMiddleware`（`middleware/validator/`）に置く（`zValidator` 自体が Hono のミドルウェアで、ルート単位で固定の応答を返す `authMiddleware` 等と同じ位置で動くため）。使われなくなった `formatZodErrors`・`ValidationErrorType` は削除する
   - 固定のメッセージの文言「入力形式が不正です」は Claude の提案（文言自体の確認は未実施）
+- 追補（Hono が投げる `HTTPException` の応答。壊れた JSON の 400 "Malformed JSON in request body"・リクエスト複製失敗の 500 の英語の開発者向けメッセージを `errorHandler` がそのまま返していたため）:
+  - `errorHandler` は `HTTPException` のメッセージを返さない。ステータスは維持し、意味が確定しているステータスだけ文言を決め（400 →「入力エラー」）、それ以外は「予期しないエラーが発生しました。」にする（元のメッセージはログに残す）
+  - 壊れた JSON は構文のレベルで解釈できず項目もないため、型・構造の違反（422・`data`）にはそろえず 400 のままにする
+  - Hono の組み込みミドルウェア（`bodyLimit` の 413 等）を導入する場合は、対応するステータスの文言を追加する
 
 ### 未決定（次回以降に決める）
 
-- Hono が投げる `HTTPException`（壊れた JSON の 400 "Malformed JSON in request body"・リクエスト複製失敗の 500）の英語の開発者向けメッセージを、`errorHandler` がそのまま返している。Claude の提案: ステータスは維持し、文言は 4xx を「入力エラー」、5xx を「予期しないエラーが発生しました。」に固定する
+なし
 
 ## 設計
 
