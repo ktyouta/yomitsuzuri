@@ -1,13 +1,11 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { UpdateUserUsecase } from "../../../../application";
 import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
 import { RefreshToken } from "../../../../domain";
 import { UpdateUserRepository } from "../../../../infrastructure";
-import { authMiddleware, userOperationGuardMiddleware } from "../../../../middleware";
+import { authMiddleware, userOperationGuardMiddleware, validatorMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
-import { formatZodErrors } from "../../../../util";
 import { toInputErrorMessage } from "../../error-message";
 import { UpdateUserSchema } from "../../schema";
 
@@ -15,11 +13,7 @@ const updateUser = new Hono<AppEnv>().patch(
     API_ENDPOINT.USER,
     userOperationGuardMiddleware,
     authMiddleware,
-    zValidator("json", UpdateUserSchema, (result, c) => {
-        if (!result.success) {
-            return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
-        }
-    }),
+    validatorMiddleware("json", UpdateUserSchema),
     async (c) => {
         const user = c.get("user");
         if (!user) {

@@ -56,10 +56,15 @@
   - `IUserLoginRepository.getLoginUser` は `LoginName` を受け取る
   - `LoginUsecase` は `INVALID_INPUT`（空の入力）・`AUTHENTICATION_FAILED`（ユーザーなし・パスワード不一致・プロフィールなし。応答は従来どおり 401）を返す
   - `UpdatePasswordUsecase` は `INVALID_INPUT`（現在のパスワードの空・`NewPassword` の違反・確認用パスワードの不一致）・`CURRENT_PASSWORD_MISMATCH`・`NOT_FOUND`（応答はどちらも従来どおり 401）を返す
+- 追補（zod の型・構造の違反の応答。Phase 6 までの移行で zod のエラーフックが `data` に zod のメッセージを返したままだったため）:
+  - zod は決まった型で受け取るためだけに使い、違反時に zod のメッセージは返さない（ユーザー指示）
+  - 違反は値の制約違反と同じ形（`{ message: "入力エラー", data: [{ field, message }] }`・422）で返す。`field` は zod の path（Usecase の `field` と同じ形式）、`message` は固定
+  - 全 API で同じ処理のため、`zValidator` を固定のフックで包んだ `validatorMiddleware`（`middleware/validator/`）に置く（`zValidator` 自体が Hono のミドルウェアで、ルート単位で固定の応答を返す `authMiddleware` 等と同じ位置で動くため）。使われなくなった `formatZodErrors`・`ValidationErrorType` は削除する
+  - 固定のメッセージの文言「入力形式が不正です」は Claude の提案（文言自体の確認は未実施）
 
 ### 未決定（次回以降に決める）
 
-なし
+- Hono が投げる `HTTPException`（壊れた JSON の 400 "Malformed JSON in request body"・リクエスト複製失敗の 500）の英語の開発者向けメッセージを、`errorHandler` がそのまま返している。Claude の提案: ステータスは維持し、文言は 4xx を「入力エラー」、5xx を「予期しないエラーが発生しました。」に固定する
 
 ## 設計
 

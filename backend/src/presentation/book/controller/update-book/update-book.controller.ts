@@ -1,12 +1,10 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { UpdateBookUsecase } from "../../../../application";
 import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
 import { BookTitleUniquenessDomainService, IconValidityDomainService, ReadingStatusValidityDomainService } from "../../../../domain";
 import { BookTitleUniquenessRepository, IconValidityRepository, ReadingStatusValidityRepository, UpdateBookRepository } from "../../../../infrastructure";
-import { authMiddleware } from "../../../../middleware";
+import { authMiddleware, validatorMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
-import { formatZodErrors } from "../../../../util";
 import { toInputErrorMessage } from "../../error-message";
 import { BookIdParamSchema, UpdateBookSchema } from "../../schema";
 
@@ -16,16 +14,8 @@ import { BookIdParamSchema, UpdateBookSchema } from "../../schema";
 const updateBook = new Hono<AppEnv>().put(
   API_ENDPOINT.BOOKS_ID,
   authMiddleware,
-  zValidator("param", BookIdParamSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
-    }
-  }),
-  zValidator("json", UpdateBookSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
-    }
-  }),
+  validatorMiddleware("param", BookIdParamSchema),
+  validatorMiddleware("json", UpdateBookSchema),
   async (c) => {
     const user = c.get("user");
     if (!user) {

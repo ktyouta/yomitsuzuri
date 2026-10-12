@@ -1,24 +1,18 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { CreateUserUsecase } from "../../../../application";
 import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
 import { RefreshToken } from "../../../../domain";
 import { CreateUserRepository } from "../../../../infrastructure";
-import { userOperationGuardMiddleware } from "../../../../middleware";
+import { userOperationGuardMiddleware, validatorMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
-import { formatZodErrors } from "../../../../util";
 import { toInputErrorMessage } from "../../error-message";
 import { CreateUserSchema } from "../../schema";
 
 const createUser = new Hono<AppEnv>().post(
     API_ENDPOINT.USER,
     userOperationGuardMiddleware,
-    zValidator("json", CreateUserSchema, (result, c) => {
-        if (!result.success) {
-            return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
-        }
-    }),
+    validatorMiddleware("json", CreateUserSchema),
     async (c) => {
         const body = c.req.valid("json");
         const db = c.get('db');

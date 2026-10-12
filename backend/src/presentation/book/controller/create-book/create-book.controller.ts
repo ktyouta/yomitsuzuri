@@ -1,12 +1,10 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { CreateBookUsecase } from "../../../../application";
 import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
 import { BookTitleUniquenessDomainService, IconValidityDomainService } from "../../../../domain";
 import { BookTitleUniquenessRepository, CreateBookRepository, IconValidityRepository } from "../../../../infrastructure";
-import { authMiddleware } from "../../../../middleware";
+import { authMiddleware, validatorMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
-import { formatZodErrors } from "../../../../util";
 import { toInputErrorMessage } from "../../error-message";
 import { CreateBookSchema } from "../../schema";
 
@@ -16,11 +14,7 @@ import { CreateBookSchema } from "../../schema";
 const createBook = new Hono<AppEnv>().post(
   API_ENDPOINT.BOOKS,
   authMiddleware,
-  zValidator("json", CreateBookSchema, (result, c) => {
-    if (!result.success) {
-      return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
-    }
-  }),
+  validatorMiddleware("json", CreateBookSchema),
   async (c) => {
     const user = c.get("user");
     if (!user) {

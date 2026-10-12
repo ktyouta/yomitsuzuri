@@ -1,11 +1,9 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { UpdatePasswordUsecase } from "../../../../application";
 import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
 import { UserPasswordRepository } from "../../../../infrastructure";
-import { authMiddleware, userOperationGuardMiddleware } from "../../../../middleware";
+import { authMiddleware, userOperationGuardMiddleware, validatorMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
-import { formatZodErrors } from "../../../../util";
 import { toInputErrorMessage } from "../../error-message";
 import { UserPasswordSchema } from "../../schema";
 
@@ -13,11 +11,7 @@ const userPassword = new Hono<AppEnv>().patch(
     API_ENDPOINT.USER_PASSWORD,
     userOperationGuardMiddleware,
     authMiddleware,
-    zValidator("json", UserPasswordSchema, (result, c) => {
-        if (!result.success) {
-            return c.json({ message: "入力エラー", data: formatZodErrors(result.error) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
-        }
-    }),
+    validatorMiddleware("json", UserPasswordSchema),
     async (c) => {
         const user = c.get("user");
         if (!user) {

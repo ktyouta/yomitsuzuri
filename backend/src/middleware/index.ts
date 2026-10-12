@@ -6,3 +6,4 @@ export * from "./auth";
 export * from "./user-operation-guard";
 export * from "./env-init";
 export * from "./create-db-client";
+export * from "./validator";
