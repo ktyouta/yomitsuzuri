@@ -20,7 +20,7 @@ const createUser = new Hono<AppEnv>().post(
         const repository = new CreateUserRepository(db);
         const usecase = new CreateUserUsecase(repository, config);
 
-        const result = await usecase.execute(body);
+        const result = await usecase.execute({ body });
         if (result.isErr()) {
             const error = result.error;
             switch (error.type) {

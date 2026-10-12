@@ -6,6 +6,11 @@ import { GetBookResultDto } from "../../dto";
 
 export type GetBookError = { type: "NOT_FOUND" };
 
+type PropsType = {
+  userId: UserId;
+  bookId: string;
+}
+
 /**
  * 書籍詳細取得ユースケース
  */
@@ -18,7 +23,7 @@ export class GetBookUsecase {
    * @returns 成功時は書籍情報と作品一覧の DTO、書籍が存在しない・他ユーザーの書籍・論理削除済みの場合は NOT_FOUND
    * @throws bookId が空の場合（書籍・作品は問い合わせない）
    */
-  async execute(userId: UserId, bookId: string): Promise<Result<GetBookResultDto, GetBookError>> {
+  async execute({ userId, bookId }: PropsType): Promise<Result<GetBookResultDto, GetBookError>> {
     const id = BookId.of(bookId);
 
     const [book, works] = await Promise.all([

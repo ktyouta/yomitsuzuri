@@ -26,7 +26,7 @@ describe("GetListBookUsecase", () => {
   it("取得した一覧と全件数をそのまま返し、全件数から総ページ数を算出すること", async () => {
     const usecase = new GetListBookUsecase(createRepository([BOOK], 31));
 
-    const result = await usecase.execute(USER_ID, 1);
+    const result = await usecase.execute({ userId: USER_ID, page: 1 });
 
     expect(result._unsafeUnwrap().value.list).toEqual([BOOK]);
     expect(result._unsafeUnwrap().value.total).toBe(31);
@@ -36,7 +36,7 @@ describe("GetListBookUsecase", () => {
   it("書籍が0件の場合、空の一覧と総ページ数0を返すこと", async () => {
     const usecase = new GetListBookUsecase(createRepository([], 0));
 
-    const result = await usecase.execute(USER_ID, 1);
+    const result = await usecase.execute({ userId: USER_ID, page: 1 });
 
     expect(result._unsafeUnwrap().value.list).toEqual([]);
     expect(result._unsafeUnwrap().value.total).toBe(0);
@@ -47,7 +47,7 @@ describe("GetListBookUsecase", () => {
     const repository = createRepository([], 0);
     const usecase = new GetListBookUsecase(repository);
 
-    await usecase.execute(USER_ID, 2);
+    await usecase.execute({ userId: USER_ID, page: 2 });
 
     const [userId, pagination, pageSize] = repository.findList.mock.calls[0];
     expect(userId).toBe(USER_ID);
@@ -59,7 +59,7 @@ describe("GetListBookUsecase", () => {
   it("全件数が1ページの件数ちょうどの場合、総ページ数が1になること", async () => {
     const usecase = new GetListBookUsecase(createRepository([BOOK], 30));
 
-    const result = await usecase.execute(USER_ID, 1);
+    const result = await usecase.execute({ userId: USER_ID, page: 1 });
 
     expect(result._unsafeUnwrap().value.totalPages).toBe(1);
   });
@@ -68,7 +68,7 @@ describe("GetListBookUsecase", () => {
     const repository = createRepository([], 0);
     const usecase = new GetListBookUsecase(repository);
 
-    const result = await usecase.execute(USER_ID, page);
+    const result = await usecase.execute({ userId: USER_ID, page });
 
     expect(result._unsafeUnwrapErr()).toEqual({
       type: "INVALID_INPUT",

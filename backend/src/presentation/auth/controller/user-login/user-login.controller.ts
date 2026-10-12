@@ -20,7 +20,7 @@ const userLogin = new Hono<AppEnv>().post(
         const userProfileRepository = new GetUserProfileRepository(db);
         const usecase = new LoginUsecase(loginRepository, userProfileRepository, config);
 
-        const result = await usecase.execute(body.name, body.password);
+        const result = await usecase.execute({ name: body.name, password: body.password });
 
         if (result.isErr()) {
             const error = result.error;

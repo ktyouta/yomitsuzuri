@@ -24,7 +24,7 @@ const getListBook = new Hono<AppEnv>().get(
     const repository = new GetListBookRepository(db);
     const usecase = new GetListBookUsecase(repository);
 
-    const result = await usecase.execute(user.userId, query.page);
+    const result = await usecase.execute({ userId: user.userId, page: query.page });
 
     return result.match(
       (dto) => c.json({ message: "書籍一覧を取得しました。", data: dto.value }, HTTP_STATUS.OK),

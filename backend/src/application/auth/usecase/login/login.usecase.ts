@@ -17,6 +17,11 @@ export type LoginError =
   | { type: "INVALID_INPUT"; errors: LoginInputError[] }
   | { type: "AUTHENTICATION_FAILED" };
 
+type PropsType = {
+  name: string;
+  password: string;
+}
+
 /**
  * ログインユースケース
  */
@@ -35,7 +40,7 @@ export class LoginUsecase {
    * 入力値が空の場合は INVALID_INPUT（違反はすべて返し、DB は問い合わせない）。
    * ユーザーが存在しない・パスワードが一致しない・プロフィールが存在しない場合は AUTHENTICATION_FAILED（最終ログイン日時は更新しない）
    */
-  async execute(name: string, password: string): Promise<Result<LoginResultDto, LoginError>> {
+  async execute({ name, password }: PropsType): Promise<Result<LoginResultDto, LoginError>> {
     // 入力値の制約チェック
     const input = Result.combineWithAllErrors([
       LoginName.create(name).mapErr((error): LoginInputError => ({ field: "name", error })),

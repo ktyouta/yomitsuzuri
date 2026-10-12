@@ -20,7 +20,7 @@ describe("GetAuthenticatedUserUsecase", () => {
   it("ユーザーが存在する場合、プロフィールを含む結果を返すこと", async () => {
     const usecase = new GetAuthenticatedUserUsecase(createRepository(PROFILE));
 
-    const result = await usecase.execute(UserId.of(PROFILE.id));
+    const result = await usecase.execute({ userId: UserId.of(PROFILE.id) });
 
     expect(result?.value).toEqual(PROFILE);
   });
@@ -28,7 +28,7 @@ describe("GetAuthenticatedUserUsecase", () => {
   it("ユーザーが存在しない場合、undefinedを返すこと", async () => {
     const usecase = new GetAuthenticatedUserUsecase(createRepository(undefined));
 
-    const result = await usecase.execute(UserId.of(PROFILE.id));
+    const result = await usecase.execute({ userId: UserId.of(PROFILE.id) });
 
     expect(result).toBeUndefined();
   });

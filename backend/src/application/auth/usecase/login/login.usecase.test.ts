@@ -48,7 +48,7 @@ describe("LoginUsecase", () => {
     const { loginRepository, userProfileRepository } = createRepositories(await createCredential(), PROFILE);
     const usecase = new LoginUsecase(loginRepository, userProfileRepository, testConfig);
 
-    const result = await usecase.execute(PROFILE.name, PASSWORD);
+    const result = await usecase.execute({ name: PROFILE.name, password: PASSWORD });
 
     const dto = result._unsafeUnwrap();
     expect(dto.value.user).toEqual(PROFILE);
@@ -61,7 +61,7 @@ describe("LoginUsecase", () => {
     const { loginRepository, userProfileRepository } = createRepositories(undefined, PROFILE);
     const usecase = new LoginUsecase(loginRepository, userProfileRepository, testConfig);
 
-    const result = await usecase.execute(PROFILE.name, PASSWORD);
+    const result = await usecase.execute({ name: PROFILE.name, password: PASSWORD });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "AUTHENTICATION_FAILED" });
     expect(loginRepository.updateLastLoginDate).not.toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe("LoginUsecase", () => {
     const { loginRepository, userProfileRepository } = createRepositories(await createCredential(), PROFILE);
     const usecase = new LoginUsecase(loginRepository, userProfileRepository, testConfig);
 
-    const result = await usecase.execute(PROFILE.name, "wrong-password");
+    const result = await usecase.execute({ name: PROFILE.name, password: "wrong-password" });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "AUTHENTICATION_FAILED" });
     expect(loginRepository.updateLastLoginDate).not.toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe("LoginUsecase", () => {
     const { loginRepository, userProfileRepository } = createRepositories(await createCredential(), undefined);
     const usecase = new LoginUsecase(loginRepository, userProfileRepository, testConfig);
 
-    const result = await usecase.execute(PROFILE.name, PASSWORD);
+    const result = await usecase.execute({ name: PROFILE.name, password: PASSWORD });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "AUTHENTICATION_FAILED" });
     expect(loginRepository.updateLastLoginDate).not.toHaveBeenCalled();
@@ -91,7 +91,7 @@ describe("LoginUsecase", () => {
     const { loginRepository, userProfileRepository } = createRepositories(await createCredential(), PROFILE);
     const usecase = new LoginUsecase(loginRepository, userProfileRepository, testConfig);
 
-    const result = await usecase.execute("", "");
+    const result = await usecase.execute({ name: "", password: "" });
 
     expect(result._unsafeUnwrapErr()).toEqual({
       type: "INVALID_INPUT",
@@ -108,7 +108,7 @@ describe("LoginUsecase", () => {
     const { loginRepository, userProfileRepository } = createRepositories(undefined, PROFILE);
     const usecase = new LoginUsecase(loginRepository, userProfileRepository, testConfig);
 
-    await usecase.execute("ab", PASSWORD);
+    await usecase.execute({ name: "ab", password: PASSWORD });
 
     expect(loginRepository.getLoginUser.mock.calls[0]?.[0].value).toBe("ab");
   });

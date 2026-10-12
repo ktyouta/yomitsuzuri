@@ -23,7 +23,7 @@ const userPassword = new Hono<AppEnv>().patch(
         const repository = new UserPasswordRepository(db);
         const usecase = new UpdatePasswordUsecase(repository, config);
 
-        const result = await usecase.execute(user.userId, body);
+        const result = await usecase.execute({ userId: user.userId, body });
         if (result.isErr()) {
             const error = result.error;
             switch (error.type) {

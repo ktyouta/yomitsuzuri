@@ -23,6 +23,11 @@ type UpdatePasswordBody = {
   confirmPassword: string;
 };
 
+type PropsType = {
+  userId: UserId;
+  body: UpdatePasswordBody;
+}
+
 /**
  * パスワード更新ユースケース
  */
@@ -40,7 +45,7 @@ export class UpdatePasswordUsecase {
    * 入力値が制約を満たさない（確認用パスワードの不一致を含む。違反はすべて返し、DB は問い合わせない）場合は INVALID_INPUT、
    * 資格情報・更新対象がない場合は NOT_FOUND、現在のパスワードが一致しない場合は CURRENT_PASSWORD_MISMATCH（いずれも更新しない）
    */
-  async execute(userId: UserId, body: UpdatePasswordBody): Promise<Result<void, UpdatePasswordError>> {
+  async execute({ userId, body }: PropsType): Promise<Result<void, UpdatePasswordError>> {
     // 入力値の制約チェック
     const input = Result.combineWithAllErrors([
       RawPassword.create(body.nowPassword).mapErr((error): UpdatePasswordInputError => ({ field: "nowPassword", error })),

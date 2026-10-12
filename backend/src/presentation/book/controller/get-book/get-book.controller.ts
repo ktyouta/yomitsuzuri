@@ -23,7 +23,7 @@ const getBook = new Hono<AppEnv>().get(
     const repository = new GetBookRepository(db);
     const usecase = new GetBookUsecase(repository);
 
-    const result = await usecase.execute(user.userId, param.bookId);
+    const result = await usecase.execute({ userId: user.userId, bookId: param.bookId });
 
     return result.match(
       (dto) => c.json({ message: "書籍詳細を取得しました。", data: dto.value }, HTTP_STATUS.OK),

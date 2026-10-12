@@ -25,7 +25,7 @@ const updateUser = new Hono<AppEnv>().patch(
         const repository = new UpdateUserRepository(db);
         const usecase = new UpdateUserUsecase(repository, config);
 
-        const result = await usecase.execute(user.userId, body.name, body.birthday);
+        const result = await usecase.execute({ userId: user.userId, name: body.name, birthday: body.birthday });
 
         if (result.isErr()) {
             const error = result.error;

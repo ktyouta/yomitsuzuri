@@ -8,6 +8,10 @@ export type VerifyResult =
   | { status: "expired" }
   | { status: "success"; dto: VerifyResultDto };
 
+type PropsType = {
+  refreshToken: RefreshToken;
+}
+
 /**
  * 認証チェックユースケース
  */
@@ -17,7 +21,7 @@ export class VerifyUsecase {
     private readonly config: EnvConfig
   ) { }
 
-  async execute(refreshToken: RefreshToken): Promise<VerifyResult> {
+  async execute({ refreshToken }: PropsType): Promise<VerifyResult> {
     const userId = await refreshToken.getPayload();
 
     const userInfo = await this.repository.findById(userId);

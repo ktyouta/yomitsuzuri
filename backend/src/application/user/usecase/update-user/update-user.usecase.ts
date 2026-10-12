@@ -19,6 +19,12 @@ export type UpdateUserError =
   | { type: "DUPLICATE_NAME" }
   | { type: "NOT_FOUND" };
 
+type PropsType = {
+  userId: UserId;
+  name: string;
+  birthday: string;
+}
+
 /**
  * ユーザー更新ユースケース
  */
@@ -36,7 +42,7 @@ export class UpdateUserUsecase {
    * @returns 成功時は更新後のユーザーとリフレッシュトークンの DTO。
    * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・ユーザー名が重複している・ユーザーが存在しない場合はエラー
    */
-  async execute(userId: UserId, name: string, birthday: string): Promise<Result<UpdateUserResultDto, UpdateUserError>> {
+  async execute({ userId, name, birthday }: PropsType): Promise<Result<UpdateUserResultDto, UpdateUserError>> {
     // 入力値の制約チェック
     const input = Result.combineWithAllErrors([
       UserName.create(name).mapErr((error): UpdateUserInputError => ({ field: "name", error })),

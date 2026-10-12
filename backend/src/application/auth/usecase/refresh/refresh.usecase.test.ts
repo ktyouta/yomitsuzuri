@@ -38,7 +38,7 @@ describe("RefreshUsecase", () => {
     const usecase = new RefreshUsecase(createRepository(PROFILE), testConfig);
     const refreshToken = await RefreshToken.create(UserId.of(PROFILE.id), testConfig);
 
-    const result = await usecase.execute(refreshToken);
+    const result = await usecase.execute({ refreshToken });
 
     expect(result.status).toBe("success");
     if (result.status !== "success") {
@@ -52,7 +52,7 @@ describe("RefreshUsecase", () => {
     const usecase = new RefreshUsecase(createRepository(PROFILE), testConfig);
     const refreshToken = RefreshToken.get(new Cookie({ [RefreshToken.COOKIE_KEY]: "invalid-token" }), testConfig);
 
-    const result = await usecase.execute(refreshToken);
+    const result = await usecase.execute({ refreshToken });
 
     expect(result.status).toBe("invalid_token");
   });
@@ -61,7 +61,7 @@ describe("RefreshUsecase", () => {
     const usecase = new RefreshUsecase(createRepository(undefined), testConfig);
     const refreshToken = await RefreshToken.create(UserId.of(PROFILE.id), testConfig);
 
-    const result = await usecase.execute(refreshToken);
+    const result = await usecase.execute({ refreshToken });
 
     expect(result.status).toBe("user_not_found");
   });
@@ -78,7 +78,7 @@ describe("RefreshUsecase", () => {
     // ログインから8日後（トークン自体の有効期限内だが、ログインから7日を過ぎている）
     vi.setSystemTime(new Date("2026-01-09T00:00:00Z"));
 
-    const result = await usecase.execute(refreshedToken);
+    const result = await usecase.execute({ refreshToken: refreshedToken });
 
     expect(result.status).toBe("expired");
   });

@@ -15,12 +15,12 @@ describe("DeleteUserUsecase", () => {
   it("削除できた場合、trueを返すこと", async () => {
     const usecase = new DeleteUserUsecase(createRepository(true));
 
-    expect(await usecase.execute(UserId.of(USER_ID))).toBe(true);
+    expect(await usecase.execute({ userId: UserId.of(USER_ID) })).toBe(true);
   });
 
   it("削除できなかった場合、falseを返すこと", async () => {
     const usecase = new DeleteUserUsecase(createRepository(false));
 
-    expect(await usecase.execute(UserId.of(USER_ID))).toBe(false);
+    expect(await usecase.execute({ userId: UserId.of(USER_ID) })).toBe(false);
   });
 });

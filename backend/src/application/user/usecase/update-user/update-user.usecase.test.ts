@@ -37,7 +37,7 @@ describe("UpdateUserUsecase", () => {
     const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: true });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), name: "renamed", birthday: "20000101" });
 
     const dto = result._unsafeUnwrap();
     expect(dto.value.user.name).toBe("renamed");
@@ -50,7 +50,7 @@ describe("UpdateUserUsecase", () => {
     const repository = createRepository(true, { entity: createUpdatedEntity(), darkMode: false });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), name: "renamed", birthday: "20000101" });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_NAME" });
     expect(repository.updateUserWithLogin).not.toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe("UpdateUserUsecase", () => {
     const repository = createRepository(false, undefined);
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), "renamed", "20000101");
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), name: "renamed", birthday: "20000101" });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "NOT_FOUND" });
   });
@@ -69,7 +69,7 @@ describe("UpdateUserUsecase", () => {
     const repository = createRepository(false, { entity: createUpdatedEntity(), darkMode: false });
     const usecase = new UpdateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), "", "20000431");
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), name: "", birthday: "20000431" });
 
     expect(result._unsafeUnwrapErr()).toEqual({
       type: "INVALID_INPUT",

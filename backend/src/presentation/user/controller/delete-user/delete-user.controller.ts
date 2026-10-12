@@ -21,7 +21,7 @@ const deleteUser = new Hono<AppEnv>().delete(
         const repository = new DeleteUserRepository(db);
         const usecase = new DeleteUserUsecase(repository);
 
-        const deleted = await usecase.execute(user.userId);
+        const deleted = await usecase.execute({ userId: user.userId });
 
         if (!deleted) {
             return c.json({ message: "ユーザーが見つかりません。" }, HTTP_STATUS.NOT_FOUND);

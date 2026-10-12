@@ -34,7 +34,7 @@ describe("GetBookUsecase", () => {
   it("取得した書籍情報と作品一覧をそのまま返すこと", async () => {
     const usecase = new GetBookUsecase(createRepository(BOOK, WORKS));
 
-    const result = await usecase.execute(USER_ID, BOOK_ID);
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID });
 
     expect(result._unsafeUnwrap().value).toEqual({ ...BOOK, works: WORKS });
   });
@@ -42,7 +42,7 @@ describe("GetBookUsecase", () => {
   it("書籍が取得できない場合、NOT_FOUND を返すこと", async () => {
     const usecase = new GetBookUsecase(createRepository(null, []));
 
-    const result = await usecase.execute(USER_ID, BOOK_ID);
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "NOT_FOUND" });
   });
@@ -51,7 +51,7 @@ describe("GetBookUsecase", () => {
     const repository = createRepository(BOOK, WORKS);
     const usecase = new GetBookUsecase(repository);
 
-    await usecase.execute(USER_ID, BOOK_ID);
+    await usecase.execute({ userId: USER_ID, bookId: BOOK_ID });
 
     const [bookUserId, bookId] = repository.findBook.mock.calls[0];
     expect(bookUserId).toBe(USER_ID);
@@ -65,7 +65,7 @@ describe("GetBookUsecase", () => {
     const repository = createRepository(BOOK, WORKS);
     const usecase = new GetBookUsecase(repository);
 
-    await expect(usecase.execute(USER_ID, "")).rejects.toThrow("書籍IDが設定されていません。");
+    await expect(usecase.execute({ userId: USER_ID, bookId: "" })).rejects.toThrow("書籍IDが設定されていません。");
     expect(repository.findBook).not.toHaveBeenCalled();
     expect(repository.findWork).not.toHaveBeenCalled();
   });

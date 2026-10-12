@@ -20,6 +20,8 @@ tools: Read, Glob, Grep
 2. 設計上の選択肢を列挙する
 3. 複数案をメリット・デメリット付きで提示する
 4. 推奨案を1つ選定し、その根拠を示す
+   - 根拠は設計原則（CLAUDE.md の設計指針など）から示す。既存コードの形だけを根拠にしない
+   - 選択肢を並べてユーザーに選ばせて終わらない
 5. 推奨案が将来どのような変更で破綻するかを説明する
 
 ## 調査対象
@@ -27,9 +29,10 @@ tools: Read, Glob, Grep
 ```
 backend/src/
 ├── domain/          # 既存 Entity・Value Object・Repository interface（DDD 4層のドメイン層）
-├── application/     # 既存 Usecase
+├── application/     # 既存 Usecase・DTO
+├── constant/        # APIエンドポイント定数（api-endpoint/api-endpoint.const.ts）
 ├── infrastructure/  # 既存 Repository 実装・DBスキーマ・テーブル設計
-├── presentation/    # 既存 Controller・DTO・Zodスキーマ・APIエンドポイント・ルーター
+├── presentation/    # 既存 Controller・Zodスキーマ・ルーター
 └── rpc/             # 既存RPCルーター集約
 
 frontend/src/
@@ -48,6 +51,7 @@ frontend/src/
 
 ### API 契約
 - REST URL 設計になっているか（RPC 設計指針に準拠）
+- URL を設計する場合、`backend/src/constant/api-endpoint/api-endpoint.const.ts` を全件 Read し、同じリソースの定義が既にないか確認しているか（キーワード検索だけで済ませない）
 - リクエスト・レスポンスの型が明確か
 - 認証・認可要件が明確か（他ユーザーのリソースにアクセスできない設計になっているか）
   - 操作対象が認証ユーザー自身のリソースの場合、`userId` をパス・リクエストボディで受け取らず、`c.get('user').userId` を使う設計になっているか

@@ -22,7 +22,7 @@ const verify = new Hono<AppEnv>().get(
             const cookie = new Cookie(getCookie(c));
             const refreshToken = RefreshToken.get(cookie, config);
 
-            const result = await usecase.execute(refreshToken);
+            const result = await usecase.execute({ refreshToken });
 
             if (result.status !== "success") {
                 const logMessage = result.status === "user_not_found"

@@ -15,7 +15,7 @@ describe("UpdateUserDarkModeUsecase", () => {
   it("更新できた場合、指定したダークモードの値を持つ結果を返すこと", async () => {
     const usecase = new UpdateUserDarkModeUsecase(createRepository(true));
 
-    const result = await usecase.execute(UserId.of(USER_ID), true);
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), darkMode: true });
 
     expect(result?.value.darkMode).toBe(true);
   });
@@ -23,7 +23,7 @@ describe("UpdateUserDarkModeUsecase", () => {
   it("更新できなかった場合、nullを返すこと", async () => {
     const usecase = new UpdateUserDarkModeUsecase(createRepository(false));
 
-    const result = await usecase.execute(UserId.of(USER_ID), true);
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), darkMode: true });
 
     expect(result).toBeNull();
   });

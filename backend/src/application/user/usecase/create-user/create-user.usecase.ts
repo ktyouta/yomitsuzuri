@@ -26,6 +26,10 @@ type CreateUserBody = {
   confirmPassword: string;
 };
 
+type PropsType = {
+  body: CreateUserBody;
+}
+
 /**
  * ユーザー作成ユースケース
  */
@@ -41,7 +45,7 @@ export class CreateUserUsecase {
    * @returns 成功時は作成したユーザーとトークンの DTO。
    * 入力値が制約を満たさない（確認用パスワードの不一致を含む。違反はすべて返し、DB は問い合わせない）・ユーザー名が重複している場合はエラー（いずれも保存しない）
    */
-  async execute(body: CreateUserBody): Promise<Result<CreateUserResultDto, CreateUserError>> {
+  async execute({ body }: PropsType): Promise<Result<CreateUserResultDto, CreateUserError>> {
     // 入力値の制約チェック
     const input = Result.combineWithAllErrors([
       UserName.create(body.name).mapErr((error): CreateUserInputError => ({ field: "name", error })),

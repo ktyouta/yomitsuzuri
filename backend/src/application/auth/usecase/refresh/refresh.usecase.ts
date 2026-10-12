@@ -9,6 +9,10 @@ export type RefreshResult =
   | { status: "expired" }
   | { status: "success"; dto: RefreshResultDto };
 
+type PropsType = {
+  refreshToken: RefreshToken;
+}
+
 /**
  * トークンリフレッシュユースケース
  */
@@ -18,7 +22,7 @@ export class RefreshUsecase {
     private readonly config: EnvConfig
   ) { }
 
-  async execute(refreshToken: RefreshToken): Promise<RefreshResult> {
+  async execute({ refreshToken }: PropsType): Promise<RefreshResult> {
     let userId;
     try {
       userId = await refreshToken.getPayload();

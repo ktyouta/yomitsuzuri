@@ -41,7 +41,7 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(credential, true);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), BODY);
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), body: BODY });
 
     expect(result.isOk()).toBe(true);
     expect(repository.updateLoginUser).toHaveBeenCalledTimes(1);
@@ -54,7 +54,7 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(await createCredential(), false);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), BODY);
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "NOT_FOUND" });
   });
@@ -63,7 +63,7 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(undefined, true);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), BODY);
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "NOT_FOUND" });
     expect(repository.updateLoginUser).not.toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(await createCredential(), true);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), { ...BODY, nowPassword: "wrong-password" });
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), body: { ...BODY, nowPassword: "wrong-password" } });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "CURRENT_PASSWORD_MISMATCH" });
     expect(repository.updateLoginUser).not.toHaveBeenCalled();
@@ -83,7 +83,7 @@ describe("UpdatePasswordUsecase", () => {
     const repository = createRepository(await createCredential(), true);
     const usecase = new UpdatePasswordUsecase(repository, testConfig);
 
-    const result = await usecase.execute(UserId.of(USER_ID), { nowPassword: "", newPassword: "short", confirmPassword: "other" });
+    const result = await usecase.execute({ userId: UserId.of(USER_ID), body: { nowPassword: "", newPassword: "short", confirmPassword: "other" } });
 
     expect(result._unsafeUnwrapErr()).toEqual({
       type: "INVALID_INPUT",

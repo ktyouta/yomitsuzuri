@@ -11,6 +11,11 @@ export type GetListBookInputError = { field: "page"; error: BookListPaginationEr
 
 export type GetListBookError = { type: "INVALID_INPUT"; errors: GetListBookInputError[] };
 
+type PropsType = {
+  userId: UserId;
+  page: number;
+}
+
 /**
  * 書籍一覧取得ユースケース
  */
@@ -26,7 +31,7 @@ export class GetListBookUsecase {
    * @returns 成功時は指定ページの書籍一覧・全件数・総ページ数（0件の場合は空の一覧）。
    * ページ番号が制約を満たさない場合は INVALID_INPUT（一覧・件数は問い合わせない）
    */
-  async execute(userId: UserId, page: number): Promise<Result<GetListBookResultDto, GetListBookError>> {
+  async execute({ userId, page }: PropsType): Promise<Result<GetListBookResultDto, GetListBookError>> {
     // 入力値の制約チェック
     const pagination = BookListPagination.create(page);
     if (pagination.isErr()) {

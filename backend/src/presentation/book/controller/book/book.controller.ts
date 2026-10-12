@@ -3,11 +3,13 @@ import type { AppEnv } from "../../../../types";
 import { createBook } from "../create-book";
 import { getBook } from "../get-book";
 import { getListBook } from "../get-list-book";
+import { getWork } from "../get-work";
 import { updateBook } from "../update-book";
 
 const book = new Hono<AppEnv>()
     .route("/", getListBook)
     .route("/", getBook)
+    .route("/", getWork)
     .route("/", createBook)
     .route("/", updateBook);
 

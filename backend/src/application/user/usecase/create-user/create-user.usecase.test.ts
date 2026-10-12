@@ -28,7 +28,7 @@ describe("CreateUserUsecase", () => {
     const repository = createRepository(false);
     const usecase = new CreateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(BODY);
+    const result = await usecase.execute({ body: BODY });
 
     const dto = result._unsafeUnwrap();
     expect(dto.value.user.name).toBe("testuser");
@@ -42,7 +42,7 @@ describe("CreateUserUsecase", () => {
     const repository = createRepository(true);
     const usecase = new CreateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute(BODY);
+    const result = await usecase.execute({ body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_NAME" });
     expect(repository.createUserWithLogin).not.toHaveBeenCalled();
@@ -52,7 +52,7 @@ describe("CreateUserUsecase", () => {
     const repository = createRepository(false);
     const usecase = new CreateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute({ name: "ab", birthday: "19990229", password: "short", confirmPassword: "other" });
+    const result = await usecase.execute({ body: { name: "ab", birthday: "19990229", password: "short", confirmPassword: "other" } });
 
     expect(result._unsafeUnwrapErr()).toEqual({
       type: "INVALID_INPUT",
@@ -71,7 +71,7 @@ describe("CreateUserUsecase", () => {
     const repository = createRepository(false);
     const usecase = new CreateUserUsecase(repository, testConfig);
 
-    const result = await usecase.execute({ ...BODY, confirmPassword: "password2" });
+    const result = await usecase.execute({ body: { ...BODY, confirmPassword: "password2" } });
 
     expect(result._unsafeUnwrapErr()).toEqual({
       type: "INVALID_INPUT",

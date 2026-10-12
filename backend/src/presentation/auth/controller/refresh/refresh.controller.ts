@@ -20,7 +20,7 @@ const refresh = new Hono<AppEnv>().post(API_ENDPOINT.REFRESH, async (c) => {
         const cookie = new Cookie(getCookie(c));
         const refreshToken = RefreshToken.get(cookie, config);
 
-        const result = await usecase.execute(refreshToken);
+        const result = await usecase.execute({ refreshToken });
 
         if (result.status !== "success") {
             const logMessage = result.status === "invalid_token"
