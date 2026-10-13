@@ -349,4 +349,102 @@ describe("BookAggregate", () => {
       expect(book.toSnapshot().works).toEqual(before);
     });
   });
+
+  describe("updateWork", () => {
+    const WORK_ID_3 = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
+
+    /** 作品1（未削除）・作品2（未削除）・作品3（削除済み）を持つ書籍集約 */
+    function createBookWithDeletedWork(): BookAggregate {
+      return BookAggregate.reconstruct({
+        id: BookId.of(BOOK_ID),
+        userId: UserId.of(USER_ID),
+        title: BookTitle.of("短編集"),
+        publishedDate: PublishedDate.of(null),
+        readingStatusId: ReadingStatusId.of(1),
+        currentPage: CurrentPage.of(null),
+        memo: BookMemo.of(null),
+        iconId: IconId.of(1),
+        deleteFlg: false,
+        works: [
+          new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), IconId.of(1), false),
+          new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), IconId.of(1), false),
+          new WorkEntity(WorkId.of(WORK_ID_3), WorkTitle.of("作品3"), WorkSort.of(3), WorkMemo.of(null), IconId.of(1), true),
+        ],
+      });
+    }
+
+    function updateWorkParam(id: string, title: string, memo: string | null = "作品メモ", iconId = 4) {
+      return {
+        id: WorkId.of(id),
+        title: WorkTitle.of(title),
+        memo: WorkMemo.of(memo),
+        iconId: IconId.of(iconId),
+      };
+    }
+
+    it("対象の作品の作品名・メモ・アイコンだけを置き換えた集約を返し、表示順・削除フラグ・他の作品・書籍情報と自身は変更しないこと", () => {
+      const book = createBookWithDeletedWork();
+      const before = book.toSnapshot();
+
+      const result = book.updateWork(updateWorkParam(WORK_ID_2, "作品2改"));
+
+      expect(result._unsafeUnwrap().toSnapshot()).toEqual({
+        ...before,
+        works: [
+          { id: WORK_ID_1, title: "作品1", sort: 1, memo: null, iconId: 1, deleteFlg: false },
+          { id: WORK_ID_2, title: "作品2改", sort: 2, memo: "作品メモ", iconId: 4, deleteFlg: false },
+          { id: WORK_ID_3, title: "作品3", sort: 3, memo: null, iconId: 1, deleteFlg: true },
+        ],
+      });
+      expect(book.toSnapshot()).toEqual(before);
+    });
+
+    it("作品名を変えずに更新できること（自身の作品名とは重複扱いしない）", () => {
+      const book = createBookWithDeletedWork();
+
+      const result = book.updateWork(updateWorkParam(WORK_ID_1, "作品1"));
+
+      expect(result.isOk()).toBe(true);
+    });
+
+    it("削除済みの作品とは作品名が重複してもよいこと", () => {
+      const book = createBookWithDeletedWork();
+
+      const result = book.updateWork(updateWorkParam(WORK_ID_1, "作品3"));
+
+      expect(result.isOk()).toBe(true);
+    });
+
+    it("削除済みの書籍の場合は throw すること", () => {
+      const book = createBook(true);
+
+      expect(() => book.updateWork(updateWorkParam(WORK_ID_1, "作品1改"))).toThrow();
+    });
+
+    it("書籍に存在しない作品の場合は WORK_NOT_FOUND を返すこと", () => {
+      const book = createBook();
+
+      const result = book.updateWork(updateWorkParam(WORK_ID_3, "作品3改"));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "WORK_NOT_FOUND" });
+    });
+
+    it("削除済みの作品の場合は WORK_NOT_FOUND を返すこと", () => {
+      const book = createBookWithDeletedWork();
+
+      const result = book.updateWork(updateWorkParam(WORK_ID_3, "作品3改"));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "WORK_NOT_FOUND" });
+    });
+
+    it("削除されていない他の作品と作品名が重複する場合は DUPLICATE_WORK_TITLE を返し、自身を変更しないこと", () => {
+      const book = createBookWithDeletedWork();
+      const before = book.toSnapshot();
+
+      const result = book.updateWork(updateWorkParam(WORK_ID_1, "作品2"));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_WORK_TITLE", title: "作品2" });
+      expect(book.toSnapshot()).toEqual(before);
+    });
+  });
 });

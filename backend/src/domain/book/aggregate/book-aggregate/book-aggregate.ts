@@ -61,6 +61,21 @@ export type BookValidationError = { type: "DUPLICATE_WORK_ID"; id: string }
 export type UpdateWorkError = { type: "WORKS_MISMATCH" }
     | { type: "INVALID_WORKS"; errors: BookValidationError[] };
 
+type UpdateSingleWorkParamType = {
+    id: WorkId;
+    title: WorkTitle;
+    memo: WorkMemo;
+    iconId: IconId;
+};
+
+/**
+ * 作品1件の更新の失敗
+ * - WORK_NOT_FOUND: 更新対象の作品が書籍に存在しない、または削除済み
+ * - DUPLICATE_WORK_TITLE: 削除されていない他の作品と作品名が重複する
+ */
+export type UpdateSingleWorkError = { type: "WORK_NOT_FOUND" }
+    | { type: "DUPLICATE_WORK_TITLE"; title: string };
+
 type BookSnapshotType = {
     id: string;
     userId: string;
@@ -378,5 +393,61 @@ export class BookAggregate {
             deleteFlg,
             this._works,
         );
+    }
+
+    /**
+     * 作品1件の更新（作品名・メモ・アイコンを置き換える。表示順・削除フラグと他の作品は変更しない）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 書籍が削除されていないこと
+     *
+     * err の条件:
+     * - WORK_NOT_FOUND: 更新対象の作品が書籍に存在しない、または削除済みであること
+     * - DUPLICATE_WORK_TITLE: 削除されていない他の作品と作品名が重複すること
+     *
+     * 事後条件:
+     * - ok の場合: 更新対象の作品だけを引数の内容に置き換えた集約を返す
+     * - いずれの場合も自身は変更しない
+     * @param param 更新対象の作品 ID と更新後の作品情報
+     * @returns 成功時は更新後の書籍集約、作品が見つからない・作品名が重複する場合はその内容を持つ Result
+     * @throws 事前条件を満たさない場合
+     */
+    updateWork(param: UpdateSingleWorkParamType): Result<BookAggregate, UpdateSingleWorkError> {
+        if (this._deleteFlg) {
+            throw new Error(`既に削除済みの書籍です。`);
+        }
+
+        const target = this._works.find((work) => {
+            return work.id === param.id.value && !work.deleteFlg;
+        });
+
+        if (!target) {
+            return err({ type: "WORK_NOT_FOUND" });
+        }
+
+        const isDuplicate = this._works.some((work) => {
+            return work.id !== target.id && work.title === param.title.value && !work.deleteFlg;
+        });
+
+        if (isDuplicate) {
+            return err({ type: "DUPLICATE_WORK_TITLE", title: param.title.value });
+        }
+
+        const works = this._works.map((work) => {
+            return work.id === target.id ? work.update(param.title, param.memo, param.iconId) : work;
+        });
+
+        return ok(new BookAggregate(
+            this._id,
+            this._userId,
+            this._title,
+            this._publishedDate,
+            this._readingStatusId,
+            this._currentPage,
+            this._memo,
+            this._iconId,
+            this._deleteFlg,
+            works,
+        ));
     }
 }
