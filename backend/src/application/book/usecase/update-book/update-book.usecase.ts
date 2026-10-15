@@ -135,7 +135,7 @@ export class UpdateBookUsecase {
         }
 
         // 書籍・作品情報更新
-        const updatedBook = book.update({
+        const updateResult = book.update({
             title,
             publishedDate,
             readingStatus: readingStatusId,
@@ -144,12 +144,12 @@ export class UpdateBookUsecase {
             iconId,
             works,
         });
-        if (updatedBook.isErr()) {
-            return err(updatedBook.error);
+        if (updateResult.isErr()) {
+            return err(updateResult.error);
         }
 
         // 更新
-        await this.updateBookRepository.updateBook(updatedBook.value);
-        return ok(new UpdateBookResultDto(updatedBook.value));
+        await this.updateBookRepository.updateBook(book);
+        return ok(new UpdateBookResultDto(book));
     };
 }

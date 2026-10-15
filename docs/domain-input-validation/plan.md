@@ -212,6 +212,7 @@ class WorkTitle {
 | `WorkTitle.initial` | 事前条件 | 書籍タイトルの上限文字数 ≤ 作品タイトルの上限文字数（テストで保証）。満たさない場合は `of` が throw |
 | `BookAggregate.update` | 事前条件（throw） | 書籍が削除されていないこと |
 | `BookAggregate.update` | err | 作品IDの重複（`DUPLICATE_WORK_ID`）・新規作品の削除済み指定（`NEW_WORK_DELETED`）があれば `INVALID_WORKS`（この場合は不一致の判定を行わない）。作品の指定が既存の作品と一致しなければ `WORKS_MISMATCH`。不変条件の違反（全件削除・タイトル重複・表示順重複）はすべて収集して `INVALID_WORKS` |
+| `BookAggregate.update` | 事後条件 | ok の場合は自身の書籍情報と作品一覧を引数の内容に置き換え、新規の作品に ID を採番する。err の場合は自身を変更しない |
 | `UpdateBookUsecase.execute` | 事後条件 | 入力値の制約違反はすべて `field` 付きで `INVALID_INPUT` として返し、DB は問い合わせない・保存しない。`@throws` はコードの不具合のみ |
 
 ### Phase 3（書籍一覧 API）

@@ -100,14 +100,14 @@ export class BookAggregate {
 
     private constructor(private readonly _id: BookId,
         private readonly _userId: UserId,
-        private readonly _title: BookTitle,
-        private readonly _publishedDate: PublishedDate,
-        private readonly _readingStatusId: ReadingStatusId,
-        private readonly _currentPage: CurrentPage,
-        private readonly _memo: BookMemo,
-        private readonly _iconId: IconId,
-        private readonly _deleteFlg: boolean,
-        private readonly _works: WorkEntity[],
+        private _title: BookTitle,
+        private _publishedDate: PublishedDate,
+        private _readingStatusId: ReadingStatusId,
+        private _currentPage: CurrentPage,
+        private _memo: BookMemo,
+        private _iconId: IconId,
+        private _deleteFlg: boolean,
+        private _works: WorkEntity[],
     ) { }
 
     get id() {
@@ -165,13 +165,13 @@ export class BookAggregate {
      * - 削除されていない作品同士で表示順が重複しないこと
      *
      * 事後条件:
-     * - ok の場合: 書籍情報と作品一覧を引数の内容に置き換え、新規の作品に ID を採番した集約を返す
-     * - いずれの場合も自身は変更しない
+     * - ok の場合: 自身の書籍情報と作品一覧を引数の内容に置き換え、新規の作品に ID を採番する
+     * - err の場合: 自身は変更しない
      * @param params 更新後の書籍情報と作品一覧（作品は削除済みを含む全件）
-     * @returns 成功時は更新後の書籍集約、作品の指定の誤り・不一致・不変条件の違反時はその内容を持つ Result
+     * @returns 成功時は ok、作品の指定の誤り・不一致・不変条件の違反時はその内容を持つ Result
      * @throws 事前条件を満たさない場合
      */
-    update(params: UpdateBookParamType): Result<BookAggregate, UpdateWorkError> {
+    update(params: UpdateBookParamType): Result<void, UpdateWorkError> {
         if (this._deleteFlg) {
             throw new Error(`既に削除済みの書籍です。`);
         }
@@ -181,18 +181,15 @@ export class BookAggregate {
             return err(works.error);
         }
 
-        return ok(new BookAggregate(
-            this._id,
-            this._userId,
-            params.title,
-            params.publishedDate,
-            params.readingStatus,
-            params.currentPage,
-            params.memo,
-            params.iconId,
-            this._deleteFlg,
-            works.value,
-        ));
+        this._title = params.title;
+        this._publishedDate = params.publishedDate;
+        this._readingStatusId = params.readingStatus;
+        this._currentPage = params.currentPage;
+        this._memo = params.memo;
+        this._iconId = params.iconId;
+        this._works = works.value;
+
+        return ok(undefined);
     }
 
     /**
@@ -352,47 +349,25 @@ export class BookAggregate {
     }
 
     /**
-     * 書籍削除
-     * @returns 削除済みにした書籍集約（自身は変更しない）
+     * 書籍削除（自身を削除済みにする）
      * @throws 既に削除済みの書籍の場合
      */
-    delete(): BookAggregate {
+    delete(): void {
         if (this._deleteFlg) {
             throw new Error(`既に削除済みの書籍です。`);
         }
-        return this.withDeleteFlg(true);
+        this._deleteFlg = true;
     }
 
     /**
-     * 書籍復元
-     * @returns 削除済みを解除した書籍集約（自身は変更しない）
+     * 書籍復元（自身の削除済みを解除する）
      * @throws 削除されていない書籍の場合
      */
-    restore(): BookAggregate {
+    restore(): void {
         if (!this._deleteFlg) {
             throw new Error(`削除されていない書籍です。`);
         }
-        return this.withDeleteFlg(false);
-    }
-
-    /**
-     * 削除フラグだけを差し替えた書籍集約を作成する
-     * @param deleteFlg 削除フラグ
-     * @returns 削除フラグ以外は自身と同じ値を持つ書籍集約
-     */
-    private withDeleteFlg(deleteFlg: boolean): BookAggregate {
-        return new BookAggregate(
-            this._id,
-            this._userId,
-            this._title,
-            this._publishedDate,
-            this._readingStatusId,
-            this._currentPage,
-            this._memo,
-            this._iconId,
-            deleteFlg,
-            this._works,
-        );
+        this._deleteFlg = false;
     }
 
     /**
@@ -406,13 +381,13 @@ export class BookAggregate {
      * - DUPLICATE_WORK_TITLE: 削除されていない他の作品と作品名が重複すること
      *
      * 事後条件:
-     * - ok の場合: 更新対象の作品だけを引数の内容に置き換えた集約を返す
-     * - いずれの場合も自身は変更しない
+     * - ok の場合: 自身の作品のうち、更新対象の作品だけを引数の内容に置き換える
+     * - err の場合: 自身は変更しない
      * @param param 更新対象の作品 ID と更新後の作品情報
-     * @returns 成功時は更新後の書籍集約、作品が見つからない・作品名が重複する場合はその内容を持つ Result
+     * @returns 成功時は ok、作品が見つからない・作品名が重複する場合はその内容を持つ Result
      * @throws 事前条件を満たさない場合
      */
-    updateWork(param: UpdateSingleWorkParamType): Result<BookAggregate, UpdateSingleWorkError> {
+    updateWork(param: UpdateSingleWorkParamType): Result<void, UpdateSingleWorkError> {
         if (this._deleteFlg) {
             throw new Error(`既に削除済みの書籍です。`);
         }
@@ -433,21 +408,10 @@ export class BookAggregate {
             return err({ type: "DUPLICATE_WORK_TITLE", title: param.title.value });
         }
 
-        const works = this._works.map((work) => {
+        this._works = this._works.map((work) => {
             return work.id === target.id ? work.update(param.title, param.memo, param.iconId) : work;
         });
 
-        return ok(new BookAggregate(
-            this._id,
-            this._userId,
-            this._title,
-            this._publishedDate,
-            this._readingStatusId,
-            this._currentPage,
-            this._memo,
-            this._iconId,
-            this._deleteFlg,
-            works,
-        ));
+        return ok(undefined);
     }
 }

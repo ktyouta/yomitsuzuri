@@ -134,14 +134,13 @@ describe("BookAggregate", () => {
   }
 
   describe("delete", () => {
-    it("削除済みにした集約を返し、自身は変更しないこと", () => {
+    it("自身を削除済みにすること", () => {
       const book = createBook();
       const before = book.toSnapshot();
 
-      const deleted = book.delete();
+      book.delete();
 
-      expect(deleted.toSnapshot()).toEqual({ ...before, deleteFlg: true });
-      expect(book.toSnapshot()).toEqual(before);
+      expect(book.toSnapshot()).toEqual({ ...before, deleteFlg: true });
     });
 
     it("既に削除済みの場合は throw すること", () => {
@@ -152,14 +151,13 @@ describe("BookAggregate", () => {
   });
 
   describe("restore", () => {
-    it("削除済みを解除した集約を返し、自身は変更しないこと", () => {
+    it("自身の削除済みを解除すること", () => {
       const book = createBook(true);
       const before = book.toSnapshot();
 
-      const restored = book.restore();
+      book.restore();
 
-      expect(restored.toSnapshot()).toEqual({ ...before, deleteFlg: false });
-      expect(book.toSnapshot()).toEqual(before);
+      expect(book.toSnapshot()).toEqual({ ...before, deleteFlg: false });
     });
 
     it("削除されていない場合は throw すること", () => {
@@ -196,9 +194,8 @@ describe("BookAggregate", () => {
       };
     }
 
-    it("書籍情報と作品（既存作品の更新・削除、新規作品の追加）を反映した集約を返し、新規作品には ID が採番されること", () => {
+    it("自身の書籍情報と作品（既存作品の更新・削除、新規作品の追加）を置き換え、新規作品には ID が採番されること", () => {
       const book = createBook();
-      const before = book.toSnapshot();
 
       const result = book.update(updateParam([
         workParam(WORK_ID_1, "作品1改", 2, false, 4),
@@ -206,7 +203,8 @@ describe("BookAggregate", () => {
         workParam(null, "作品3", 1, false, 6),
       ]));
 
-      expect(result._unsafeUnwrap().toSnapshot()).toEqual({
+      expect(result.isOk()).toBe(true);
+      expect(book.toSnapshot()).toEqual({
         id: BOOK_ID,
         userId: USER_ID,
         title: "短編集改",
@@ -222,7 +220,6 @@ describe("BookAggregate", () => {
           { id: expect.stringMatching(ULID_PATTERN), title: "作品3", sort: 1, memo: null, iconId: 6, deleteFlg: false },
         ],
       });
-      expect(book.toSnapshot()).toEqual(before);
     });
 
     it("削除済みの作品とはタイトル・表示順が重複してもよいこと", () => {
@@ -246,16 +243,16 @@ describe("BookAggregate", () => {
       ]))).toThrow();
     });
 
-    it("既存の作品が含まれていない場合は WORKS_MISMATCH を返し、自身の作品を変更しないこと", () => {
+    it("既存の作品が含まれていない場合は WORKS_MISMATCH を返し、自身を変更しないこと", () => {
       const book = createBook();
-      const before = book.toSnapshot().works;
+      const before = book.toSnapshot();
 
       const result = book.update(updateParam([
         workParam(WORK_ID_1, "作品1", 1),
       ]));
 
       expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
-      expect(book.toSnapshot().works).toEqual(before);
+      expect(book.toSnapshot()).toEqual(before);
     });
 
     it("既存にない作品 ID が含まれる場合は WORKS_MISMATCH を返すこと", () => {
@@ -280,8 +277,9 @@ describe("BookAggregate", () => {
       expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
     });
 
-    it("同じ作品 ID が重複して含まれる場合は DUPLICATE_WORK_ID を返すこと（作品の不一致より優先する）", () => {
+    it("同じ作品 ID が重複して含まれる場合は DUPLICATE_WORK_ID を返し、自身を変更しないこと（作品の不一致より優先する）", () => {
       const book = createBook();
+      const before = book.toSnapshot();
 
       const result = book.update(updateParam([
         workParam(WORK_ID_1, "作品1", 1),
@@ -290,6 +288,7 @@ describe("BookAggregate", () => {
       ]));
 
       expect(result._unsafeUnwrapErr()).toEqual({ type: "INVALID_WORKS", errors: [{ type: "DUPLICATE_WORK_ID", id: WORK_ID_1 }] });
+      expect(book.toSnapshot()).toEqual(before);
     });
 
     it("新規の作品が削除済みの場合は NEW_WORK_DELETED を返すこと", () => {
@@ -330,9 +329,9 @@ describe("BookAggregate", () => {
       expect(result._unsafeUnwrapErr()).toEqual({ type: "INVALID_WORKS", errors: [{ type: "ALL_DELETED" }] });
     });
 
-    it("削除されていない作品のタイトル・表示順の重複をすべて返し、自身の作品を変更しないこと", () => {
+    it("削除されていない作品のタイトル・表示順の重複をすべて返し、自身を変更しないこと", () => {
       const book = createBook();
-      const before = book.toSnapshot().works;
+      const before = book.toSnapshot();
 
       const result = book.update(updateParam([
         workParam(WORK_ID_1, "作品1", 1),
@@ -346,7 +345,7 @@ describe("BookAggregate", () => {
           { type: "DUPLICATE_WORK_SORT", sort: 1 },
         ],
       });
-      expect(book.toSnapshot().works).toEqual(before);
+      expect(book.toSnapshot()).toEqual(before);
     });
   });
 
@@ -382,13 +381,14 @@ describe("BookAggregate", () => {
       };
     }
 
-    it("対象の作品の作品名・メモ・アイコンだけを置き換えた集約を返し、表示順・削除フラグ・他の作品・書籍情報と自身は変更しないこと", () => {
+    it("自身の対象の作品の作品名・メモ・アイコンだけを置き換え、表示順・削除フラグ・他の作品・書籍情報は変更しないこと", () => {
       const book = createBookWithDeletedWork();
       const before = book.toSnapshot();
 
       const result = book.updateWork(updateWorkParam(WORK_ID_2, "作品2改"));
 
-      expect(result._unsafeUnwrap().toSnapshot()).toEqual({
+      expect(result.isOk()).toBe(true);
+      expect(book.toSnapshot()).toEqual({
         ...before,
         works: [
           { id: WORK_ID_1, title: "作品1", sort: 1, memo: null, iconId: 1, deleteFlg: false },
@@ -396,7 +396,6 @@ describe("BookAggregate", () => {
           { id: WORK_ID_3, title: "作品3", sort: 3, memo: null, iconId: 1, deleteFlg: true },
         ],
       });
-      expect(book.toSnapshot()).toEqual(before);
     });
 
     it("作品名を変えずに更新できること（自身の作品名とは重複扱いしない）", () => {
