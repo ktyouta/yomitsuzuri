@@ -23,7 +23,11 @@ export default {
           sub: "rgb(var(--ink-sub-rgb) / <alpha-value>)",
         },
         line: "rgb(var(--line-rgb) / <alpha-value>)",
-        danger: "rgb(var(--danger-rgb) / <alpha-value>)",
+        danger: {
+          DEFAULT: "rgb(var(--danger-rgb) / <alpha-value>)",
+          bg: "rgb(var(--danger-bg-rgb) / <alpha-value>)",
+          border: "rgb(var(--danger-border-rgb) / <alpha-value>)",
+        },
       },
       borderColor: {
         // 色指定のない `border` / `border-b` 等（Tailwindの既定では固定のgray-200相当）を

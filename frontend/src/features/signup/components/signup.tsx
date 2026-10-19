@@ -1,4 +1,4 @@
-import { LoadingOverlay, Select, Textbox } from "@/components";
+import { ErrorAlert, LoadingOverlay, Select, Textbox } from "@/components";
 import { MONTH_LIST } from "@/constants/date-options";
 import { getDayList } from "@/utils/date-select-options";
 import { type BaseSyntheticEvent } from "react";
@@ -66,13 +66,13 @@ export function Signup(props: PropsType) {
                     アカウント作成
                 </h1>
                 {errMessage && (
-                    <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg p-4 mb-6">
-                        {errMessage}
-                    </div>
+                    <ErrorAlert className="mb-6 text-sm sm:text-base">
+                        <p>{errMessage}</p>
+                    </ErrorAlert>
                 )}
                 <div className="flex flex-col gap-6">
                     <div>
-                        <label className="block text-sm font-medium text-ink mb-2">
+                        <label className="block text-sm sm:text-base font-medium text-ink mb-2">
                             ユーザー名（3〜30文字）
                         </label>
                         <Textbox
@@ -84,11 +84,11 @@ export function Signup(props: PropsType) {
                             registration={register("name")}
                         />
                         {errors.name?.message && (
-                            <p className="text-red-500 text-xs mt-2">{errors.name.message}</p>
+                            <p className="text-red-500 text-xs sm:text-sm mt-2">{errors.name.message}</p>
                         )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-ink mb-2">
+                        <label className="block text-sm sm:text-base font-medium text-ink mb-2">
                             生年月日
                         </label>
                         <div className="flex items-center gap-2">
@@ -112,11 +112,11 @@ export function Signup(props: PropsType) {
                             <span className="text-ink-sub shrink-0">日</span>
                         </div>
                         {errors.birthday?.message && (
-                            <p className="text-red-500 text-xs mt-2">{errors.birthday.message}</p>
+                            <p className="text-red-500 text-xs sm:text-sm mt-2">{errors.birthday.message}</p>
                         )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-ink mb-2">
+                        <label className="block text-sm sm:text-base font-medium text-ink mb-2">
                             パスワード
                         </label>
                         <Textbox
@@ -127,11 +127,11 @@ export function Signup(props: PropsType) {
                             registration={register("password")}
                         />
                         {errors.password?.message && (
-                            <p className="text-red-500 text-xs mt-2">{errors.password.message}</p>
+                            <p className="text-red-500 text-xs sm:text-sm mt-2">{errors.password.message}</p>
                         )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-ink mb-2">
+                        <label className="block text-sm sm:text-base font-medium text-ink mb-2">
                             確認用パスワード
                         </label>
                         <Textbox
@@ -142,7 +142,7 @@ export function Signup(props: PropsType) {
                             registration={register("confirmPassword")}
                         />
                         {errors.confirmPassword?.message && (
-                            <p className="text-red-500 text-xs mt-2">{errors.confirmPassword.message}</p>
+                            <p className="text-red-500 text-xs sm:text-sm mt-2">{errors.confirmPassword.message}</p>
                         )}
                     </div>
                     <div className="flex flex-row gap-3 mt-4">

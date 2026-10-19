@@ -1,4 +1,4 @@
-import { LoadingOverlay, Textbox } from "@/components";
+import { ErrorAlert, LoadingOverlay, Textbox } from "@/components";
 import { type BaseSyntheticEvent } from "react";
 import { type FieldErrors, type UseFormRegister } from "react-hook-form";
 
@@ -38,13 +38,13 @@ export function UpdatePassword(props: PropsType) {
                     パスワード変更
                 </h1>
                 {errMessage && (
-                    <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg p-4 mb-6">
-                        {errMessage}
-                    </div>
+                    <ErrorAlert className="mb-6 text-sm sm:text-base">
+                        <p>{errMessage}</p>
+                    </ErrorAlert>
                 )}
                 <div className="flex flex-col gap-6">
                     <div>
-                        <label className="block text-sm font-medium text-ink mb-2">
+                        <label className="block text-sm sm:text-base font-medium text-ink mb-2">
                             現在のパスワード
                         </label>
                         <Textbox
@@ -54,11 +54,11 @@ export function UpdatePassword(props: PropsType) {
                             registration={register("nowPassword")}
                         />
                         {errors.nowPassword?.message && (
-                            <p className="text-red-500 text-xs mt-2">{errors.nowPassword.message}</p>
+                            <p className="text-red-500 text-xs sm:text-sm mt-2">{errors.nowPassword.message}</p>
                         )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-ink mb-2">
+                        <label className="block text-sm sm:text-base font-medium text-ink mb-2">
                             新しいパスワード
                         </label>
                         <Textbox
@@ -68,11 +68,11 @@ export function UpdatePassword(props: PropsType) {
                             registration={register("newPassword")}
                         />
                         {errors.newPassword?.message && (
-                            <p className="text-red-500 text-xs mt-2">{errors.newPassword.message}</p>
+                            <p className="text-red-500 text-xs sm:text-sm mt-2">{errors.newPassword.message}</p>
                         )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-ink mb-2">
+                        <label className="block text-sm sm:text-base font-medium text-ink mb-2">
                             確認用パスワード
                         </label>
                         <Textbox
@@ -82,7 +82,7 @@ export function UpdatePassword(props: PropsType) {
                             registration={register("confirmPassword")}
                         />
                         {errors.confirmPassword?.message && (
-                            <p className="text-red-500 text-xs mt-2">{errors.confirmPassword.message}</p>
+                            <p className="text-red-500 text-xs sm:text-sm mt-2">{errors.confirmPassword.message}</p>
                         )}
                     </div>
                     <div className="flex flex-row gap-3 mt-4">

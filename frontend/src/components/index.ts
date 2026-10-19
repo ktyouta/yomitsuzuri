@@ -6,6 +6,7 @@ export { Badge } from './ui/badge/badge';
 export { Breadcrumb } from './ui/breadcrumb/breadcrumb';
 export { Button } from './ui/button/button';
 export { DatePicker } from './ui/date-picker/date-picker';
+export { ErrorAlert } from './ui/error-alert/error-alert';
 export { Checkbox } from './ui/checkbox/checkbox';
 export { Dialog } from './ui/dialog/dialog';
 export { Footer } from './layouts/footer/footer';

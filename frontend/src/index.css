@@ -16,6 +16,8 @@
   --ink-sub-rgb: 100 116 139;
   --line-rgb: 226 232 240;
   --danger-rgb: 220 38 38;
+  --danger-bg-rgb: 254 242 242;
+  --danger-border-rgb: 254 202 202;
 }
 
 .dark {
@@ -27,6 +29,8 @@
   --ink-sub-rgb: 148 163 184;
   --line-rgb: 51 65 85;
   --danger-rgb: 248 113 113;
+  --danger-bg-rgb: 63 26 26;
+  --danger-border-rgb: 127 29 29;
   color-scheme: dark;
 }
 
