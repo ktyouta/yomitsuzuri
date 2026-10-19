@@ -12,6 +12,13 @@ export class DeleteUserUsecase {
   constructor(private readonly repository: IDeleteUserRepository) { }
 
   async execute({ userId }: PropsType): Promise<boolean> {
-    return await this.repository.deleteUserWithLogin(userId);
+    const user = await this.repository.findUser(userId);
+    if (!user) {
+      return false;
+    }
+
+    user.delete();
+
+    return await this.repository.deleteUser(user);
   }
 }

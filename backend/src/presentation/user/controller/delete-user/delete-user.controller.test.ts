@@ -4,9 +4,9 @@ import { env, SELF } from "cloudflare:test";
 import { ulid } from "ulid";
 import { describe, expect, it } from "vitest";
 import { createEnvConfig } from "../../../../config";
-import { AccessToken } from "../../../../domain/auth";
+import { AccessToken } from "../../../../domain/user";
 import { UserId } from "../../../../domain/shared";
-import { userMaster } from "../../../../infrastructure/db";
+import { userLoginMaster, userMaster } from "../../../../infrastructure/db";
 import * as schema from "../../../../infrastructure/db/schema";
 
 describe("DELETE /api/v1/user", () => {
@@ -19,8 +19,14 @@ describe("DELETE /api/v1/user", () => {
         const otherUserId = ulid();
 
         await db.insert(userMaster).values([
-            { id: authenticatedUserId, name: `test-user-${authenticatedUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
-            { id: otherUserId, name: `test-user-${otherUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
+            { id: authenticatedUserId, name: `u-${authenticatedUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
+            { id: otherUserId, name: `u-${otherUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
+        ]);
+
+        // ユーザーは必ずログイン情報とともに登録される
+        await db.insert(userLoginMaster).values([
+            { id: ulid(), userId: authenticatedUserId, loginId: `u-${authenticatedUserId}`, passwordHash: "hashed", salt: "salt", createdAt: now, updatedAt: now },
+            { id: ulid(), userId: otherUserId, loginId: `u-${otherUserId}`, passwordHash: "hashed", salt: "salt", createdAt: now, updatedAt: now },
         ]);
 
         const config = createEnvConfig(env);
@@ -37,8 +43,12 @@ describe("DELETE /api/v1/user", () => {
 
         const [authenticatedUserRow] = await db.select().from(userMaster).where(eq(userMaster.id, authenticatedUserId));
         const [otherUserRow] = await db.select().from(userMaster).where(eq(userMaster.id, otherUserId));
+        const [authenticatedUserLoginRow] = await db.select().from(userLoginMaster).where(eq(userLoginMaster.userId, authenticatedUserId));
+        const [otherUserLoginRow] = await db.select().from(userLoginMaster).where(eq(userLoginMaster.userId, otherUserId));
 
         expect(authenticatedUserRow.deleteFlg).toBe(true);
         expect(otherUserRow.deleteFlg).toBe(false);
+        expect(authenticatedUserLoginRow.deleteFlg).toBe(true);
+        expect(otherUserLoginRow.deleteFlg).toBe(false);
     });
 });

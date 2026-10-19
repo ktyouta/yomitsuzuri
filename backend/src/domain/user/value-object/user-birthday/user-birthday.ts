@@ -41,6 +41,19 @@ export class UserBirthday {
   }
 
   /**
+   * 永続化済みの値など、制約を満たすことが保証された値から生成する
+   * @param userBirthday 生年月日（yyyyMMdd）
+   * @returns 生年月日
+   * @throws 制約を満たさない場合（呼び出し側の不具合）
+   */
+  static of(userBirthday: string): UserBirthday {
+    return UserBirthday.create(userBirthday).match(
+      (birthday) => birthday,
+      (error) => { throw new Error(`生年月日が不正です。type:${error.type}`); },
+    );
+  }
+
+  /**
    * yyyyMMdd 形式か判定する（月は 01〜12、日は 01〜31 の範囲のみ。実在するかは判定しない）
    * @param userBirthday 生年月日
    * @returns 形式を満たす場合は true

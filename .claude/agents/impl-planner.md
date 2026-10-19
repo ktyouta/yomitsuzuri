@@ -36,9 +36,9 @@ tools: Read, Glob, Grep
 
 **契約テストは実装より先に書く（テスト駆動）。** 設計で定めた契約（クラス仕様）からテストを作成し、失敗を確認してから実装に進む。テストを実装の後に書くと、契約ではなく書いたコードの動きを確かめるテストになりやすいため。
 
-**機能がどのモジュール（`user` / `auth` / 等）に属するかは「変更理由の一致」で判断する。** 新しい機能が既存モジュールのどれにも当てはまらない場合のみ新規モジュールを切る。
+**機能がどのモジュール（`user` / `book` / 等）に属するかは、一緒に守る必要があるルール（集約）で判断する。** 新しい機能が既存モジュールのどれにも当てはまらない場合のみ新規モジュールを切る。
 
-**モジュール跨ぎの依存**：Usecase が自モジュール以外の `domain/{他モジュール}/repository` interface に依存するのは正当（例: `create-user` usecase が `user` と `auth` 両方の repository を呼ぶ）。ただし domain 層の Entity/VO 同士が直接依存するのは禁止。
+**モジュール跨ぎの依存**：Usecase が自モジュール以外の `domain/{他モジュール}/repository` interface に依存するのは正当（例: `book` の usecase が `user` の repository を呼ぶ）。ただし domain 層の Entity/VO 同士が直接依存するのは禁止。
 
 **複数テーブルへのアトミックな書き込み**：Cloudflare D1 は `db.transaction()` 非対応のため `db.batch` を使うが、これは必ず1つの Repository メソッド内（Infrastructure層）で完結させる。Usecase・Controller から Drizzle のクエリビルダーを直接呼び出す実装は計画に含めない。
 
@@ -59,7 +59,7 @@ tools: Read, Glob, Grep
 - 新しいルーターは `src/index.ts` に登録する（`rpc/index.ts` は `AppType` の型再 export 専用）
 - バックエンドのファイルは1単位1フォルダ（`<名前>/<名前>.<種別>.ts` + `index.ts`）で配置する
 - テストファイルは実装ファイルと同じ単位フォルダに配置する（`backend/test/` はマイグレーション適用・型定義の設定専用）
-- 複数のドメインで共有する VO（`UserId` / `UserName` 等）は `domain/shared/` に置く
+- 複数のドメインで共有する VO（`UserId` 等）は `domain/shared/` に置く
 - Usecase のテストでは、Repository interface を満たすスタブ（オブジェクトリテラル + `vi.fn()`）を使い、DB を使わない
 
 ### フロントエンド

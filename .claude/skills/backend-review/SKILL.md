@@ -45,7 +45,7 @@ version: 2.1.0
 - `execute` の処理の流れが、コメントや命名で上から順に読めるか（長くなる場合は private メソッドやドメインサービスに切り出しているか）
 - DB に触れない純粋なビジネスロジック（バリデーション・計算処理等）を Usecase に直書きせず、ドメイン層・`util/` に置いているか
 - Usecase が Drizzle のクエリビルダー（`db.insert(...)` 等）やテーブルスキーマを直接importしていないか（Infrastructure層の詳細はRepository経由でのみ扱う）
-- **モジュール跨ぎの依存は許可される**: Usecase が自モジュール以外の `domain/{他モジュール}/repository` interface に依存すること自体は違反ではない（例: `application/user/usecase/create-user/create-user.usecase.ts` が `domain/auth` の `IUserLoginRepository` に依存する）。ただし domain 層の Entity/VO 同士が直接依存するのは違反として指摘する
+- **モジュール跨ぎの依存は許可される**: Usecase が自モジュール以外の `domain/{他モジュール}/repository` interface に依存すること自体は違反ではない（例: `application/book` の Usecase が `domain/user` の Repository interface に依存する）。ただし domain 層の Entity/VO 同士が直接依存するのは違反として指摘する
 
 ### フォルダ・ファイル構成
 - `domain/{機能グループ名}/`（entity, value-object, repository interface）、`application/{機能グループ名}/`（usecase, dto）、`infrastructure/{機能グループ名}/repository/`、`presentation/{機能グループ名}/`（controller, schema）の4層構成に沿っているか
@@ -53,7 +53,7 @@ version: 2.1.0
 - ルーター集約ファイルが `[機能グループ名]/[機能グループ名].controller.ts` になっているか
 - repository に対応する `.repository.interface.ts` が `domain/` 側にセットで存在するか
 - 各レイヤーフォルダ・単位フォルダに `index.ts` が存在するか
-- 複数のドメインで共有する VO（`UserId` / `UserName` 等）が `domain/shared/` に置かれ、ドメイン同士が直接 import していないか
+- 複数のドメインで共有する VO（`UserId` 等）が `domain/shared/` に置かれ、ドメイン同士が直接 import していないか
 
 ### コーディング規約
 - ユーティリティ関数（日付変換・文字列変換等）を Usecase / Controller 内に直接定義していないか
@@ -120,7 +120,7 @@ CLAUDE.md の「クラス設計指針（契約による設計）」に基づき�
   - アンチパターン: `get-xxx.repository.ts`（SELECT）・`create-xxx.repository.ts`（INSERT）のように操作種別でファイルを分けている
   - 正しいパターン: `create-xxx.repository.ts` に SELECT / INSERT / UPDATE をまとめて定義している（エンドポイントが必要とする全DB操作を1ファイルに集約）
   - 異なるエンドポイント間で同じDB操作が重複しても共通化しない
-  - 1つのユースケースが複数モジュール（例: user と auth）のテーブルへの書き込みを必要とする場合も、そのユースケース専用の Repository メソッド1つに集約してよい（後述の Constraints 参照）
+  - 1つのユースケースが複数モジュール（例: user と book）のテーブルへの書き込みを必要とする場合も、そのユースケース専用の Repository メソッド1つに集約してよい（後述の Constraints 参照）
 
 ---
 
@@ -130,7 +130,7 @@ CLAUDE.md の「クラス設計指針（契約による設計）」に基づき�
 - **`db.batch` は必ず Repository（Infrastructure層）内で完結させる。Controller・Usecase から Drizzle のクエリビルダーを直接呼び出すことは禁止**
   - 同一ユースケース内で複数テーブル（複数モジュールにまたがる場合を含む）への書き込みをアトミックに行う必要がある場合、そのユースケース専用の Repository に両方の insert/update をまとめたメソッドを1つ定義し、その内部で `db.batch` を実行する
   - アンチパターン: Controller や Usecase が `db.batch([db.insert(tableA)..., db.insert(tableB)...])` を直接組み立てている（Repositoryの存在意義がなくなる）
-  - 正しいパターン: `ICreateUserRepository.createUserWithLogin(user, login): Promise<void>` のように1メソッドにまとめ、Usecase は `repository.createUserWithLogin(...)` を1回呼ぶだけにする
+  - 正しいパターン: `ICreateUserRepository.createUser(user): Promise<void>`（ユーザーとログイン情報を `db.batch` で登録）のように1メソッドにまとめ、Usecase は `repository.createUser(...)` を1回呼ぶだけにする
 
 ---
 

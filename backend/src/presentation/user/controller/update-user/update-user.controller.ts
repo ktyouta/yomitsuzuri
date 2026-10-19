@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { UpdateUserUsecase } from "../../../../application";
 import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
-import { RefreshToken } from "../../../../domain";
-import { UpdateUserRepository } from "../../../../infrastructure";
+import { RefreshToken, UserNameUniquenessDomainService } from "../../../../domain";
+import { UpdateUserRepository, UserNameUniquenessRepository } from "../../../../infrastructure";
 import { authMiddleware, userOperationGuardMiddleware, validatorMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
 import { toInputErrorMessage } from "../../error-message";
@@ -23,7 +23,8 @@ const updateUser = new Hono<AppEnv>().patch(
         const db = c.get('db');
         const config = c.get('envConfig');
         const repository = new UpdateUserRepository(db);
-        const usecase = new UpdateUserUsecase(repository, config);
+        const uniquenessService = new UserNameUniquenessDomainService(new UserNameUniquenessRepository(db));
+        const usecase = new UpdateUserUsecase(repository, config, uniquenessService);
 
         const result = await usecase.execute({ userId: user.userId, name: body.name, birthday: body.birthday });
 

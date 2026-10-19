@@ -1,22 +1,21 @@
-import type { UserEntity } from "../../entity";
-import type { UserBirthday } from "../../value-object";
-import type { UserId, UserName } from "../../../shared";
+import type { UserId } from "../../../shared";
+import type { UserAggregate } from "../../aggregate";
 
 /**
  * ユーザー更新リポジトリインターフェース
  */
 export interface IUpdateUserRepository {
   /**
-   * 自分以外に同名のユーザーが存在するかチェック
+   * ユーザーIDでユーザーを取得
+   * @param userId 取得対象のユーザーID
+   * @returns ユーザーとログイン情報がともに削除されていないユーザー（存在しない場合は null）
    */
-  checkUserNameExists(userId: UserId, userName: UserName): Promise<boolean>;
+  findUser(userId: UserId): Promise<UserAggregate | null>;
 
   /**
    * ユーザーとログイン情報をアトミックに更新する
+   * @param user ユーザー情報を変更したユーザー
+   * @returns 更新できた場合は true（削除済み・存在しない場合は false）
    */
-  updateUserWithLogin(
-    userId: UserId,
-    userName: UserName,
-    userBirthday: UserBirthday
-  ): Promise<{ entity: UserEntity; darkMode: boolean } | undefined>;
+  updateUser(user: UserAggregate): Promise<boolean>;
 }

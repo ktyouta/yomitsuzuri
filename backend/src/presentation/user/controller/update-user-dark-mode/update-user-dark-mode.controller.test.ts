@@ -4,9 +4,9 @@ import { env, SELF } from "cloudflare:test";
 import { ulid } from "ulid";
 import { describe, expect, it } from "vitest";
 import { createEnvConfig } from "../../../../config";
-import { AccessToken } from "../../../../domain/auth";
+import { AccessToken } from "../../../../domain/user";
 import { UserId } from "../../../../domain/shared";
-import { userMaster } from "../../../../infrastructure/db";
+import { userLoginMaster, userMaster } from "../../../../infrastructure/db";
 import * as schema from "../../../../infrastructure/db/schema";
 
 describe("PATCH /api/v1/user/dark-mode", () => {
@@ -19,8 +19,14 @@ describe("PATCH /api/v1/user/dark-mode", () => {
         const otherUserId = ulid();
 
         await db.insert(userMaster).values([
-            { id: authenticatedUserId, name: `test-user-${authenticatedUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
-            { id: otherUserId, name: `test-user-${otherUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
+            { id: authenticatedUserId, name: `u-${authenticatedUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
+            { id: otherUserId, name: `u-${otherUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
+        ]);
+
+        // ユーザーは必ずログイン情報とともに登録される
+        await db.insert(userLoginMaster).values([
+            { id: ulid(), userId: authenticatedUserId, loginId: `u-${authenticatedUserId}`, passwordHash: "hashed", salt: "salt", createdAt: now, updatedAt: now },
+            { id: ulid(), userId: otherUserId, loginId: `u-${otherUserId}`, passwordHash: "hashed", salt: "salt", createdAt: now, updatedAt: now },
         ]);
 
         const config = createEnvConfig(env);

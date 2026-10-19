@@ -61,6 +61,9 @@ lerna-debug.log*
 !.claude/skills/**
 # incidents.md は各プロジェクトのローカル記録（Git管理しない）。雛形のみ管理する
 !.claude/incidents-template.md
+!.claude/settings.json
+!.claude/hooks/
+!.claude/hooks/**
 
 tmpclaude-*
 

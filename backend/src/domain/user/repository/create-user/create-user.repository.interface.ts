@@ -1,18 +1,11 @@
-import type { UserLoginEntity } from "../../../auth";
-import type { UserEntity } from "../../entity";
-import type { UserName } from "../../../shared";
+import type { UserAggregate } from "../../aggregate";
 
 /**
  * ユーザー作成リポジトリインターフェース
  */
 export interface ICreateUserRepository {
   /**
-   * ユーザー名の重複チェック
-   */
-  existsByUserName(userName: UserName): Promise<boolean>;
-
-  /**
    * ユーザーとログイン情報をアトミックに作成する
    */
-  createUserWithLogin(user: UserEntity, login: UserLoginEntity): Promise<void>;
+  createUser(user: UserAggregate): Promise<void>;
 }

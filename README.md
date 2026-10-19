@@ -75,26 +75,27 @@ AI はアプリの目的そのものではなく、情報を登録する作業�
 yomitsuzuri/
 ├── backend/                  # Hono バックエンド（Cloudflare Workers）
 │   ├── src/
-│   │   ├── domain/           # Entity・Value Object・Repository interface（何にも依存しない）
-│   │   │   ├── shared/       #   複数コンテキストで共有する概念（UserId・UserName）
-│   │   │   ├── user/         #   プロフィール管理
-│   │   │   └── auth/         #   認証（login/logout/password/token/credential）
-│   │   ├── application/      # Usecase（メインロジック。Repository interface 経由で domain を操作）
-│   │   │   ├── user/usecase/
-│   │   │   └── auth/usecase/
+│   │   ├── domain/           # Aggregate・Entity・Value Object・Domain Service・Repository interface（何にも依存しない）
+│   │   │   ├── shared/       #   複数コンテキストで共有する概念（UserId）
+│   │   │   ├── user/         #   ユーザー（プロフィール・ログイン・パスワード・トークン）
+│   │   │   └── book/         #   書籍・作品
+│   │   ├── application/      # Usecase・DTO（メインロジック。Repository interface 経由で domain を操作）
+│   │   │   ├── user/
+│   │   │   └── book/
 │   │   ├── infrastructure/   # Repository 実装（Drizzle ORM）・DB スキーマ・DB クライアント
 │   │   │   ├── db/
 │   │   │   ├── user/repository/
-│   │   │   └── auth/repository/
-│   │   ├── presentation/     # Controller・DTO・Zod スキーマ（HTTP 入出力のみ）
+│   │   │   └── book/repository/
+│   │   ├── presentation/     # Controller・Zod スキーマ・エラーメッセージ変換（HTTP 入出力のみ）
 │   │   │   ├── user/
-│   │   │   ├── auth/
+│   │   │   ├── book/
 │   │   │   └── health/
 │   │   ├── config/           # 環境変数設定（EnvConfig）
 │   │   ├── middleware/       # ミドルウェア（認証, CORS, ログ等）
 │   │   ├── rpc/              # RPC 型エクスポート専用
 │   │   └── index.ts          # エントリポイント、AppType エクスポート
 │   ├── drizzle/              # マイグレーションファイル（drizzle-kit generate 出力先）
+│   ├── scripts/              # マイグレーション適用前の検査（check-migrations.mjs）
 │   ├── seed/                 # Seed データ
 │   ├── test/                 # テスト用設定（マイグレーション適用・型定義）。テスト本体は実装と同じフォルダに置く
 │   ├── wrangler.jsonc        # Wrangler 設定（ローカル / 本番）

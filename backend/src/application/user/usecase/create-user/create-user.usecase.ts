@@ -1,9 +1,7 @@
 import { err, ok, Result } from "neverthrow";
 import type { EnvConfig } from "../../../../config";
-import { AccessToken, NewPassword, Pepper, RefreshToken, UserLoginEntity, UserPassword, UserSalt, type NewPasswordError } from "../../../../domain/auth";
-import { UserId, UserName, type UserNameError } from "../../../../domain/shared";
-import type { ICreateUserRepository } from "../../../../domain/user";
-import { UserBirthday, UserEntity, type UserBirthdayError } from "../../../../domain/user";
+import { AccessToken, NewPassword, Pepper, RefreshToken, UserAggregate, UserBirthday, UserName, type NewPasswordError, type UserBirthdayError, type UserNameError } from "../../../../domain/user";
+import type { ICreateUserRepository, UserNameUniquenessDomainService } from "../../../../domain/user";
 import { CreateUserResultDto } from "../../dto";
 
 /**
@@ -36,7 +34,8 @@ type PropsType = {
 export class CreateUserUsecase {
   constructor(
     private readonly repository: ICreateUserRepository,
-    private readonly config: EnvConfig
+    private readonly config: EnvConfig,
+    private readonly uniquenessService: UserNameUniquenessDomainService,
   ) { }
 
   /**
@@ -60,26 +59,24 @@ export class CreateUserUsecase {
     }
     const [userName, userBirthday, newPassword] = input.value;
 
-    // ユーザー名の重複チェック
-    if (await this.repository.existsByUserName(userName)) {
+    const user = await UserAggregate.generate({
+      name: userName,
+      birthday: userBirthday,
+      password: newPassword,
+      pepper: new Pepper(this.config.pepper),
+    });
+
+    // ユーザー名の重複チェック（userId は未使用の新規 ID のため自己除外は実質的に無効）
+    if (await this.uniquenessService.isDuplicated(user.id, userName)) {
       return err({ type: "DUPLICATE_NAME" });
     }
 
-    const salt = UserSalt.generate();
-    const pepper = new Pepper(this.config.pepper);
-    const userPassword = await UserPassword.hash(newPassword.value, salt, pepper);
-
-    const userId = UserId.generate();
-    const loginId = UserId.generate();
-    const userEntity = new UserEntity(userId, userName, userBirthday);
-    const userLoginEntity = new UserLoginEntity(loginId, userId, userName, userPassword, salt);
-
     // ユーザー情報作成
-    await this.repository.createUserWithLogin(userEntity, userLoginEntity);
+    await this.repository.createUser(user);
 
-    const accessToken = await AccessToken.create(userId, this.config);
-    const refreshToken = await RefreshToken.create(userId, this.config);
+    const accessToken = await AccessToken.create(user.id, this.config);
+    const refreshToken = await RefreshToken.create(user.id, this.config);
 
-    return ok(new CreateUserResultDto(userEntity, accessToken, refreshToken));
+    return ok(new CreateUserResultDto(user, accessToken, refreshToken));
   }
 }

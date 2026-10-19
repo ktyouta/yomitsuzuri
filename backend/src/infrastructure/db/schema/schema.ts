@@ -46,8 +46,6 @@ export const userLoginMaster = sqliteTable(
     loginId: text("login_id").notNull(),
     passwordHash: text("password_hash").notNull(),
     salt: text("salt").notNull(),
-    authProvider: text("auth_provider").notNull().default("password"),
-    googleId: text("google_id"),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
@@ -55,11 +53,37 @@ export const userLoginMaster = sqliteTable(
   (t) => [
     // 論理削除済みの行は除外し、退会後に同じログインIDで再登録できるようにする
     uniqueIndex("user_login_master_login_id_unique").on(t.loginId).where(sql`delete_flg = 0`),
+    // 論理削除済みの行は除外し、1ユーザーにつき有効なログイン情報を1件に限る
+    uniqueIndex("user_login_master_user_id_unique").on(t.userId).where(sql`delete_flg = 0`),
   ]
 );
 
 export type UserLoginMaster = typeof userLoginMaster.$inferSelect;
 export type NewUserLoginMaster = typeof userLoginMaster.$inferInsert;
+
+/**
+ * ユーザーGoogleログインマスタ
+ */
+export const userGoogleLoginMaster = sqliteTable(
+  "user_google_login_master",
+  {
+    id: text("id").primaryKey(), // ULID（ログインレコード自身のID）
+    userId: text("user_id").notNull().references(() => userMaster.id, { onDelete: "cascade" }), // FK → user_master.id
+    googleId: text("google_id").notNull(),
+    deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (t) => [
+    // 論理削除済みの行は除外し、退会後に同じGoogleアカウントで再登録できるようにする
+    uniqueIndex("user_google_login_master_google_id_unique").on(t.googleId).where(sql`delete_flg = 0`),
+    // 論理削除済みの行は除外し、1ユーザーにつき有効なGoogleログイン情報を1件に限る
+    uniqueIndex("user_google_login_master_user_id_unique").on(t.userId).where(sql`delete_flg = 0`),
+  ]
+);
+
+export type UserGoogleLoginMaster = typeof userGoogleLoginMaster.$inferSelect;
+export type NewUserGoogleLoginMaster = typeof userGoogleLoginMaster.$inferInsert;
 
 /**
  * 書籍トランザクション

@@ -18,4 +18,14 @@ describe("UserBirthday", () => {
       },
     );
   });
+
+  describe("of", () => {
+    it("制約を満たす値で生成できること", () => {
+      expect(UserBirthday.of("19900101").value).toBe("19900101");
+    });
+
+    it("制約を満たさない値の場合は throw すること", () => {
+      expect(() => UserBirthday.of("19990229")).toThrow();
+    });
+  });
 });

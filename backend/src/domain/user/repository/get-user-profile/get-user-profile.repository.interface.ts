@@ -17,5 +17,5 @@ export interface IGetUserProfileRepository {
   /**
    * ユーザーIDでプロフィールを取得
    */
-  findById(userId: UserId): Promise<UserProfile | undefined>;
+  findUserProfile(userId: UserId): Promise<UserProfile | undefined>;
 }

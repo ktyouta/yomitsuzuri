@@ -10,7 +10,7 @@ import { userMaster } from "../../../db";
 export class GetUserProfileRepository implements IGetUserProfileRepository {
   constructor(private readonly db: Database) { }
 
-  async findById(userId: UserId): Promise<UserProfile | undefined> {
+  async findUserProfile(userId: UserId): Promise<UserProfile | undefined> {
     const result = await this.db
       .select()
       .from(userMaster)

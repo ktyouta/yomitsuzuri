@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { CreateUserUsecase } from "../../../../application";
 import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
-import { RefreshToken } from "../../../../domain";
-import { CreateUserRepository } from "../../../../infrastructure";
+import { RefreshToken, UserNameUniquenessDomainService } from "../../../../domain";
+import { CreateUserRepository, UserNameUniquenessRepository } from "../../../../infrastructure";
 import { userOperationGuardMiddleware, validatorMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
 import { toInputErrorMessage } from "../../error-message";
@@ -18,7 +18,8 @@ const createUser = new Hono<AppEnv>().post(
         const db = c.get('db');
         const config = c.get('envConfig');
         const repository = new CreateUserRepository(db);
-        const usecase = new CreateUserUsecase(repository, config);
+        const uniquenessService = new UserNameUniquenessDomainService(new UserNameUniquenessRepository(db));
+        const usecase = new CreateUserUsecase(repository, config, uniquenessService);
 
         const result = await usecase.execute({ body });
         if (result.isErr()) {

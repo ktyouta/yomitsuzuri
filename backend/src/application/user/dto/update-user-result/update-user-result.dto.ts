@@ -1,5 +1,4 @@
-import type { RefreshToken } from "../../../../domain/auth";
-import type { UserEntity } from "../../../../domain/user";
+import type { RefreshToken, UserAggregate } from "../../../../domain/user";
 
 export type UpdateUserResultType = {
   refreshToken: string;
@@ -18,18 +17,17 @@ export class UpdateUserResultDto {
   private readonly _value: UpdateUserResultType;
 
   /**
-   * @param entity 更新後のユーザー
-   * @param darkMode ユーザーのダークモード設定
+   * @param user 更新後のユーザー
    * @param refreshToken 再発行したリフレッシュトークン
    */
-  constructor(entity: UserEntity, darkMode: boolean, refreshToken: RefreshToken) {
+  constructor(user: UserAggregate, refreshToken: RefreshToken) {
     this._value = {
       refreshToken: refreshToken.value,
       user: {
-        id: entity.userId,
-        name: entity.userName,
-        birthday: entity.userBirthday,
-        darkMode,
+        id: user.id.value,
+        name: user.name.value,
+        birthday: user.birthday.value,
+        darkMode: user.darkMode,
       },
     };
   }

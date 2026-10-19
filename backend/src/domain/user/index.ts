@@ -1,3 +1,4 @@
-export * from "./entity";
-export * from "./value-object";
+export * from "./aggregate";
 export * from "./repository";
+export * from "./service";
+export * from "./value-object";

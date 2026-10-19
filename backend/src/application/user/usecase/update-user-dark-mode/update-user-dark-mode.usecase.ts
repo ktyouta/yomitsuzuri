@@ -17,11 +17,17 @@ export class UpdateUserDarkModeUsecase {
    * @returns 更新結果。対象ユーザーが存在しない場合は null
    */
   async execute({ userId, darkMode }: PropsType): Promise<UpdateUserDarkModeResultDto | null> {
-    const updated = await this.repository.updateDarkMode(userId, darkMode);
-    if (!updated) {
+    const user = await this.repository.findUser(userId);
+    if (!user) {
       return null;
     }
 
-    return new UpdateUserDarkModeResultDto(darkMode);
+    user.updateDarkMode(darkMode);
+
+    if (!(await this.repository.updateDarkMode(user))) {
+      return null;
+    }
+
+    return new UpdateUserDarkModeResultDto(user.darkMode);
   }
 }

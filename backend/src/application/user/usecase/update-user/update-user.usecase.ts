@@ -1,10 +1,8 @@
 import { err, ok, Result } from "neverthrow";
 import type { EnvConfig } from "../../../../config";
-import { RefreshToken } from "../../../../domain/auth";
-import { UserBirthday, type UserBirthdayError } from "../../../../domain/user";
-import { UserName, type UserNameError } from "../../../../domain/shared";
+import { RefreshToken, UserBirthday, UserName, type UserBirthdayError, type UserNameError } from "../../../../domain/user";
 import type { UserId } from "../../../../domain/shared";
-import type { IUpdateUserRepository } from "../../../../domain/user";
+import type { IUpdateUserRepository, UserNameUniquenessDomainService } from "../../../../domain/user";
 import { UpdateUserResultDto } from "../../dto";
 
 /**
@@ -31,7 +29,8 @@ type PropsType = {
 export class UpdateUserUsecase {
   constructor(
     private readonly repository: IUpdateUserRepository,
-    private readonly config: EnvConfig
+    private readonly config: EnvConfig,
+    private readonly uniquenessService: UserNameUniquenessDomainService,
   ) { }
 
   /**
@@ -54,17 +53,25 @@ export class UpdateUserUsecase {
     const [userName, userBirthday] = input.value;
 
     // ユーザー名の重複チェック
-    if (await this.repository.checkUserNameExists(userId, userName)) {
+    if (await this.uniquenessService.isDuplicated(userId, userName)) {
       return err({ type: "DUPLICATE_NAME" });
     }
 
-    const updateResult = await this.repository.updateUserWithLogin(userId, userName, userBirthday);
-    if (!updateResult) {
+    // 更新前のユーザー取得
+    const user = await this.repository.findUser(userId);
+    if (!user) {
+      return err({ type: "NOT_FOUND" });
+    }
+
+    // ユーザー情報の変更
+    user.updateUser({ name: userName, birthday: userBirthday });
+
+    if (!(await this.repository.updateUser(user))) {
       return err({ type: "NOT_FOUND" });
     }
 
     const refreshToken = await RefreshToken.create(userId, this.config);
 
-    return ok(new UpdateUserResultDto(updateResult.entity, updateResult.darkMode, refreshToken));
+    return ok(new UpdateUserResultDto(user, refreshToken));
   }
 }

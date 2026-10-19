@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CreateUserResultDto } from "..";
-import { AccessToken, RefreshToken, UserEntity, UserId, UserName, UserBirthday } from "../../../../domain";
+import { AccessToken, NewPassword, Pepper, RefreshToken, UserAggregate, UserName, UserBirthday } from "../../../../domain";
 import type { EnvConfig } from "../../../../config";
 
 const testConfig: EnvConfig = {
@@ -15,19 +15,21 @@ const testConfig: EnvConfig = {
 };
 
 describe("CreateUserResultDto", () => {
-  it("エンティティとトークンからDTOを生成できること", async () => {
-    const userId = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
-    const userName = UserName.of("testuser");
-    const userBirthday = UserBirthday.create("19900101")._unsafeUnwrap();
-    const entity = new UserEntity(userId, userName, userBirthday);
-    const accessToken = await AccessToken.create(userId, testConfig);
-    const refreshToken = await RefreshToken.create(userId, testConfig);
+  it("集約とトークンからDTOを生成できること", async () => {
+    const user = await UserAggregate.generate({
+      name: UserName.of("testuser"),
+      birthday: UserBirthday.of("19900101"),
+      password: NewPassword.create("password123")._unsafeUnwrap(),
+      pepper: new Pepper(testConfig.pepper),
+    });
+    const accessToken = await AccessToken.create(user.id, testConfig);
+    const refreshToken = await RefreshToken.create(user.id, testConfig);
 
-    const dto = new CreateUserResultDto(entity, accessToken, refreshToken);
+    const dto = new CreateUserResultDto(user, accessToken, refreshToken);
 
     expect(dto.value.accessToken).toBe(accessToken.token);
     expect(dto.value.refreshToken).toBe(refreshToken.value);
-    expect(dto.value.user.id).toBe("01ARZ3NDEKTSV4RRFFQ69G5FAV");
+    expect(dto.value.user.id).toBe(user.id.value);
     expect(dto.value.user.name).toBe("testuser");
     expect(dto.value.user.birthday).toBe("19900101");
     expect(dto.value.user.darkMode).toBe(false);

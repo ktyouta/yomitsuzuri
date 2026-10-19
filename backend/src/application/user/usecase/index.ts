@@ -2,3 +2,8 @@ export * from "./create-user";
 export * from "./update-user";
 export * from "./update-user-dark-mode";
 export * from "./delete-user";
+export * from "./login";
+export * from "./update-password";
+export * from "./refresh";
+export * from "./verify";
+export * from "./get-authenticated-user";

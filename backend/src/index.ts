@@ -3,7 +3,6 @@ import { cors } from "hono/cors";
 import { health } from "./presentation/health";
 import { user } from "./presentation/user";
 import { book } from "./presentation/book";
-import { userLogin, userLogout, userPassword, refresh, verify } from "./presentation/auth";
 import {
   accessLogMiddleware,
   createDbClientMiddleware,
@@ -49,11 +48,6 @@ app.notFound(notFoundHandler);
 const routes = app
   .route("/", health)
   .route("/", user)
-  .route("/", userLogin)
-  .route("/", refresh)
-  .route("/", verify)
-  .route("/", userLogout)
-  .route("/", userPassword)
   .route("/", book);
 
 // RPC用の型エクスポート
