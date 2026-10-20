@@ -11,23 +11,23 @@ export class WorkEntity {
     ) { }
 
     get id() {
-        return this._id.value;
+        return this._id;
     }
 
     get title() {
-        return this._title.value;
+        return this._title;
     }
 
     get sort() {
-        return this._sort.value;
+        return this._sort;
     }
 
     get memo() {
-        return this._memo.value;
+        return this._memo;
     }
 
     get iconId() {
-        return this._iconId.value;
+        return this._iconId;
     }
 
     get deleteFlg() {

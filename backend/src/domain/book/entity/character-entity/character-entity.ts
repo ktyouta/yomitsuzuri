@@ -12,4 +12,40 @@ export class CharacterEntity {
         private readonly _memo: CharacterMemo,
         private readonly _deleteFlg: boolean,
     ) { }
+
+    get id() {
+        return this._id;
+    }
+
+    get workId() {
+        return this._workId;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get age() {
+        return this._age;
+    }
+
+    get genderId() {
+        return this._genderId;
+    }
+
+    get occupation() {
+        return this._occupation;
+    }
+
+    get characteristic() {
+        return this._characteristic;
+    }
+
+    get memo() {
+        return this._memo;
+    }
+
+    get deleteFlg() {
+        return this._deleteFlg;
+    }
 }

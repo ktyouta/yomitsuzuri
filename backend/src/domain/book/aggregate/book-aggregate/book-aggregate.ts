@@ -270,7 +270,7 @@ export class BookAggregate {
      * @returns 一致する場合は true
      */
     private matchesExistingWorks(works: UpdateWorkParamType[]): boolean {
-        const existingIds = new Set(this._works.map((work) => work.id));
+        const existingIds = new Set(this._works.map((work) => work.id.value));
         const paramIds = works.flatMap((work) => work.id ? [work.id.value] : []);
 
         return paramIds.length === existingIds.size
@@ -338,11 +338,11 @@ export class BookAggregate {
             iconId: this._iconId.value,
             deleteFlg: this._deleteFlg,
             works: this._works.map((work) => ({
-                id: work.id,
-                title: work.title,
-                sort: work.sort,
-                memo: work.memo,
-                iconId: work.iconId,
+                id: work.id.value,
+                title: work.title.value,
+                sort: work.sort.value,
+                memo: work.memo.value,
+                iconId: work.iconId.value,
                 deleteFlg: work.deleteFlg,
             })),
         };
@@ -393,7 +393,7 @@ export class BookAggregate {
         }
 
         const target = this._works.find((work) => {
-            return work.id === param.id.value && !work.deleteFlg;
+            return work.id.value === param.id.value && !work.deleteFlg;
         });
 
         if (!target) {
@@ -401,7 +401,7 @@ export class BookAggregate {
         }
 
         const isDuplicate = this._works.some((work) => {
-            return work.id !== target.id && work.title === param.title.value && !work.deleteFlg;
+            return work.id.value !== target.id.value && work.title.value === param.title.value && !work.deleteFlg;
         });
 
         if (isDuplicate) {
@@ -409,7 +409,7 @@ export class BookAggregate {
         }
 
         this._works = this._works.map((work) => {
-            return work.id === target.id ? work.update(param.title, param.memo, param.iconId) : work;
+            return work.id.value === target.id.value ? work.update(param.title, param.memo, param.iconId) : work;
         });
 
         return ok(undefined);
