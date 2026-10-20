@@ -5,7 +5,7 @@ import { UserId } from "../../../../domain/shared";
 
 describe("CreateBookResultDto", () => {
   it("書籍集約から、ユーザーID・削除フラグを除いた書籍の項目と作品一覧を写像すること", () => {
-    const book = BookAggregate.generate({
+    const book = BookAggregate.create({
       userId: UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
       title: BookTitle.of("容疑者Xの献身"),
       publishedDate: PublishedDate.of("2005-08"),

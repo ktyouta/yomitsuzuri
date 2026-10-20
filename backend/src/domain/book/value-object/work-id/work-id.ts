@@ -27,7 +27,7 @@ export class WorkId {
      * ULIDで作品IDを生成
      * @returns 新規の作品ID
      */
-    static generate(): WorkId {
+    static create(): WorkId {
         return new WorkId(ulid());
     }
 

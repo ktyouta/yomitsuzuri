@@ -94,8 +94,8 @@
 
 ### 違反あり
 - **ファイル**: backend/src/domain/task/entity/task/task.entity.ts:42
-- **違反内容**: 決定的でない処理（`ulid()`）が、名前付きファクトリメソッド（`generate()` / `create()` 等）以外のメソッド `duplicate()` の中に書かれている
-- **修正方針**: ID の生成は既存の `TaskId.generate()` に任せ、`duplicate(newId: TaskId)` のように生成済みの ID を引数で受け取る。`TaskId.generate()` の呼び出しは Usecase で行う
+- **違反内容**: 決定的でない処理（`ulid()`）が、名前付きファクトリメソッド（`create()` 等）以外のメソッド `duplicate()` の中に書かれている
+- **修正方針**: ID の生成は既存の `TaskId.create()` に任せ、`duplicate(newId: TaskId)` のように生成済みの ID を引数で受け取る。`TaskId.create()` の呼び出しは Usecase で行う
 ```
 
 ---

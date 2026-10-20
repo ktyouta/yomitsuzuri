@@ -11,8 +11,8 @@ const WORK_ID_2 = "01ARZ3NDEKTSV4RRFFQ69G5FAY";
 const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
 describe("BookAggregate", () => {
-  it("generate で作成した集約のスナップショットが、渡した値と初期値を返すこと（自動作成する作品は書籍のタイトル・アイコンを引き継ぐ）", () => {
-    const book = BookAggregate.generate({
+  it("create で作成した集約のスナップショットが、渡した値と初期値を返すこと（自動作成する作品は書籍のタイトル・アイコンを引き継ぐ）", () => {
+    const book = BookAggregate.create({
       userId: UserId.of(USER_ID),
       title: BookTitle.of("容疑者Xの献身"),
       publishedDate: PublishedDate.of("2005-08"),
@@ -47,7 +47,7 @@ describe("BookAggregate", () => {
   });
 
   it("未入力の項目はスナップショットで null になること", () => {
-    const book = BookAggregate.generate({
+    const book = BookAggregate.create({
       userId: UserId.of(USER_ID),
       title: BookTitle.of("容疑者Xの献身"),
       publishedDate: PublishedDate.of(null),
@@ -64,7 +64,7 @@ describe("BookAggregate", () => {
   });
 
   it("書籍IDと自動作成する作品のIDが異なること", () => {
-    const book = BookAggregate.generate({
+    const book = BookAggregate.create({
       userId: UserId.of(USER_ID),
       title: BookTitle.of("容疑者Xの献身"),
       publishedDate: PublishedDate.of(null),

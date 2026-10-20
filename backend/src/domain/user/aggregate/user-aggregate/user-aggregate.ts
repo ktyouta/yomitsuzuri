@@ -2,7 +2,7 @@ import { err, ok, type Result } from "neverthrow";
 import { UserId } from "../../../shared";
 import { LoginCredentialId, LoginId, UserPassword, UserSalt, type NewPassword, type Pepper, type RawPassword, type UserBirthday, type UserName } from "../../value-object";
 
-type GenerateUserParamType = {
+type CreateUserParamType = {
     name: UserName;
     birthday: UserBirthday;
     password: NewPassword;
@@ -47,7 +47,7 @@ export type ChangePasswordError = { type: "CURRENT_PASSWORD_MISMATCH" };
 /**
  * ユーザー集約（プロフィール・ダークモード設定・ログイン情報）
  *
- * ログイン ID は generate・updateUser でユーザー名にそろえる
+ * ログイン ID は create・updateUser でユーザー名にそろえる
  */
 export class UserAggregate {
 
@@ -84,16 +84,16 @@ export class UserAggregate {
      * @param params ユーザーの登録内容とペッパー
      * @returns ダークモードが無効・ログイン ID がユーザー名・未削除のユーザー集約
      */
-    static async generate(params: GenerateUserParamType): Promise<UserAggregate> {
-        const salt = UserSalt.generate();
+    static async create(params: CreateUserParamType): Promise<UserAggregate> {
+        const salt = UserSalt.create();
         const password = await UserPassword.hash(params.password.value, salt, params.pepper);
 
         return new UserAggregate(
-            UserId.generate(),
+            UserId.create(),
             params.name,
             params.birthday,
             false,
-            LoginCredentialId.generate(),
+            LoginCredentialId.create(),
             LoginId.of(params.name.value),
             password,
             salt,

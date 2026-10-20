@@ -25,9 +25,9 @@ describe("PATCH /api/v1/user-password", () => {
             { id: otherUserId, name: `u-${otherUserId}`, birthday: "19900101", createdAt: now, updatedAt: now },
         ]);
 
-        const authenticatedUserSalt = UserSalt.generate();
+        const authenticatedUserSalt = UserSalt.create();
         const authenticatedUserPasswordHash = await UserPassword.hash("CorrectHorse1!", authenticatedUserSalt, pepper);
-        const otherUserSalt = UserSalt.generate();
+        const otherUserSalt = UserSalt.create();
         const otherUserPasswordHash = await UserPassword.hash("OtherPassw0rd!", otherUserSalt, pepper);
 
         await db.insert(userLoginMaster).values([
@@ -85,7 +85,7 @@ describe("PATCH /api/v1/user-password", () => {
 
         await db.insert(userMaster).values({ id: userId, name: `u-${userId}`, birthday: "19900101", createdAt: now, updatedAt: now });
 
-        const salt = UserSalt.generate();
+        const salt = UserSalt.create();
         const passwordHash = await UserPassword.hash("CorrectHorse1!", salt, pepper);
 
         await db.insert(userLoginMaster).values({

@@ -26,7 +26,7 @@ const PROFILE = {
 };
 
 async function createUser() {
-  const salt = UserSalt.generate();
+  const salt = UserSalt.create();
   const passwordHash = await UserPassword.hash(PASSWORD, salt, new Pepper(testConfig.pepper));
   return UserAggregate.reconstruct({
     id: UserId.of(PROFILE.id),

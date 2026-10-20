@@ -59,7 +59,7 @@ export class CreateUserUsecase {
     }
     const [userName, userBirthday, newPassword] = input.value;
 
-    const user = await UserAggregate.generate({
+    const user = await UserAggregate.create({
       name: userName,
       birthday: userBirthday,
       password: newPassword,

@@ -20,7 +20,7 @@ export class LoginCredentialId {
   /**
    * ULIDでログイン情報IDを生成
    */
-  static generate(): LoginCredentialId {
+  static create(): LoginCredentialId {
     return new LoginCredentialId(ulid());
   }
 

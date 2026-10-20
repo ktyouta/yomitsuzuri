@@ -124,9 +124,9 @@ export class BookAggregate {
      * @param params 書籍の登録内容
      * @returns 読書状況が初期値（未読）の書籍集約
      */
-    static generate(params: CreateBookParamType): BookAggregate {
+    static create(params: CreateBookParamType): BookAggregate {
         return new BookAggregate(
-            BookId.generate(),
+            BookId.create(),
             params.userId,
             params.title,
             params.publishedDate,
@@ -136,7 +136,7 @@ export class BookAggregate {
             params.iconId,
             false,
             [new WorkEntity(
-                WorkId.generate(),
+                WorkId.create(),
                 WorkTitle.initial(params.title),
                 WorkSort.first(),
                 WorkMemo.of(null),
@@ -216,7 +216,7 @@ export class BookAggregate {
         }
 
         return ok(works.map((work) => new WorkEntity(
-            work.id ?? WorkId.generate(),
+            work.id ?? WorkId.create(),
             work.title,
             work.sort,
             work.memo,

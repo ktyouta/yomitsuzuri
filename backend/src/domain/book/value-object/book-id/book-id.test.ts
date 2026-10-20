@@ -11,14 +11,14 @@ describe("BookId", () => {
     expect(() => BookId.of("")).toThrow("書籍IDが設定されていません。");
   });
 
-  it("generateでULID（26文字）を生成できること", () => {
-    const id = BookId.generate();
+  it("createでULID（26文字）を生成できること", () => {
+    const id = BookId.create();
     expect(id.value).toHaveLength(26);
   });
 
-  it("generateは毎回異なるIDを生成すること", () => {
-    const id1 = BookId.generate();
-    const id2 = BookId.generate();
+  it("createは毎回異なるIDを生成すること", () => {
+    const id1 = BookId.create();
+    const id2 = BookId.create();
     expect(id1.value).not.toBe(id2.value);
   });
 });

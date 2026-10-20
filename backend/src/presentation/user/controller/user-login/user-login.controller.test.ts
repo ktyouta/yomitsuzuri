@@ -20,7 +20,7 @@ describe("POST /api/v1/user-login", () => {
 
         await db.insert(userMaster).values({ id: userId, name: loginId, birthday: "19900101", createdAt: now, updatedAt: now });
 
-        const salt = UserSalt.generate();
+        const salt = UserSalt.create();
         const passwordHash = await UserPassword.hash("CorrectHorse1!", salt, pepper);
 
         await db.insert(userLoginMaster).values({

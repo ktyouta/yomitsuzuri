@@ -26,7 +26,7 @@ export class BookId {
      * ULIDで書籍IDを生成
      * @returns 新規の書籍ID
      */
-    static generate(): BookId {
+    static create(): BookId {
         return new BookId(ulid());
     }
 

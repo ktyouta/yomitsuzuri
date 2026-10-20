@@ -16,7 +16,7 @@ const testConfig: EnvConfig = {
 
 describe("CreateUserResultDto", () => {
   it("集約とトークンからDTOを生成できること", async () => {
-    const user = await UserAggregate.generate({
+    const user = await UserAggregate.create({
       name: UserName.of("testuser"),
       birthday: UserBirthday.of("19900101"),
       password: NewPassword.create("password123")._unsafeUnwrap(),

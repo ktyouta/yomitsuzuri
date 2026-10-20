@@ -14,13 +14,13 @@ describe("WorkId", () => {
     });
   });
 
-  describe("generate", () => {
+  describe("create", () => {
     it("ULID 形式の ID を生成すること", () => {
-      expect(WorkId.generate().value).toMatch(ULID_PATTERN);
+      expect(WorkId.create().value).toMatch(ULID_PATTERN);
     });
 
     it("毎回異なるIDを生成すること", () => {
-      expect(WorkId.generate().value).not.toBe(WorkId.generate().value);
+      expect(WorkId.create().value).not.toBe(WorkId.create().value);
     });
   });
 });

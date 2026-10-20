@@ -5,7 +5,7 @@ describe("UserPassword", () => {
   const testPepper = new Pepper("test-pepper-secret");
 
   it("パスワードをハッシュ化できること", async () => {
-    const salt = UserSalt.generate();
+    const salt = UserSalt.create();
     const password = await UserPassword.hash("password123", salt, testPepper);
 
     expect(password.value).toBeDefined();
@@ -13,14 +13,14 @@ describe("UserPassword", () => {
   });
 
   it("ハッシュが128文字（64バイトの16進数）であること", async () => {
-    const salt = UserSalt.generate();
+    const salt = UserSalt.create();
     const password = await UserPassword.hash("password123", salt, testPepper);
 
     expect(password.value).toHaveLength(128);
   });
 
   it("ハッシュが16進数のみで構成されていること", async () => {
-    const salt = UserSalt.generate();
+    const salt = UserSalt.create();
     const password = await UserPassword.hash("password123", salt, testPepper);
 
     expect(password.value).toMatch(/^[0-9a-f]+$/);
@@ -35,7 +35,7 @@ describe("UserPassword", () => {
   });
 
   it("異なるパスワードで異なるハッシュが生成されること", async () => {
-    const salt = UserSalt.generate();
+    const salt = UserSalt.create();
     const password1 = await UserPassword.hash("password123", salt, testPepper);
     const password2 = await UserPassword.hash("password456", salt, testPepper);
 
@@ -43,8 +43,8 @@ describe("UserPassword", () => {
   });
 
   it("異なるソルトで異なるハッシュが生成されること", async () => {
-    const salt1 = UserSalt.generate();
-    const salt2 = UserSalt.generate();
+    const salt1 = UserSalt.create();
+    const salt2 = UserSalt.create();
     const password1 = await UserPassword.hash("password123", salt1, testPepper);
     const password2 = await UserPassword.hash("password123", salt2, testPepper);
 
@@ -52,7 +52,7 @@ describe("UserPassword", () => {
   });
 
   it("異なるペッパーで異なるハッシュが生成されること", async () => {
-    const salt = UserSalt.generate();
+    const salt = UserSalt.create();
     const pepper1 = new Pepper("pepper-1");
     const pepper2 = new Pepper("pepper-2");
     const password1 = await UserPassword.hash("password123", salt, pepper1);
@@ -76,7 +76,7 @@ describe("UserPassword", () => {
   });
 
   it("equalsで異なるハッシュを比較できること", async () => {
-    const salt = UserSalt.generate();
+    const salt = UserSalt.create();
     const password1 = await UserPassword.hash("password123", salt, testPepper);
     const password2 = await UserPassword.hash("password456", salt, testPepper);
 

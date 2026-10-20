@@ -23,7 +23,7 @@ const NEW_PASSWORD = "new-password";
 const BODY = { nowPassword: NOW_PASSWORD, newPassword: NEW_PASSWORD, confirmPassword: NEW_PASSWORD };
 
 async function createUser() {
-  const salt = UserSalt.generate();
+  const salt = UserSalt.create();
   const passwordHash = await UserPassword.hash(NOW_PASSWORD, salt, new Pepper(testConfig.pepper));
   return UserAggregate.reconstruct({
     id: UserId.of(USER_ID),

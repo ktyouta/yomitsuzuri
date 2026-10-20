@@ -11,14 +11,14 @@ describe("UserId", () => {
     expect(() => UserId.of("")).toThrow("ユーザーIDが設定されていません。");
   });
 
-  it("generateでULID（26文字）を生成できること", () => {
-    const userId = UserId.generate();
+  it("createでULID（26文字）を生成できること", () => {
+    const userId = UserId.create();
     expect(userId.value).toHaveLength(26);
   });
 
-  it("generateは毎回異なるIDを生成すること", () => {
-    const id1 = UserId.generate();
-    const id2 = UserId.generate();
+  it("createは毎回異なるIDを生成すること", () => {
+    const id1 = UserId.create();
+    const id2 = UserId.create();
     expect(id1.value).not.toBe(id2.value);
   });
 });

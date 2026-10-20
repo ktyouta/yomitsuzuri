@@ -11,14 +11,14 @@ describe("LoginCredentialId", () => {
     expect(() => LoginCredentialId.of("")).toThrow("ログイン情報IDが設定されていません。");
   });
 
-  it("generateでULID（26文字）を生成できること", () => {
-    const loginCredentialId = LoginCredentialId.generate();
+  it("createでULID（26文字）を生成できること", () => {
+    const loginCredentialId = LoginCredentialId.create();
     expect(loginCredentialId.value).toHaveLength(26);
   });
 
-  it("generateは毎回異なるIDを生成すること", () => {
-    const id1 = LoginCredentialId.generate();
-    const id2 = LoginCredentialId.generate();
+  it("createは毎回異なるIDを生成すること", () => {
+    const id1 = LoginCredentialId.create();
+    const id2 = LoginCredentialId.create();
     expect(id1.value).not.toBe(id2.value);
   });
 });

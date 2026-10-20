@@ -20,7 +20,7 @@ export class UserId {
   /**
    * ULIDでユーザーIDを生成
    */
-  static generate(): UserId {
+  static create(): UserId {
     return new UserId(ulid());
   }
 

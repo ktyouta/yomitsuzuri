@@ -35,9 +35,9 @@ async function reconstructUser(deleteFlg = false): Promise<UserAggregate> {
 }
 
 describe("UserAggregate", () => {
-  describe("generate", () => {
+  describe("create", () => {
     it("渡した値と初期値（ダークモード無効・ログイン ID はユーザー名・未削除）を持ち、ID とソルトを採番すること", async () => {
-      const user = await UserAggregate.generate({
+      const user = await UserAggregate.create({
         name: UserName.of("testuser"),
         birthday: UserBirthday.of("19900101"),
         password: newPassword("password123"),
@@ -58,7 +58,7 @@ describe("UserAggregate", () => {
     });
 
     it("パスワードをハッシュ化して保持し、同じパスワードで照合できること", async () => {
-      const user = await UserAggregate.generate({
+      const user = await UserAggregate.create({
         name: UserName.of("testuser"),
         birthday: UserBirthday.of("19900101"),
         password: newPassword("password123"),

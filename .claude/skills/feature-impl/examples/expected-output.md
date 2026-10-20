@@ -58,7 +58,7 @@
 
 | メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
 |---|---|---|---|
-| createTask(userId, data) | data.title が TaskTitle の事前条件を満たす（Error） | タスクを1件書き込み、作成したタスクを返す | あり（TaskId.generate） |
+| createTask(userId, data) | data.title が TaskTitle の事前条件を満たす（Error） | タスクを1件書き込み、作成したタスクを返す | あり（TaskId.create） |
 
 - **テストケース**: 正常なデータで書き込みが1回行われ作成結果が返る / タイトル不正時はエラーになり書き込みが行われない
 
