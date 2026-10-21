@@ -106,6 +106,7 @@ export const bookTransaction = sqliteTable(
   (t) => [
     // book_tag_transaction の複合 FK の参照先にするため（SQLite は参照先に UNIQUE が必要）
     unique("book_transaction_id_user_id_unique").on(t.id, t.userId),
+    uniqueIndex("book_transaction_user_id_title_unique").on(t.userId, t.title).where(sql`delete_flg = 0`),
     index("book_transaction_user_id_idx").on(t.userId),
   ]
 );
@@ -158,6 +159,7 @@ export const characterTransaction = sqliteTable(
   (t) => [
     // character_relation_transaction の複合 FK の参照先にするため（SQLite は参照先に UNIQUE が必要）
     unique("character_transaction_id_work_id_unique").on(t.id, t.workId),
+    uniqueIndex("character_transaction_work_id_name_unique").on(t.workId, t.name).where(sql`delete_flg = 0`),
     index("character_transaction_work_id_idx").on(t.workId),
   ]
 );

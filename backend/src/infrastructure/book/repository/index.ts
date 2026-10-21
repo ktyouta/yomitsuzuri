@@ -1,4 +1,5 @@
 export * from "./book-title-uniqueness";
+export * from "./character-name-uniqueness";
 export * from "./create-book";
 export * from "./get-book";
 export * from "./get-list-book";

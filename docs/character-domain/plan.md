@@ -5,13 +5,13 @@
 - 今回は値オブジェクトのみを作る（集約・Usecase・Repository・Controller は対象外）
 - 上限文字数: 名前 100 / 年齢 20 / 職業 50 / 特徴 500 / メモ 2000（名前・メモ以外は Claude の提案をユーザーが承認）
 - 性別は区分値（マスタ）にする
+- 作品内での登場人物名の重複は禁止する（未削除のものが対象）。ドメインサービス（CharacterNameUniquenessDomainService）で判定し、DB にも部分一意インデックス `(work_id, name) WHERE delete_flg = 0` を張る
 - 既存の CharacterId の不備（コメント・引数名・例外メッセージが「書籍ID」のまま、テストが BookId を対象にしている）を直す
 
 ## 未決定事項
 
 - 集約の境界（design-architect の推奨は book コンテキスト内の独立集約 CharacterAggregate。ユーザー未承認）
 - 性別マスタのテーブル設計・マスタ値・`character_transaction.gender` の FK 化（スキーマ変更とマイグレーションが必要）
-- 作品内での登場人物名の重複可否
 
 ## タスク
 
