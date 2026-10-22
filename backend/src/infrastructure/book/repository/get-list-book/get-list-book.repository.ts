@@ -10,7 +10,7 @@ import { bookTransaction, iconMaster, readingStatusMaster, workTransaction } fro
 export class GetListBookRepository implements IGetListBookRepository {
   constructor(private readonly db: Database) { }
 
-  async findList(userId: UserId, pagination: BookListPagination, pageSize: number): Promise<BookListItem[]> {
+  async findBookList(userId: UserId, pagination: BookListPagination, pageSize: number): Promise<BookListItem[]> {
     return this.db
       .select({
         id: bookTransaction.id,
@@ -48,7 +48,7 @@ export class GetListBookRepository implements IGetListBookRepository {
       .offset((pagination.value - 1) * pageSize);
   }
 
-  async count(userId: UserId): Promise<number> {
+  async countBook(userId: UserId): Promise<number> {
     const [{ total }] = await this.db
       .select({ total: count() })
       .from(bookTransaction)

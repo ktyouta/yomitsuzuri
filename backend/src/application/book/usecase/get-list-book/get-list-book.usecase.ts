@@ -39,8 +39,8 @@ export class GetListBookUsecase {
     }
 
     const [list, total] = await Promise.all([
-      this.repository.findList(userId, pagination.value, GetListBookUsecase.PAGE_SIZE),
-      this.repository.count(userId),
+      this.repository.findBookList(userId, pagination.value, GetListBookUsecase.PAGE_SIZE),
+      this.repository.countBook(userId),
     ]);
     const totalPages = Math.ceil(total / GetListBookUsecase.PAGE_SIZE);
 

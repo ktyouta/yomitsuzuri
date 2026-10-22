@@ -27,12 +27,12 @@ export interface IGetListBookRepository {
    * @param pageSize 1ページあたりの最大取得件数
    * @returns 指定ページの書籍一覧
    */
-  findList(userId: UserId, pagination: BookListPagination, pageSize: number): Promise<BookListItem[]>;
+  findBookList(userId: UserId, pagination: BookListPagination, pageSize: number): Promise<BookListItem[]>;
 
   /**
    * ユーザーの書籍の全件数を取得
    * @param userId 書籍を所有するユーザーID
    * @returns ページング適用前の全件数
    */
-  count(userId: UserId): Promise<number>;
+  countBook(userId: UserId): Promise<number>;
 }

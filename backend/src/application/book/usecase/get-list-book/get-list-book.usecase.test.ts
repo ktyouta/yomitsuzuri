@@ -17,8 +17,8 @@ const BOOK: BookListItem = {
 
 function createRepository(list: BookListItem[], total: number) {
   return {
-    findList: vi.fn<IGetListBookRepository["findList"]>().mockResolvedValue(list),
-    count: vi.fn<IGetListBookRepository["count"]>().mockResolvedValue(total),
+    findBookList: vi.fn<IGetListBookRepository["findBookList"]>().mockResolvedValue(list),
+    countBook: vi.fn<IGetListBookRepository["countBook"]>().mockResolvedValue(total),
   } satisfies IGetListBookRepository;
 }
 
@@ -49,11 +49,11 @@ describe("GetListBookUsecase", () => {
 
     await usecase.execute({ userId: USER_ID, page: 2 });
 
-    const [userId, pagination, pageSize] = repository.findList.mock.calls[0];
+    const [userId, pagination, pageSize] = repository.findBookList.mock.calls[0];
     expect(userId).toBe(USER_ID);
     expect(pagination.value).toBe(2);
     expect(pageSize).toBe(30);
-    expect(repository.count).toHaveBeenCalledWith(USER_ID);
+    expect(repository.countBook).toHaveBeenCalledWith(USER_ID);
   });
 
   it("全件数が1ページの件数ちょうどの場合、総ページ数が1になること", async () => {
@@ -74,7 +74,7 @@ describe("GetListBookUsecase", () => {
       type: "INVALID_INPUT",
       errors: [{ field: "page", error: { type: "BOOK_LIST_PAGE_INVALID", min: 1 } }],
     });
-    expect(repository.findList).not.toHaveBeenCalled();
-    expect(repository.count).not.toHaveBeenCalled();
+    expect(repository.findBookList).not.toHaveBeenCalled();
+    expect(repository.countBook).not.toHaveBeenCalled();
   });
 });

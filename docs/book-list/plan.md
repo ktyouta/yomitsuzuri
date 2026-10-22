@@ -31,8 +31,8 @@
 
 ## 設計
 
-- Repository: `findList(userId, pagination, pageSize)` が指定ページの一覧を、`count(userId)` が全件数を返す。抽出条件は両者で共通化する（件数側への条件適用漏れを防ぐため）
-- Usecase: `findList` と `count` を `Promise.all` で並列に実行する（一覧と件数は別クエリのため、間に登録・削除があると一致しない可能性があるが、自分の書籍のみが対象のため許容する）
+- Repository: `findBookList(userId, pagination, pageSize)` が指定ページの一覧を、`countBook(userId)` が全件数を返す。抽出条件は両者で共通化する（件数側への条件適用漏れを防ぐため）
+- Usecase: `findBookList` と `countBook` を `Promise.all` で並列に実行する（一覧と件数は別クエリのため、間に登録・削除があると一致しない可能性があるが、自分の書籍のみが対象のため許容する）
 - `BookListItem` は表示用の読み取り結果のため、id・readingStatusId を値オブジェクトで包まずプリミティブで返す
 - Usecase は `UserId` を受け取る（Controller は認証済みユーザーの `UserId` をそのまま渡す）
 - workCount: SELECT 句の相関サブクエリ（`work_transaction.delete_flg = false` の件数）
@@ -103,7 +103,7 @@
 |---|---|---|---|
 | execute(userId, page) | page が上記の事前条件を満たす（Error。違反時は Repository を呼ばない）。userId の妥当性は `UserId` 型で保証する | userId・page・PAGE_SIZE（30）で一覧を、userId で全件数を問い合わせる。list・total は Repository の結果どおり。totalPages = ceil(total/30) | なし |
 
-- **テストケース**: list・total をそのまま返し total=31 で totalPages=2 / total=0 で空 list・totalPages=0 / total=30 で totalPages=1 / page=2 で Repository に userId・page=2・pageSize=30 が渡り、count に userId が渡る / page=0 で例外・findList・count 未呼び出し
+- **テストケース**: list・total をそのまま返し total=31 で totalPages=2 / total=0 で空 list・totalPages=0 / total=30 で totalPages=1 / page=2 で Repository に userId・page=2・pageSize=30 が渡り、countBook に userId が渡る / page=0 で例外・findBookList・countBook 未呼び出し
 - offset の算出は Repository 実装にあり、単体テストの対象外（Repository のテストがないため）
 
 ### その他
