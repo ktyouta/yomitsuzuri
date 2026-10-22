@@ -8,7 +8,6 @@ export interface ICharacterNameUniquenessRepository {
     /**
      * 同名登場人物の取得（同一ユーザーの同一作品内・未削除のもの）
      * characterId 自身は判定対象から除外する（更新時の自己重複を防ぐ）。
-     * 新規作成では未使用の ID を渡すため、除外は実質的に無効となる。
      * @param userId 書籍を所有するユーザーID
      * @param workId 登場人物が属する作品ID
      * @param characterId 判定対象から除外する登場人物ID

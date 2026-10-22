@@ -7,11 +7,15 @@
 - 性別は区分値（マスタ）にする
 - 作品内での登場人物名の重複は禁止する（未削除のものが対象）。ドメインサービス（CharacterNameUniquenessDomainService）で判定し、DB にも部分一意インデックス `(work_id, name) WHERE delete_flg = 0` を張る
 - 既存の CharacterId の不備（コメント・引数名・例外メッセージが「書籍ID」のまま、テストが BookId を対象にしている）を直す
+- 性別マスタ `gender_master` を作り、`character_transaction.gender`（text）を `gender_id`（integer, FK → gender_master.id）に置き換える（schema.ts のみ変更済み。マイグレーションは今回行わない）
+  - Claudeからの提案（未確認の前提）: テーブル構成は読書状況マスタと同じ（id・label・共通3カラム）、gender_id は null 可、FK の削除時は `restrict`
 
 ## 未決定事項
 
 - 集約の境界（design-architect の推奨は book コンテキスト内の独立集約 CharacterAggregate。ユーザー未承認）
-- 性別マスタのテーブル設計・マスタ値・`character_transaction.gender` の FK 化（スキーマ変更とマイグレーションが必要）
+- 性別マスタのマスタ値と Seed の投入方法
+- 性別マスタ追加のマイグレーションの生成・適用時期（適用するまでは、ローカル DB に gender_id 列・gender_master がなく、登場人物の登録は DB エラーになる）
+- 登場人物の登録・更新時に、性別 ID がマスタに存在するかを判定する方法（判定しない場合、マスタにない ID は FK 違反で 500 になる）
 
 ## タスク
 
@@ -21,7 +25,7 @@
 - [ ] CharacterOccupation
 - [ ] CharacterCharacteristic
 - [ ] CharacterMemo
-- [ ] GenderId（gender_master の主キーを想定。マスタは未作成）
+- [ ] GenderId（gender_master の主キー。schema.ts に定義済み・マイグレーション未適用）
 
 ## クラス仕様（契約）
 

@@ -1,4 +1,4 @@
-import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CurrentPageError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../../domain";
+import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CurrentPageError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../../domain";
 
 /**
  * 書籍コンテキストの入力値の違反（値オブジェクトの制約違反、集約の作品の指定の誤り・不変条件の違反）
@@ -14,7 +14,13 @@ type BookInputError =
   | WorkSortError
   | WorkMemoError
   | BookValidationError
-  | BookListPaginationError;
+  | BookListPaginationError
+  | CharacterNameError
+  | CharacterAgeError
+  | GenderIdError
+  | CharacterOccupationError
+  | CharacterCharacteristicError
+  | CharacterMemoError;
 
 /**
  * 入力値の違反を、利用者向けのメッセージに変換する
@@ -59,6 +65,20 @@ export function toInputErrorMessage(error: BookInputError): string {
       return "作品をすべて削除することはできません。";
     case "BOOK_LIST_PAGE_INVALID":
       return `ページ番号は${error.min}以上の整数で指定してください`;
+    case "CHARACTER_NAME_EMPTY":
+      return "名前は必須です";
+    case "CHARACTER_NAME_TOO_LONG":
+      return `名前は${error.max}文字以内で入力してください`;
+    case "CHARACTER_AGE_TOO_LONG":
+      return `年齢は${error.max}文字以内で入力してください`;
+    case "GENDER_ID_INVALID":
+      return "性別が不正です";
+    case "CHARACTER_OCCUPATION_TOO_LONG":
+      return `職業は${error.max}文字以内で入力してください`;
+    case "CHARACTER_CHARACTERISTIC_TOO_LONG":
+      return `特徴は${error.max}文字以内で入力してください`;
+    case "CHARACTER_MEMO_TOO_LONG":
+      return `メモは${error.max}文字以内で入力してください`;
     default: {
       // 全てのエラー種別を網羅していることを型で保証する
       error satisfies never;

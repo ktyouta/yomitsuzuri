@@ -148,7 +148,7 @@ export const characterTransaction = sqliteTable(
     workId: text("work_id").notNull().references(() => workTransaction.id, { onDelete: "no action" }), // FK → work_transaction.id
     name: text("name").notNull(),
     age: text("age"), // 「30代」「不明」等も入力できるよう text
-    gender: text("gender"),
+    genderId: integer("gender_id").references(() => genderMaster.id, { onDelete: "restrict" }), // FK → gender_master.id（未入力は null）
     occupation: text("occupation"),
     characteristic: text("characteristic"),
     memo: text("memo"),
@@ -357,3 +357,17 @@ export const readingStatusMaster = sqliteTable("reading_status_master", {
 
 export type ReadingStatusMaster = typeof readingStatusMaster.$inferSelect;
 export type NewReadingStatusMaster = typeof readingStatusMaster.$inferInsert;
+
+/**
+ * 性別マスタ
+ */
+export const genderMaster = sqliteTable("gender_master", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  label: text("label").notNull(),
+  deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export type GenderMaster = typeof genderMaster.$inferSelect;
+export type NewGenderMaster = typeof genderMaster.$inferInsert;

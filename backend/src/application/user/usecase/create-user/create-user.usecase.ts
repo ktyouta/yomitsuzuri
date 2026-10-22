@@ -66,7 +66,7 @@ export class CreateUserUsecase {
       pepper: new Pepper(this.config.pepper),
     });
 
-    // ユーザー名の重複チェック（userId は未使用の新規 ID のため自己除外は実質的に無効）
+    // ユーザー名の重複チェック
     if (await this.uniquenessService.isDuplicated(user.id, userName)) {
       return err({ type: "DUPLICATE_NAME" });
     }
