@@ -1,7 +1,7 @@
 import { err, ok, type Result } from "neverthrow";
 import type { UserId } from "../../../shared";
-import { WorkEntity } from "../../entity/work-entity/work-entity";
-import { BookId, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle, type BookMemo, type BookTitle, type CurrentPage, type IconId, type PublishedDate } from "../../value-object";
+import { WorkEntity, type WorkSnapshotType } from "../../entity/work-entity/work-entity";
+import { BookId, ReadingStatusId, WorkMemo, WorkSort, WorkTitle, type BookMemo, type BookTitle, type CurrentPage, type IconId, type PublishedDate, type WorkId } from "../../value-object";
 
 type CreateBookParamType = {
     userId: UserId;
@@ -86,14 +86,7 @@ type BookSnapshotType = {
     memo: string | null;
     iconId: number;
     deleteFlg: boolean;
-    works: {
-        id: string;
-        title: string;
-        sort: number;
-        memo: string | null;
-        iconId: number;
-        deleteFlg: boolean;
-    }[];
+    works: WorkSnapshotType[];
 }
 
 export class BookAggregate {
@@ -135,14 +128,12 @@ export class BookAggregate {
             params.memo,
             params.iconId,
             false,
-            [new WorkEntity(
-                WorkId.create(),
-                WorkTitle.initial(params.title),
-                WorkSort.first(),
-                WorkMemo.of(null),
-                params.iconId,
-                false,
-            )]
+            [WorkEntity.create({
+                title: WorkTitle.initial(params.title),
+                sort: WorkSort.first(),
+                memo: WorkMemo.of(null),
+                iconId: params.iconId,
+            })]
         );
     }
 
@@ -215,14 +206,23 @@ export class BookAggregate {
             return err({ type: "INVALID_WORKS", errors });
         }
 
-        return ok(works.map((work) => new WorkEntity(
-            work.id ?? WorkId.create(),
-            work.title,
-            work.sort,
-            work.memo,
-            work.iconId,
-            work.deleteFlg,
-        )));
+        // 新規の作品が削除済みでないことは collectWorkSpecErrors で判定済み
+        return ok(works.map((work) => work.id === null
+            ? WorkEntity.create({
+                title: work.title,
+                sort: work.sort,
+                memo: work.memo,
+                iconId: work.iconId,
+            })
+            : WorkEntity.reconstruct({
+                id: work.id,
+                title: work.title,
+                sort: work.sort,
+                memo: work.memo,
+                iconId: work.iconId,
+                deleteFlg: work.deleteFlg,
+            })
+        ));
     }
 
     /**
@@ -337,14 +337,7 @@ export class BookAggregate {
             memo: this._memo.value,
             iconId: this._iconId.value,
             deleteFlg: this._deleteFlg,
-            works: this._works.map((work) => ({
-                id: work.id.value,
-                title: work.title.value,
-                sort: work.sort.value,
-                memo: work.memo.value,
-                iconId: work.iconId.value,
-                deleteFlg: work.deleteFlg,
-            })),
+            works: this._works.map((work) => work.toSnapshot()),
         };
     }
 

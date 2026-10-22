@@ -90,8 +90,8 @@ describe("BookAggregate", () => {
       iconId: IconId.of(2),
       deleteFlg: true,
       works: [
-        new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of("作品メモ"), IconId.of(4), false),
-        new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), IconId.of(5), true),
+        WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of("作品メモ"), iconId: IconId.of(4), deleteFlg: false }),
+        WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(5), deleteFlg: true }),
       ],
     });
 
@@ -127,8 +127,8 @@ describe("BookAggregate", () => {
       iconId: IconId.of(1),
       deleteFlg,
       works: [
-        new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), IconId.of(1), false),
-        new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), IconId.of(1), false),
+        WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false }),
+        WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false }),
       ],
     });
   }
@@ -365,9 +365,9 @@ describe("BookAggregate", () => {
         iconId: IconId.of(1),
         deleteFlg: false,
         works: [
-          new WorkEntity(WorkId.of(WORK_ID_1), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), IconId.of(1), false),
-          new WorkEntity(WorkId.of(WORK_ID_2), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of(null), IconId.of(1), false),
-          new WorkEntity(WorkId.of(WORK_ID_3), WorkTitle.of("作品3"), WorkSort.of(3), WorkMemo.of(null), IconId.of(1), true),
+          WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false }),
+          WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false }),
+          WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_3), title: WorkTitle.of("作品3"), sort: WorkSort.of(3), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: true }),
         ],
       });
     }

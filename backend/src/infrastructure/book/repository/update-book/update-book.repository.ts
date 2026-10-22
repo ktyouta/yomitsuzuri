@@ -62,14 +62,14 @@ export class UpdateBookRepository implements IUpdateBookRepository {
       userId,
       deleteFlg: book.deleteFlg,
       works: workResult.map((e) =>
-        new WorkEntity(
-          WorkId.of(e.id),
-          WorkTitle.of(e.title),
-          WorkSort.of(e.sortOrder),
-          WorkMemo.of(e.memo),
-          IconId.of(e.iconId),
-          e.deleteFlg,
-        )
+        WorkEntity.reconstruct({
+          id: WorkId.of(e.id),
+          title: WorkTitle.of(e.title),
+          sort: WorkSort.of(e.sortOrder),
+          memo: WorkMemo.of(e.memo),
+          iconId: IconId.of(e.iconId),
+          deleteFlg: e.deleteFlg,
+        })
       ),
     });
   }

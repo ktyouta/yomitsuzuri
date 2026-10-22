@@ -1,8 +1,33 @@
-import type { IconId, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../value-object";
+import { WorkId, type IconId, type WorkMemo, type WorkSort, type WorkTitle } from "../../value-object";
+
+type CreateWorkParamType = {
+    title: WorkTitle;
+    sort: WorkSort;
+    memo: WorkMemo;
+    iconId: IconId;
+};
+
+type WorkReconstructParamType = {
+    id: WorkId;
+    title: WorkTitle;
+    sort: WorkSort;
+    memo: WorkMemo;
+    iconId: IconId;
+    deleteFlg: boolean;
+};
+
+export type WorkSnapshotType = {
+    id: string;
+    title: string;
+    sort: number;
+    memo: string | null;
+    iconId: number;
+    deleteFlg: boolean;
+};
 
 export class WorkEntity {
 
-    constructor(private readonly _id: WorkId,
+    private constructor(private readonly _id: WorkId,
         private readonly _title: WorkTitle,
         private readonly _sort: WorkSort,
         private readonly _memo: WorkMemo,
@@ -35,6 +60,38 @@ export class WorkEntity {
     }
 
     /**
+     * 作品作成
+     * @param params 作成する作品の情報
+     * @returns 新しい ID を採番した、削除されていない作品
+     */
+    static create(params: CreateWorkParamType) {
+        return new WorkEntity(
+            WorkId.create(),
+            params.title,
+            params.sort,
+            params.memo,
+            params.iconId,
+            false
+        );
+    }
+
+    /**
+     * 永続化済みの値から作品を復元する
+     * @param params 永続化済みの作品の情報
+     * @returns 引数の値をそのまま持つ作品
+     */
+    static reconstruct(params: WorkReconstructParamType) {
+        return new WorkEntity(
+            params.id,
+            params.title,
+            params.sort,
+            params.memo,
+            params.iconId,
+            params.deleteFlg,
+        );
+    }
+
+    /**
      * 作品名・メモ・アイコンを置き換えた作品を作成する
      * @param title 更新後の作品名
      * @param memo 更新後のメモ
@@ -50,5 +107,20 @@ export class WorkEntity {
             iconId,
             this._deleteFlg,
         );
+    }
+
+    /**
+     * スナップショットを作成
+     * @returns 作品の値
+     */
+    toSnapshot(): WorkSnapshotType {
+        return {
+            id: this._id.value,
+            title: this._title.value,
+            sort: this._sort.value,
+            memo: this._memo.value,
+            iconId: this._iconId.value,
+            deleteFlg: this._deleteFlg,
+        };
     }
 }

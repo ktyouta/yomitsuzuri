@@ -16,9 +16,9 @@ describe("UpdateBookResultDto", () => {
       iconId: IconId.of(3),
       deleteFlg: false,
       works: [
-        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS0"), WorkTitle.of("作品1"), WorkSort.of(1), WorkMemo.of(null), IconId.of(4), false),
-        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS1"), WorkTitle.of("作品2"), WorkSort.of(2), WorkMemo.of("作品メモ"), IconId.of(5), false),
-        new WorkEntity(WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS2"), WorkTitle.of("削除済み作品"), WorkSort.of(3), WorkMemo.of(null), IconId.of(6), true),
+        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS0"), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(4), deleteFlg: false }),
+        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS1"), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of("作品メモ"), iconId: IconId.of(5), deleteFlg: false }),
+        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS2"), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(3), memo: WorkMemo.of(null), iconId: IconId.of(6), deleteFlg: true }),
       ],
     });
 
