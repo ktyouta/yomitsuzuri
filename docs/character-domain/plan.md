@@ -26,6 +26,7 @@
 - [ ] CharacterCharacteristic
 - [ ] CharacterMemo
 - [ ] GenderId（gender_master の主キー。schema.ts に定義済み・マイグレーション未適用）
+- [x?] 登場人物更新 API（`PUT /api/v1/characters/:characterId`）。テスト未実行（Smart App Control が workerd をブロックしているため）。通過を確認したら [x] にする
 
 ## クラス仕様（契約）
 
@@ -69,3 +70,12 @@
 | of(genderId) | create が ok になる値（Error） | 値を保持する | なし |
 
 - **テストケース**: 正常値 / null・undefined で null / 0・負数・小数で INVALID / of の正常系（null を含む） / of の違反で throw
+
+### UpdateCharacterUsecase（Usecase・登場人物更新 API `PUT /api/v1/characters/:characterId`）
+- 対象はバックエンドの API のみ（フロントエンドは含めない）
+
+| メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
+|---|---|---|---|
+| execute({ userId, characterId, body }) | characterId が空でない（Error「登場人物IDが設定されていません。」。DB は問い合わせない） | 成功 → 名前・年齢・性別・職業・特徴・メモを置き換えて保存し、更新後の DTO を ok で返す（ID・作品・削除フラグは変えない）/ 入力値が制約違反 → err INVALID_INPUT（違反をすべて項目名付きで返し、DB は問い合わせない）/ 登場人物が存在しない（他ユーザー・登場人物・作品・書籍のいずれかが論理削除済みを含む）→ err NOT_FOUND / 性別がマスタに存在しない → err INVALID_GENDER / 同一作品内に自身以外の同名の登場人物（未削除）が存在する → err DUPLICATE_NAME。いずれのエラーでも保存しない | なし |
+
+- **テストケース**: 更新内容で保存し DTO を返す / 自身と同じ名前のまま更新できる（重複判定から自身を除外して問い合わせる）/ INVALID_INPUT（全違反・該当項目のみ）/ NOT_FOUND / INVALID_GENDER / DUPLICATE_NAME / 空の characterId で throw（いずれのエラーでも保存しないこと・DB を問い合わせないことを含む）

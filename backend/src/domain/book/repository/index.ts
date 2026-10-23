@@ -10,3 +10,4 @@ export * from "./get-work";
 export * from "./icon-validity";
 export * from "./reading-status-validity";
 export * from "./update-book";
+export * from "./update-character";
