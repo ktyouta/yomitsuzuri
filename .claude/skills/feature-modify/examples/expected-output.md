@@ -180,7 +180,7 @@
 - メッセージ変換関数は書籍コンテキストで1つにまとめる
 
 ### Claudeの提案をユーザーが承認したもの
-- 置き場所: `presentation/book/error-message/input/input.error-message.ts`
+- 置き場所: `presentation/book/error-message/book.error-message.ts`
 
 ### 未決定（次回以降に決める）
 （「メッセージ変換関数の置き場所」の行を削除）

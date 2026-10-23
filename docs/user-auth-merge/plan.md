@@ -30,7 +30,7 @@
 | 集約のコメント | 事前条件・事後条件の形式で書く | `BookAggregate` に合わせる |
 | ドメインサービスの引数 | `isDuplicated(userId, userName)` の位置引数 | `BookTitleUniquenessDomainService` に合わせる |
 | ダークモード | 集約に `darkMode: boolean` と `updateDarkMode()` を持たせる（theme は持ち込まない） | yomitsuzuri 独自 |
-| エラーメッセージ | `presentation/user/error-message/input/` に統合（ranking-maker の `user.error-message.ts` 1ファイル構成にはしない） | yomitsuzuri 独自 |
+| エラーメッセージ | `presentation/user/error-message/input/` に統合（ranking-maker の `user.error-message.ts` 1ファイル構成にはしない） | yomitsuzuri 独自（2026-10-23 変更: ranking-maker に合わせ `presentation/{コンテキスト}/error-message/{コンテキスト}.error-message.ts` の1ファイル構成に変更） |
 | `UserPassword.hash` の引数 | 文字列のまま | 構成とは関係なく、変える必要がない |
 | ユーザー更新の処理順 | 重複チェック → ユーザー取得（今のまま） | ranking-maker の順（取得 → 重複チェック）では「ユーザー不在かつ名前重複」の戻り値が DUPLICATE_NAME から NOT_FOUND に変わり、振る舞いが変わる |
 | `UserEntity` | 削除する（集約に置き換える） | ranking-maker でも未使用の残骸 |

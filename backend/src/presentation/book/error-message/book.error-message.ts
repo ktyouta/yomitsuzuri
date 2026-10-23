@@ -1,4 +1,4 @@
-import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CurrentPageError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../../domain";
+import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CurrentPageError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
 
 /**
  * 書籍コンテキストの入力値の違反（値オブジェクトの制約違反、集約の作品の指定の誤り・不変条件の違反）

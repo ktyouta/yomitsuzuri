@@ -39,7 +39,7 @@
 ### Claudeの提案をユーザーが承認したもの
 
 - 書籍作成 API の試行範囲（5つの VO の private 化まで含める。変換関数・`INVALID_INPUT` 型は作成 API 内に置き、共通の置き場所は 2 つ目の利用者の移行時に決める）
-- U1 の置き場所: `presentation/book/error-message/input/input.error-message.ts`（`toInputErrorMessage`）。既存の規則（`<種類>/<単位>/<単位>.<種別>.ts` + `index.ts`）に沿わせ、`presentation/book/` 配下のため単位名に `book` は付けない
+- U1 の置き場所: `presentation/book/error-message/input/input.error-message.ts`（`toInputErrorMessage`）。既存の規則（`<種類>/<単位>/<単位>.<種別>.ts` + `index.ts`）に沿わせ、`presentation/book/` 配下のため単位名に `book` は付けない（2026-10-23 変更: ranking-maker に合わせ `presentation/{コンテキスト}/error-message/{コンテキスト}.error-message.ts` の1ファイル構成に変更）
 - 書籍更新 API（Phase 2）:
   - 既存の `toWorkErrorMessage` も `toInputErrorMessage` へ統合する
   - 作品IDの重複・新規作品の削除済み指定は `BookValidationError` に追加し（`DUPLICATE_WORK_ID`・`NEW_WORK_DELETED`）、`INVALID_WORKS` で返す。不一致の判定（`WORKS_MISMATCH`）より前に判定する
