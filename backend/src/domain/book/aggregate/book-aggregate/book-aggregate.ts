@@ -191,7 +191,7 @@ export class BookAggregate {
      */
     private replaceWorks(works: UpdateWorkParamType[]): Result<WorkEntity[], UpdateWorkError> {
         // 不一致の判定は作品 ID の重複がないことを前提とするため、先に判定する
-        const specErrors = BookAggregate.collectWorkSpecErrors(works);
+        const specErrors = this.collectWorkSpecErrors(works);
         if (specErrors.length > 0) {
             return err({ type: "INVALID_WORKS", errors: specErrors });
         }
@@ -201,27 +201,43 @@ export class BookAggregate {
             return err({ type: "WORKS_MISMATCH" });
         }
 
-        const errors = BookAggregate.collectWorkErrors(works);
+        const errors = this.collectWorkErrors(works);
         if (errors.length > 0) {
             return err({ type: "INVALID_WORKS", errors });
         }
 
+        const nowWorkMap = new Map(this._works.map((work) => [work.id.value, work]));
         // 新規の作品が削除済みでないことは collectWorkSpecErrors で判定済み
-        return ok(works.map((work) => work.id === null
-            ? WorkEntity.create({
-                title: work.title,
-                sort: work.sort,
-                memo: work.memo,
-                iconId: work.iconId,
-            })
-            : WorkEntity.reconstruct({
-                id: work.id,
+        return ok(works.map((work) => {
+            const workId = work.id;
+            if (!workId) {
+                return WorkEntity.create({
+                    title: work.title,
+                    sort: work.sort,
+                    memo: work.memo,
+                    iconId: work.iconId,
+                });
+            }
+
+            const nowWork = nowWorkMap.get(workId.value);
+            if (!nowWork) {
+                throw new Error(`照合済みの作品が見つかりません。(ID: ${workId.value})`);
+            }
+
+            const isNowDeleted = nowWork.deleteFlg;
+            if (isNowDeleted) {
+                return nowWork;
+            }
+
+            return WorkEntity.reconstruct({
+                id: workId,
                 title: work.title,
                 sort: work.sort,
                 memo: work.memo,
                 iconId: work.iconId,
                 deleteFlg: work.deleteFlg,
-            })
+            });
+        }
         ));
     }
 
@@ -250,13 +266,15 @@ export class BookAggregate {
      * @param works 更新後の作品一覧
      * @returns 誤りの一覧（誤りがなければ空配列）
      */
-    private static collectWorkSpecErrors(works: UpdateWorkParamType[]): BookValidationError[] {
+    private collectWorkSpecErrors(works: UpdateWorkParamType[]): BookValidationError[] {
         const errors: BookValidationError[] = [];
 
-        for (const id of BookAggregate.findDuplicates(works.flatMap((work) => work.id ? [work.id.value] : []))) {
+        // 作品ID重複チェック
+        for (const id of this.findDuplicates(works.flatMap((work) => work.id ? [work.id.value] : []))) {
             errors.push({ type: "DUPLICATE_WORK_ID", id });
         }
 
+        // 削除済み作品追加チェック
         if (works.some((work) => !work.id && work.deleteFlg)) {
             errors.push({ type: "NEW_WORK_DELETED" });
         }
@@ -270,7 +288,7 @@ export class BookAggregate {
      * @returns 一致する場合は true
      */
     private matchesExistingWorks(works: UpdateWorkParamType[]): boolean {
-        const existingIds = new Set(this._works.map((work) => work.id.value));
+        const existingIds = new Set(this._works.filter((work) => !work.deleteFlg).map((work) => work.id.value));
         const paramIds = works.flatMap((work) => work.id ? [work.id.value] : []);
 
         return paramIds.length === existingIds.size
@@ -282,19 +300,22 @@ export class BookAggregate {
      * @param works 更新後の作品一覧
      * @returns 違反一覧（違反がなければ空配列）
      */
-    private static collectWorkErrors(works: UpdateWorkParamType[]): BookValidationError[] {
+    private collectWorkErrors(works: UpdateWorkParamType[]): BookValidationError[] {
         const activeWorks = works.filter((work) => !work.deleteFlg);
         const errors: BookValidationError[] = [];
 
+        // 全作品削除済みエラー
         if (activeWorks.length === 0) {
             errors.push({ type: "ALL_DELETED" });
         }
 
-        for (const title of BookAggregate.findDuplicates(activeWorks.map((work) => work.title.value))) {
+        // タイトル重複チェック
+        for (const title of this.findDuplicates(activeWorks.map((work) => work.title.value))) {
             errors.push({ type: "DUPLICATE_WORK_TITLE", title });
         }
 
-        for (const sort of BookAggregate.findDuplicates(activeWorks.map((work) => work.sort.value))) {
+        // 並び順重複チェック
+        for (const sort of this.findDuplicates(activeWorks.map((work) => work.sort.value))) {
             errors.push({ type: "DUPLICATE_WORK_SORT", sort });
         }
 
@@ -306,7 +327,7 @@ export class BookAggregate {
      * @param values 検査対象の値一覧
      * @returns 重複していた値の一覧
      */
-    private static findDuplicates<V>(values: V[]): V[] {
+    private findDuplicates<V>(values: V[]): V[] {
         const seen = new Set<V>();
         const duplicated = new Set<V>();
 

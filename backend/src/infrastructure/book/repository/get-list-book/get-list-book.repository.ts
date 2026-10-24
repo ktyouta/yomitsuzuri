@@ -65,7 +65,6 @@ export class GetListBookRepository implements IGetListBookRepository {
   private buildCondition(userId: UserId) {
     return and(
       eq(bookTransaction.userId, userId.value),
-      eq(bookTransaction.deleteFlg, false)
     );
   }
 }
