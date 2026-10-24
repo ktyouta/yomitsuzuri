@@ -2,7 +2,7 @@
 
 ## 概要
 
-バックエンドの auth コンテキストを user コンテキストに統合し、ranking-maker リポジトリの `backend` と同様の構成（`UserAggregate`・`UserNameUniquenessDomainService`・`LoginCredentialId` / `LoginId` 等）にする。
+バックエンドの auth コンテキストを user コンテキストに統合し、`UserAggregate`・`UserNameUniquenessDomainService`・`LoginCredentialId` / `LoginId` 等を持つ構成にする。
 
 振る舞いを変えないリファクタリング（refactor スキル）として扱う。URL・レスポンス・利用者向けのメッセージは変えない。
 
@@ -17,7 +17,7 @@
 
 ### ユーザー決定事項
 
-- ranking-maker の user / auth の構成を基本的にそのまま踏襲する
+- 踏襲元リポジトリの user / auth の構成を基本的にそのまま踏襲する
 - yomitsuzuri 独自の箇所は yomitsuzuri を優先する
 - 実装前に本設計書を作成する
 
@@ -29,14 +29,14 @@
 | `reconstruct` の引数 | 値オブジェクトで受け取る（`UserBirthday.of` を追加） | `BookAggregate.reconstruct` に合わせる |
 | 集約のコメント | 事前条件・事後条件の形式で書く | `BookAggregate` に合わせる |
 | ドメインサービスの引数 | `isDuplicated(userId, userName)` の位置引数 | `BookTitleUniquenessDomainService` に合わせる |
-| ダークモード | 集約に `darkMode: boolean` と `updateDarkMode()` を持たせる（theme は持ち込まない） | yomitsuzuri 独自 |
-| エラーメッセージ | `presentation/user/error-message/input/` に統合（ranking-maker の `user.error-message.ts` 1ファイル構成にはしない） | yomitsuzuri 独自（2026-10-23 変更: ranking-maker に合わせ `presentation/{コンテキスト}/error-message/{コンテキスト}.error-message.ts` の1ファイル構成に変更） |
+| ダークモード | 集約に `darkMode: boolean` と `updateDarkMode()` を持たせる | yomitsuzuri 独自 |
+| エラーメッセージ | `presentation/user/error-message/input/` に統合（`user.error-message.ts` の1ファイル構成にはしない） | yomitsuzuri 独自（2026-10-23 変更: `presentation/{コンテキスト}/error-message/{コンテキスト}.error-message.ts` の1ファイル構成に変更） |
 | `UserPassword.hash` の引数 | 文字列のまま | 構成とは関係なく、変える必要がない |
-| ユーザー更新の処理順 | 重複チェック → ユーザー取得（今のまま） | ranking-maker の順（取得 → 重複チェック）では「ユーザー不在かつ名前重複」の戻り値が DUPLICATE_NAME から NOT_FOUND に変わり、振る舞いが変わる |
-| `UserEntity` | 削除する（集約に置き換える） | ranking-maker でも未使用の残骸 |
+| ユーザー更新の処理順 | 重複チェック → ユーザー取得（今のまま） | 踏襲元の順（取得 → 重複チェック）では「ユーザー不在かつ名前重複」の戻り値が DUPLICATE_NAME から NOT_FOUND に変わり、振る舞いが変わる |
+| `UserEntity` | 削除する（集約に置き換える） | 未使用の残骸 |
 | ドメインサービスのテスト | 追加する | book のドメインサービスにはテストがある |
-| Usecase の戻り値の型 | 今のまま（`DeleteUser` の boolean、`GetAuthenticatedUser` の undefined、`UpdateUserDarkMode` の null、`Refresh` / `Verify` の PropsType） | ranking-maker の Result 化等は契約の変更にあたるため取り込まない |
-| Value Object のファクトリ名 | `UserId.generate`・`UserSalt.generate` のまま | ranking-maker の `create` への統一は yomitsuzuri の命名（`create` は Result を返すファクトリ）と異なる |
+| Usecase の戻り値の型 | 今のまま（`DeleteUser` の boolean、`GetAuthenticatedUser` の undefined、`UpdateUserDarkMode` の null、`Refresh` / `Verify` の PropsType） | 踏襲元の Result 化等は契約の変更にあたるため取り込まない |
+| Value Object のファクトリ名 | `UserId.generate`・`UserSalt.generate` のまま | 踏襲元の `create` への統一は yomitsuzuri の命名（`create` は Result を返すファクトリ）と異なる |
 
 ### 未決定（次回以降に決める）
 
@@ -44,9 +44,9 @@
 
 ### 実装時に Claude が判断したもの（未承認）
 
-- 集約のパスワード変更の失敗型は `ChangePasswordError` とした（ranking-maker の `UserValidationError` ではなく、book の `UpdateWorkError` 等のメソッド単位の命名に合わせた）
-- パスワード変更・ダークモード更新の Repository の保存メソッドは `updatePassword`・`updateDarkMode` とした（ranking-maker の `updateUser`・`updateTheme` に相当）
-- `IGetUserProfileRepository.findById` を `findUserProfile` に改名した（ranking-maker に合わせた）
+- 集約のパスワード変更の失敗型は `ChangePasswordError` とした（book の `UpdateWorkError` 等のメソッド単位の命名に合わせた）
+- パスワード変更・ダークモード更新の Repository の保存メソッドは `updatePassword`・`updateDarkMode` とした
+- `IGetUserProfileRepository.findById` を `findUserProfile` に改名した（踏襲元に合わせた）
 - 集約はユーザーとログイン情報を JOIN して取得するため、コントローラーのテスト（ユーザー更新・ダークモード更新・ユーザー削除）の準備データにログイン情報の登録を追加した。また、準備データのユーザー名（`test-user-${ulid}`、36文字）が `UserName` の上限（30文字）を超え、集約の復元時に throw するため、`u-${ulid}`（28文字）に変更した。アプリから登録したデータではいずれの状態も起きない（seed にもユーザーは含まれない）
 - ログインのテストのうち「プロフィールが存在しない場合」のケースは、ログイン Repository の取得（JOIN）に含まれるため「ユーザーが存在しない場合」に統合した
 
@@ -154,7 +154,7 @@
 
 ### スコープ外
 
-- Usecase の戻り値の Result 化（ranking-maker の `DeleteUser`・`GetAuthenticatedUser` 等）
+- Usecase の戻り値の Result 化（`DeleteUser`・`GetAuthenticatedUser` 等）
 - Value Object のファクトリ名の統一（`generate` → `create`）
 - ユーザー更新の処理順の変更
 - フロントエンドの変更（URL・RPC の型は変わらないため不要の想定）

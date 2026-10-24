@@ -26,7 +26,7 @@ version: 1.0.0
 前提となる事実：
 
 - D1 のマイグレーションはトランザクション内で実行されるため、drizzle-kit が生成する `PRAGMA foreign_keys=OFF` は効かない
-- そのため親テーブルを DROP すると、参照している子孫テーブルの行が ON DELETE CASCADE で全件削除される（同じ構成の ranking-maker で 2026-10-18 にローカルで発生）
+- そのため親テーブルを DROP すると、参照している子孫テーブルの行が ON DELETE CASCADE で全件削除される（同じ構成の別プロジェクトで 2026-10-18 にローカルで発生）
 - yomitsuzuri では、`user_master` を CASCADE で参照するのは `user_login_master`・`user_google_login_master` のみで、book 系のテーブル（`book_transaction` など）は `no action`・`restrict` で参照している。これらの子孫テーブルに行がある状態で親を DROP した場合、CASCADE で消えるのではなく DROP が失敗する可能性がある（未確認）。どちらの場合も、Step 3 の退避・戻しが必要になる
 - `npm run db:migrate:local`・`npm run db:migrate:prod` の前には、`backend/scripts/check-migrations.mjs` が pre スクリプトとして自動で動き、問題があれば適用を止める
 - Claude が `wrangler d1 migrations apply` を直接実行した場合も、`.claude/settings.json` の hook（`.claude/hooks/check-migration-command.mjs`）で同じ確認が動く
@@ -89,7 +89,7 @@ version: 1.0.0
 
 ## Constraints
 
-- `PRAGMA foreign_keys=OFF` や `PRAGMA defer_foreign_keys` で CASCADE を防げると考えない（`foreign_keys=OFF` がローカルの D1 で効かないことを ranking-maker で確認済み。本番の D1 は未確認だが、同じ前提で扱う）
+- `PRAGMA foreign_keys=OFF` や `PRAGMA defer_foreign_keys` で CASCADE を防げると考えない（`foreign_keys=OFF` がローカルの D1 で効かないことは、同じ構成の別プロジェクトで確認済み。本番の D1 は未確認だが、同じ前提で扱う）
 - 確認スクリプト（pre スクリプト・hook）を回避する操作をしない（npm の `--ignore-scripts`、別名の DB への適用など）
 - 本番 DB への読み書き（`--remote`）を Claude が行わない
 - 確認スクリプトは、文面の確認（退避・戻しがそろっているか）と、適用先と同じ状態の使い捨て D1 に検証用データを入れて当てる確認を行う。ただし本番のデータそのものでは確認できない（本番だけに NULL の行がある、など）。その可能性がある変更（NOT NULL 化など）は、本番のデータの状態をユーザーに確認する
