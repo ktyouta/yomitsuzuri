@@ -4,7 +4,7 @@ import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, Publis
 import { UserId } from "../../../../domain/shared";
 
 describe("UpdateBookResultDto", () => {
-  it("書籍集約から、userId・削除フラグを除いた項目と削除されていない作品だけでDTOを生成できること", () => {
+  it("書籍集約から、書籍の userId・削除フラグを除いた項目と、削除済みを含む作品（削除フラグ付き）でDTOを生成できること", () => {
     const book = BookAggregate.reconstruct({
       id: BookId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ"),
       userId: UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
@@ -33,8 +33,9 @@ describe("UpdateBookResultDto", () => {
       memo: "書籍メモ",
       iconId: 3,
       works: [
-        { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "作品1", sort: 1, memo: null, iconId: 4 },
-        { id: "01BX5ZZKBKACTAV9WEVGEMMVS1", title: "作品2", sort: 2, memo: "作品メモ", iconId: 5 },
+        { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "作品1", sort: 1, memo: null, iconId: 4, deleteFlg: false },
+        { id: "01BX5ZZKBKACTAV9WEVGEMMVS1", title: "作品2", sort: 2, memo: "作品メモ", iconId: 5, deleteFlg: false },
+        { id: "01BX5ZZKBKACTAV9WEVGEMMVS2", title: "削除済み作品", sort: 3, memo: null, iconId: 6, deleteFlg: true },
       ],
     });
   });

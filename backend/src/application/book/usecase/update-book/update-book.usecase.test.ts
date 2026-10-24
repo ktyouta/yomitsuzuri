@@ -78,7 +78,7 @@ function createUsecase({ book = createBook(), invalidIconIds = [], readingStatus
 }
 
 describe("UpdateBookUsecase", () => {
-  it("書籍と作品を更新内容で保存し、削除されていない作品だけを含む内容を返すこと", async () => {
+  it("書籍と作品を更新内容で保存し、削除済みを含む作品（削除フラグ付き）の内容を返すこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
     const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
@@ -105,7 +105,12 @@ describe("UpdateBookUsecase", () => {
     const dto = result._unsafeUnwrap();
     expect(dto.value.id).toBe(BOOK_ID.value);
     expect(dto.value.title).toBe("容疑者Xの献身");
-    expect(dto.value.works.map((e) => e.title)).toEqual(["作品1改", "作品3"]);
+    expect(dto.value.works.map((e) => ({ title: e.title, deleteFlg: e.deleteFlg }))).toEqual(expect.arrayContaining([
+      { title: "作品1改", deleteFlg: false },
+      { title: "作品2", deleteFlg: true },
+      { title: "作品3", deleteFlg: false },
+    ]));
+    expect(dto.value.works).toHaveLength(3);
   });
 
   it("指定したユーザー・書籍IDで更新対象を取得すること", async () => {

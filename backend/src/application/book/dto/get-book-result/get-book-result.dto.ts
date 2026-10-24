@@ -18,6 +18,7 @@ export type GetBookResultType = {
     memo: string | null;
     iconId: number;
     icon: string | null;
+    deleteFlg: boolean;
   }[];
 };
 
@@ -29,7 +30,7 @@ export class GetBookResultDto {
 
   /**
    * @param book 書籍情報
-   * @param works 書籍に収録された作品一覧
+   * @param works 書籍に収録された作品一覧（論理削除済みを含む）
    */
   constructor(book: BookItem, works: WorkItem[]) {
     this._value = {
@@ -50,6 +51,7 @@ export class GetBookResultDto {
         memo: e.memo,
         iconId: e.iconId,
         icon: e.icon,
+        deleteFlg: e.deleteFlg,
       })),
     };
   }

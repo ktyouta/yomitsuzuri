@@ -16,16 +16,16 @@
 
 - P1: 返却項目（書籍の項目はトップレベルに並べ、作品一覧を works に持つ。当初の `book: {...}` の入れ子から、ユーザーの実装でフラットな形に変更）
   - id, title, publishedDate, readingStatusId, readingStatusLabel, currentPage, memo, iconId, icon（絵文字）, updatedAt
-  - works: id, title, sort, memo
+  - works: id, title, sort, memo, iconId, icon（絵文字）, deleteFlg（2026-10-24 時点。iconId・icon は作品へのアイコン追加時、deleteFlg は `docs/delete-restore/plan.md` の P8 で追加）
 - P2: 論理削除された読書状況は readingStatusLabel を null、論理削除されたアイコンは icon を null にする（書籍一覧と同じ扱い）。iconId は書籍に保存されている値をそのまま返す
-- P3: 作品は論理削除されていないものだけを sort の昇順で返す
+- P3: 作品は論理削除済みを含めて sort の昇順で返し、各作品に deleteFlg を付ける（2026-10-24 変更: `docs/delete-restore/plan.md` の P8。当初は論理削除されていないものだけを返していた）
 - P4: 書籍が存在しない・他ユーザーの書籍・論理削除済みのいずれも 404 で同じメッセージを返す（他ユーザーの書籍の存在を推測させないため）
 - ~~P5: bookId の形式（ULID）は検証しない。不正な値は該当なしとして 404 にする~~ → ユーザー指示で変更（上記「ユーザー決定事項」）
 - P6: workCount は返さない（works の件数で分かるため）
 
 ## 設計
 
-- Repository: `findBook(userId, bookId)` が書籍1件（なければ null）、`findWork(userId, bookId)` が作品一覧を返す。どちらも `book_transaction.user_id` と `delete_flg = false` を条件に含める（`findWork` は書籍を INNER JOIN して条件を付与する）
+- Repository: `findBook(userId, bookId)` が書籍1件（なければ null）、`findWork(userId, bookId)` が作品一覧を返す。どちらも `book_transaction.user_id` と書籍の `delete_flg = false` を条件に含める（`findWork` は書籍を INNER JOIN して条件を付与する。作品の `delete_flg` では絞り込まない）
 - Usecase: `findBook` と `findWork` を `Promise.all` で並列実行する。書籍が null の場合は `err({ type: "NOT_FOUND" })`、それ以外は `ok(GetBookResultDto)` を返す
 - `BookItem` / `WorkItem` は表示用の読み取り結果のため、値オブジェクトで包まずプリミティブで返す
 - readingStatusLabel・icon: マスタを LEFT JOIN（結合条件に `delete_flg = false`）

@@ -14,6 +14,7 @@ export type UpdateBookResultType = {
     sort: number;
     memo: string | null;
     iconId: number;
+    deleteFlg: boolean;
   }[];
 };
 
@@ -30,7 +31,7 @@ export class UpdateBookResultDto {
   constructor(book: BookAggregate) {
     const snapshot = book.toSnapshot();
 
-    // スナップショットには userId・deleteFlg も含まれるため、レスポンスに出す項目だけを詰め替える
+    // スナップショットには書籍の userId・deleteFlg も含まれるため、レスポンスに出す項目だけを詰め替える
     this._value = {
       id: snapshot.id,
       title: snapshot.title,
@@ -39,16 +40,15 @@ export class UpdateBookResultDto {
       currentPage: snapshot.currentPage,
       memo: snapshot.memo,
       iconId: snapshot.iconId,
-      // 論理削除した作品は返さない（書籍詳細取得と同じく、削除されていない作品だけを返す）
-      works: snapshot.works
-        .filter((e) => !e.deleteFlg)
-        .map((e) => ({
-          id: e.id,
-          title: e.title,
-          sort: e.sort,
-          memo: e.memo,
-          iconId: e.iconId,
-        })),
+      // 書籍詳細取得と同じく、論理削除した作品も削除フラグ付きで返す（画面で削除済みとして表示するため）
+      works: snapshot.works.map((e) => ({
+        id: e.id,
+        title: e.title,
+        sort: e.sort,
+        memo: e.memo,
+        iconId: e.iconId,
+        deleteFlg: e.deleteFlg,
+      })),
     };
   }
 

@@ -30,6 +30,7 @@ export type WorkItem = {
   iconId: number;
   // 論理削除されたアイコンの場合は null
   icon: string | null;
+  deleteFlg: boolean;
 };
 
 /**
@@ -48,7 +49,7 @@ export interface IGetBookRepository {
    * 書籍に収録された作品一覧を表示順の昇順で取得
    * @param userId 書籍を所有するユーザーID
    * @param bookId 書籍ID
-   * @returns 論理削除されていない作品一覧（書籍が取得対象外の場合は空配列）
+   * @returns 論理削除済みを含む作品一覧（書籍が取得対象外の場合は空配列）
    */
   findWork(userId: UserId, bookId: BookId): Promise<WorkItem[]>;
 }

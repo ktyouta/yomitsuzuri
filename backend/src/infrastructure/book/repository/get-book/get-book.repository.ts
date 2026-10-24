@@ -55,6 +55,7 @@ export class GetBookRepository implements IGetBookRepository {
         memo: workTransaction.memo,
         iconId: workTransaction.iconId,
         icon: iconMaster.emoji,
+        deleteFlg: workTransaction.deleteFlg,
       })
       .from(workTransaction)
       // 他ユーザー・論理削除済みの書籍の作品を返さないため、書籍側の条件で絞り込む
@@ -67,10 +68,8 @@ export class GetBookRepository implements IGetBookRepository {
           eq(iconMaster.deleteFlg, false)
         )
       )
-      .where(and(
-        this.buildBookCondition(userId, bookId),
-        eq(workTransaction.deleteFlg, false)
-      ))
+      // 削除済みの作品も画面で削除済みとして表示するため、作品の削除フラグでは絞り込まない
+      .where(this.buildBookCondition(userId, bookId))
       .orderBy(asc(workTransaction.sortOrder));
   }
 

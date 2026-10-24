@@ -9,7 +9,7 @@ import { toInputErrorMessage } from "../../error-message";
 import { BookIdParamSchema, UpdateBookSchema } from "../../schema";
 
 /**
- * 書籍更新（書籍に収録された作品も、削除済みを含む全件を受け取って更新する）
+ * 書籍更新（書籍に収録された作品もまとめて更新する。既に削除済みの作品は、含まれていても変更しない）
  */
 const updateBook = new Hono<AppEnv>().put(
   API_ENDPOINT.BOOKS_ID,

@@ -76,7 +76,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
 
   /**
    * 書籍更新
-   * 書籍本体を上書き更新し、作品は ID をキーに upsert する（既存は更新、新規は挿入）。
+   * 書籍本体を上書き更新し、作品は ID をキーに upsert する（既存は更新、新規は挿入）。既に削除済みの作品は更新しない。
    * @param bookAggregate 更新後の状態を表す書籍集約
    */
   async updateBook(bookAggregate: BookAggregate): Promise<void> {
@@ -121,8 +121,9 @@ export class UpdateBookRepository implements IUpdateBookRepository {
               deleteFlg: e.deleteFlg,
               updatedAt: now,
             },
-            // 他の書籍の作品を上書きしないための保険
-            setWhere: eq(workTransaction.bookId, bookSnapshot.id),
+            // 他の書籍の作品を上書きしないための保険。
+            // 既に削除済みの作品は集約が変更しないため、更新日時を無用に変えないよう更新の対象から外す
+            setWhere: and(eq(workTransaction.bookId, bookSnapshot.id), eq(workTransaction.deleteFlg, false)),
           })
       ),
     ]);
