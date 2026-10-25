@@ -1,4 +1,4 @@
-import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CurrentPageError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
+import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CurrentPageError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, WordMemoError, WordPageError, WordTextError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
 
 /**
  * 書籍コンテキストの入力値の違反（値オブジェクトの制約違反、集約の作品の指定の誤り・不変条件の違反）
@@ -20,7 +20,10 @@ type BookInputError =
   | GenderIdError
   | CharacterOccupationError
   | CharacterCharacteristicError
-  | CharacterMemoError;
+  | CharacterMemoError
+  | WordTextError
+  | WordMemoError
+  | WordPageError;
 
 /**
  * 入力値の違反を、利用者向けのメッセージに変換する
@@ -79,6 +82,14 @@ export function toInputErrorMessage(error: BookInputError): string {
       return `特徴は${error.max}文字以内で入力してください`;
     case "CHARACTER_MEMO_TOO_LONG":
       return `メモは${error.max}文字以内で入力してください`;
+    case "WORD_EMPTY":
+      return "ワードは必須です";
+    case "WORD_TOO_LONG":
+      return `ワードは${error.max}文字以内で入力してください`;
+    case "WORD_MEMO_TOO_LONG":
+      return `メモは${error.max}文字以内で入力してください`;
+    case "WORD_PAGE_INVALID":
+      return `ページは${error.min}以上の整数で入力してください`;
     default: {
       // 全てのエラー種別を網羅していることを型で保証する
       error satisfies never;

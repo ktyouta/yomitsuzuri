@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "../../../../types";
 import { createBook } from "../create-book";
 import { createCharacter } from "../create-character";
+import { createWord } from "../create-word";
 import { getBook } from "../get-book";
 import { getListBook } from "../get-list-book";
 import { getListCharacter } from "../get-list-character";
@@ -16,6 +17,7 @@ const book = new Hono<AppEnv>()
     .route("/", getWork)
     .route("/", getListCharacter)
     .route("/", getListWord)
+    .route("/", createWord)
     .route("/", createCharacter)
     .route("/", updateCharacter)
     .route("/", createBook)

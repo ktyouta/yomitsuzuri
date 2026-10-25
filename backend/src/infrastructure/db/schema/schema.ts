@@ -218,6 +218,7 @@ export const wordTransaction = sqliteTable(
     updatedAt: text("updated_at").notNull(),
   },
   (t) => [
+    uniqueIndex("word_transaction_work_id_text_unique").on(t.workId, t.text).where(sql`delete_flg = 0`),
     index("word_transaction_work_id_idx").on(t.workId),
   ]
 );
