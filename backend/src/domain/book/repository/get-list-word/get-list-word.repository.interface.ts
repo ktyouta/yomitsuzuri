@@ -7,7 +7,6 @@ import type { WorkId } from "../../value-object";
 export type WordListItem = {
   id: string;
   text: string;
-  memo: string | null;
   page: number | null;
   updatedAt: string;
 };
@@ -25,7 +24,7 @@ export interface IGetListWordRepository {
   findWork(userId: UserId, workId: WorkId): Promise<{ id: string } | null>;
 
   /**
-   * 作品の気になるワード一覧を更新日時の降順で取得
+   * 作品の気になるワード一覧をページの昇順（ページ未入力は末尾、同じページ内は ID の昇順）で取得
    * @param userId 書籍を所有するユーザーID
    * @param workId 気になるワードが属する作品ID
    * @returns 論理削除されていない気になるワード一覧（作品が取得対象外の場合は空配列）

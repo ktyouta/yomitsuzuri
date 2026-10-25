@@ -5,6 +5,7 @@ import { createCharacter } from "../create-character";
 import { getBook } from "../get-book";
 import { getListBook } from "../get-list-book";
 import { getListCharacter } from "../get-list-character";
+import { getListWord } from "../get-list-word";
 import { getWork } from "../get-work";
 import { updateBook } from "../update-book";
 import { updateCharacter } from "../update-character";
@@ -14,6 +15,7 @@ const book = new Hono<AppEnv>()
     .route("/", getBook)
     .route("/", getWork)
     .route("/", getListCharacter)
+    .route("/", getListWord)
     .route("/", createCharacter)
     .route("/", updateCharacter)
     .route("/", createBook)

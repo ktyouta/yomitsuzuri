@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import type { IGetListWordRepository, WordListItem, WorkId } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import type { Database } from "../../../db";
@@ -28,7 +28,6 @@ export class GetListWordRepository implements IGetListWordRepository {
       .select({
         id: wordTransaction.id,
         text: wordTransaction.text,
-        memo: wordTransaction.memo,
         page: wordTransaction.page,
         updatedAt: wordTransaction.updatedAt,
       })
@@ -40,8 +39,8 @@ export class GetListWordRepository implements IGetListWordRepository {
         this.buildWorkCondition(userId, workId),
         eq(wordTransaction.deleteFlg, false)
       ))
-      // 更新日時が同じ気になるワードの順序を固定するため id を第2キーにする
-      .orderBy(desc(wordTransaction.updatedAt), desc(wordTransaction.id));
+      // SQLite の昇順では null が先頭になるため、ページ未入力を末尾にするよう nulls last を指定する。同じページ内の順序を固定するため id を第2キーにする
+      .orderBy(sql`${wordTransaction.page} asc nulls last`, asc(wordTransaction.id));
   }
 
   /**
