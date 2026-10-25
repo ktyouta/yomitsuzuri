@@ -6,6 +6,7 @@ export * from "./gender-validity";
 export * from "./get-book";
 export * from "./get-list-book";
 export * from "./get-list-character";
+export * from "./get-list-word";
 export * from "./get-work";
 export * from "./icon-validity";
 export * from "./reading-status-validity";
