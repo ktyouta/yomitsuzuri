@@ -210,7 +210,7 @@ export const wordTransaction = sqliteTable(
   {
     id: text("id").primaryKey(), // ULID
     workId: text("work_id").notNull().references(() => workTransaction.id, { onDelete: "no action" }), // FK → work_transaction.id
-    word: text("word").notNull(),
+    text: text("text").notNull(),
     memo: text("memo"),
     page: integer("page"),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),

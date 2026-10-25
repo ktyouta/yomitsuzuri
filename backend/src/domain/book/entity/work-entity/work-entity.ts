@@ -25,6 +25,9 @@ export type WorkSnapshotType = {
     deleteFlg: boolean;
 };
 
+/**
+ * 作品（書籍に収録された物語）
+ */
 export class WorkEntity {
 
     private constructor(private readonly _id: WorkId,

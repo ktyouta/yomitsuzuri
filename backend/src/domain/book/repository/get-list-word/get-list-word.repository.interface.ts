@@ -6,7 +6,7 @@ import type { WorkId } from "../../value-object";
  */
 export type WordListItem = {
   id: string;
-  word: string;
+  text: string;
   memo: string | null;
   page: number | null;
   updatedAt: string;

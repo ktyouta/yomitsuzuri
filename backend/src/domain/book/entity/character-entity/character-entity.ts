@@ -43,6 +43,9 @@ type CharacterSnapshotType = {
     deleteFlg: boolean;
 }
 
+/**
+ * 登場人物（作品に登場する人物）
+ */
 export class CharacterEntity {
 
     private constructor(private readonly _id: CharacterId,

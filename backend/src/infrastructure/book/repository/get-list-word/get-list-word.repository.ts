@@ -27,7 +27,7 @@ export class GetListWordRepository implements IGetListWordRepository {
     return this.db
       .select({
         id: wordTransaction.id,
-        word: wordTransaction.word,
+        text: wordTransaction.text,
         memo: wordTransaction.memo,
         page: wordTransaction.page,
         updatedAt: wordTransaction.updatedAt,
