@@ -8,3 +8,4 @@ export * from "./get-list-word-result";
 export * from "./get-work-result";
 export * from "./update-book-result";
 export * from "./update-character-result";
+export * from "./update-word-result";

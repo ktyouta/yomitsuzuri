@@ -13,4 +13,5 @@ export * from "./icon-validity";
 export * from "./reading-status-validity";
 export * from "./update-book";
 export * from "./update-character";
+export * from "./update-word";
 export * from "./word-text-uniqueness";

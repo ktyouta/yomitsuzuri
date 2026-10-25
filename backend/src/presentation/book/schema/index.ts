@@ -6,4 +6,6 @@ export * from "./create-word";
 export * from "./get-list-book";
 export * from "./update-book";
 export * from "./update-character";
+export * from "./update-word";
+export * from "./word-id-param";
 export * from "./work-id-param";
