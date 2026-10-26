@@ -85,38 +85,4 @@ describe("WordEntity", () => {
       expect(word.toSnapshot()).toEqual(before);
     });
   });
-
-  describe("delete", () => {
-    it("自身を削除済みにすること", () => {
-      const word = createWord();
-      const before = word.toSnapshot();
-
-      word.delete();
-
-      expect(word.toSnapshot()).toEqual({ ...before, deleteFlg: true });
-    });
-
-    it("既に削除済みの場合は throw すること", () => {
-      const word = createWord(true);
-
-      expect(() => word.delete()).toThrow();
-    });
-  });
-
-  describe("restore", () => {
-    it("自身の削除済みを解除すること", () => {
-      const word = createWord(true);
-      const before = word.toSnapshot();
-
-      word.restore();
-
-      expect(word.toSnapshot()).toEqual({ ...before, deleteFlg: false });
-    });
-
-    it("削除されていない場合は throw すること", () => {
-      const word = createWord();
-
-      expect(() => word.restore()).toThrow();
-    });
-  });
 });

@@ -41,7 +41,7 @@ export class WordEntity {
         private _text: WordText,
         private _memo: WordMemo,
         private _page: WordPage,
-        private _deleteFlg: boolean,
+        private readonly _deleteFlg: boolean,
     ) { }
 
     get id() {
@@ -119,28 +119,6 @@ export class WordEntity {
         this._text = params.text;
         this._memo = params.memo;
         this._page = params.page;
-    }
-
-    /**
-     * 気になるワード削除（自身を削除済みにする）
-     * @throws 既に削除済みの気になるワードの場合
-     */
-    delete(): void {
-        if (this._deleteFlg) {
-            throw new Error(`既に削除済みの気になるワードです。`);
-        }
-        this._deleteFlg = true;
-    }
-
-    /**
-     * 気になるワード復元（自身の削除済みを解除する）
-     * @throws 削除されていない気になるワードの場合
-     */
-    restore(): void {
-        if (!this._deleteFlg) {
-            throw new Error(`削除されていない気になるワードです。`);
-        }
-        this._deleteFlg = false;
     }
 
     /**
