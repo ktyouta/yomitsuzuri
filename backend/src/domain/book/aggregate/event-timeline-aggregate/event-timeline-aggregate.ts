@@ -1,10 +1,22 @@
+import { err, ok, type Result } from "neverthrow";
 import { EventEntity } from "../../entity";
-import { EventSortOrder, type EventContent, type EventOccurredTiming, type WorkId } from "../../value-object";
+import { EventSortOrder, type EventId, type EventContent, type EventOccurredTiming, type WorkId } from "../../value-object";
 
 type AddEventTimelineParamType = {
     occurredTiming: EventOccurredTiming;
     content: EventContent;
 };
+
+type UpdateEventTimelineSortParamType = {
+    id: EventId;
+    sortOrder: EventSortOrder;
+};
+
+/**
+ * 時系列順の更新の失敗
+ */
+export type UpdateEventError ={ type: "EVENT_MISMATCH" }
+    | { type: "DUPLICATE_SORT_ORDER"; };
 
 type EventTimelineReconstructParamType = {
     workId: WorkId;
@@ -46,7 +58,7 @@ export class EventTimelineAggregate {
      *
      * 事前条件（満たさない場合は throw）:
      * - 出来事がすべて引数の作品に属すること
-     * @param params 作品と、作品に属する出来事（削除済みを含む）
+     * @param params 作品と、作品に属する出来事
      * @returns 渡した値をそのまま保持する出来事の並び
      * @throws 事前条件を満たさない場合（取得処理の不具合）
      */
@@ -57,8 +69,52 @@ export class EventTimelineAggregate {
         );
     }
 
-    update() {
+    /**
+     * 出来事の時系列順を置き換える
+     *
+     * 引数の指定の誤り（自身は変更せずに err で返す）:
+     * - 引数の出来事が保持する出来事と過不足なく一致しない場合（欠けている・既存にない ID が含まれる・ID が重複する）は EVENT_MISMATCH
+     * - 引数の時系列順が重複する場合は DUPLICATE_SORT_ORDER
+     *
+     * 事後条件:
+     * - 各出来事の時系列順を、引数で同じ ID に指定した値に置き換える（引数の配列の順番は問わない）
+     * - 時系列順以外の値と、保持する出来事の順番は変更しない
+     * @param params 保持するすべての出来事の ID と、置き換え後の時系列順
+     * @returns 成功時は undefined、引数の指定の誤り時はその内容を持つ Result
+     */
+    update(params: UpdateEventTimelineSortParamType[]): Result<undefined, UpdateEventError> {
+        const updateEventMap = new Map(params.map((param) => [param.id.value, param]));
+        if (this._events.some((event => !updateEventMap.has(event.id.value)))) {
+            return err({ type: "EVENT_MISMATCH" });
+        }
 
+        if (this._events.length !== params.length) {
+            return err({ type: "EVENT_MISMATCH" });
+        }
+
+        // ソート順重複
+        if (params.length !== new Set(params.map((param) => param.sortOrder.value)).size) {
+            return err({ type: "DUPLICATE_SORT_ORDER" });
+        }
+
+        this._events = this._events.map((event) => {
+
+            const targetEvent = updateEventMap.get(event.id.value);
+            if (!targetEvent) {
+                throw new Error(`照合済みの出来事が見つかりません。(ID: ${event.id.value})`);
+            }
+
+            return EventEntity.reconstruct({
+                id: event.id,
+                workId: event.workId,
+                content: event.content,
+                occurredTiming: event.occurredTiming,
+                sortOrder: targetEvent.sortOrder,
+                deleteFlg: event.deleteFlg,
+            });
+        });
+
+        return ok(undefined);
     }
 
     /**
@@ -66,7 +122,7 @@ export class EventTimelineAggregate {
      *
      * 事後条件:
      * - 自身の作品に属する、削除されていない出来事を1件追加する
-     * - 追加した出来事の時系列順は、既存の出来事（削除済みを含む）の最大値+1とする（既存がなければ先頭）
+     * - 追加した出来事の時系列順は、既存の出来事の最大値+1とする（既存がなければ先頭）
      * - 既存の出来事は変更しない
      * @param params 追加する出来事の情報
      * @returns 追加した出来事
@@ -87,7 +143,7 @@ export class EventTimelineAggregate {
 
     /**
      * スナップショットを作成
-     * @returns 保持する出来事（削除済みを含む）の値
+     * @returns 保持する出来事の値
      */
     toSnapshot(): EventTimelineSnapshotType[] {
         return this._events.map((event) => event.toSnapshot());

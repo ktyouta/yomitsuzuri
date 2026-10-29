@@ -29,15 +29,15 @@ function addParam() {
 
 describe("EventTimelineAggregate", () => {
   describe("reconstruct", () => {
-    it("渡した出来事（削除済みを含む）をそのまま保持すること", () => {
+    it("渡した出来事をそのまま保持すること", () => {
       const timeline = EventTimelineAggregate.reconstruct({
         workId: WorkId.of(WORK_ID),
-        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, 2, true)],
+        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, 2)],
       });
 
       expect(timeline.toSnapshot()).toEqual([
         createEvent(EVENT_ID_1, 1).toSnapshot(),
-        createEvent(EVENT_ID_2, 2, true).toSnapshot(),
+        createEvent(EVENT_ID_2, 2).toSnapshot(),
       ]);
     });
 
@@ -81,16 +81,57 @@ describe("EventTimelineAggregate", () => {
       expect(added.sortOrder.value).toBe(4);
       expect(after[2]).toEqual(added.toSnapshot());
     });
+  });
 
-    it("削除済みの出来事の時系列順も最大値の判定に含めること", () => {
-      const timeline = EventTimelineAggregate.reconstruct({
+  describe("update", () => {
+    const EVENT_ID_3 = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
+
+    /** 出来事1（時系列順1）・出来事2（時系列順2）を持つ出来事の並び */
+    function createTimeline() {
+      return EventTimelineAggregate.reconstruct({
         workId: WorkId.of(WORK_ID),
-        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, 5, true)],
+        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, 2)],
       });
+    }
 
-      const added = timeline.add(addParam());
+    function sortParam(id: string, sortOrder: number) {
+      return { id: EventId.of(id), sortOrder: EventSortOrder.of(sortOrder) };
+    }
 
-      expect(added.sortOrder.value).toBe(6);
+    it("各出来事の時系列順を同じ ID に指定した値に置き換え、時系列順以外の値と出来事の順番は変更しないこと（引数の配列の順番は問わない）", () => {
+      const timeline = createTimeline();
+
+      const result = timeline.update([sortParam(EVENT_ID_2, 1), sortParam(EVENT_ID_1, 2)]);
+
+      expect(result.isOk()).toBe(true);
+      expect(timeline.toSnapshot()).toEqual([
+        createEvent(EVENT_ID_1, 2).toSnapshot(),
+        createEvent(EVENT_ID_2, 1).toSnapshot(),
+      ]);
+    });
+
+    it.each([
+      ["既存の出来事が欠けている", [sortParam(EVENT_ID_1, 1)]],
+      ["既存にない ID が含まれる", [sortParam(EVENT_ID_1, 1), sortParam(EVENT_ID_2, 2), sortParam(EVENT_ID_3, 3)]],
+      ["ID が重複する", [sortParam(EVENT_ID_1, 1), sortParam(EVENT_ID_2, 2), sortParam(EVENT_ID_1, 3)]],
+    ])("%s場合は EVENT_MISMATCH を返し、自身は変更しないこと", (_, params) => {
+      const timeline = createTimeline();
+      const before = timeline.toSnapshot();
+
+      const result = timeline.update(params);
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "EVENT_MISMATCH" });
+      expect(timeline.toSnapshot()).toEqual(before);
+    });
+
+    it("時系列順が重複する場合は DUPLICATE_SORT_ORDER を返し、自身は変更しないこと", () => {
+      const timeline = createTimeline();
+      const before = timeline.toSnapshot();
+
+      const result = timeline.update([sortParam(EVENT_ID_1, 3), sortParam(EVENT_ID_2, 3)]);
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_SORT_ORDER" });
+      expect(timeline.toSnapshot()).toEqual(before);
     });
   });
 });
