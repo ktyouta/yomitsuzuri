@@ -3,6 +3,7 @@ export * from "./character-id-param";
 export * from "./create-book";
 export * from "./create-character";
 export * from "./create-word";
+export * from "./event-id-param";
 export * from "./get-list-book";
 export * from "./update-book";
 export * from "./update-character";
