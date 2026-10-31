@@ -8,5 +8,3 @@ import { z } from "zod";
 export const CharacterIdParamSchema = z.object({
   characterId: z.string(),
 });
-
-export type CharacterIdParamSchemaType = z.infer<typeof CharacterIdParamSchema>;

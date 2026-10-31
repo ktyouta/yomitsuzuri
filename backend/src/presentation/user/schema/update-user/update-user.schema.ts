@@ -9,5 +9,3 @@ export const UpdateUserSchema = z.object({
   name: z.string(),
   birthday: z.string(),
 });
-
-export type UpdateUserSchemaType = z.infer<typeof UpdateUserSchema>;

@@ -10,5 +10,3 @@ export const CreateEventSchema = z.object({
   occurredTiming: z.string().nullish(),
   content: z.string(),
 });
-
-export type CreateEventSchemaType = z.infer<typeof CreateEventSchema>;

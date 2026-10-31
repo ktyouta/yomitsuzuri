@@ -11,5 +11,3 @@ export const CreateUserSchema = z.object({
   password: z.string(),
   confirmPassword: z.string(),
 });
-
-export type CreateUserSchemaType = z.infer<typeof CreateUserSchema>;

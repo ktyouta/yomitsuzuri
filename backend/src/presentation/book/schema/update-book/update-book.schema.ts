@@ -27,5 +27,3 @@ export const UpdateBookSchema = z.object({
   iconId: z.number(),
   works: z.array(UpdateWorkSchema),
 });
-
-export type UpdateBookSchemaType = z.infer<typeof UpdateBookSchema>;

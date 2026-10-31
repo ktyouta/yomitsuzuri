@@ -8,5 +8,3 @@ import { z } from "zod";
 export const EventIdParamSchema = z.object({
   eventId: z.string(),
 });
-
-export type EventIdParamSchemaType = z.infer<typeof EventIdParamSchema>;

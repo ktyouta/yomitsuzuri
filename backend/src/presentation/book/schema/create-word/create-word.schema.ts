@@ -11,5 +11,3 @@ export const CreateWordSchema = z.object({
   memo: z.string().nullish(),
   page: z.number().nullish(),
 });
-
-export type CreateWordSchemaType = z.infer<typeof CreateWordSchema>;

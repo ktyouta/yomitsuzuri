@@ -8,5 +8,3 @@ import { z } from "zod";
 export const WordIdParamSchema = z.object({
   wordId: z.string(),
 });
-
-export type WordIdParamSchemaType = z.infer<typeof WordIdParamSchema>;

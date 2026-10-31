@@ -8,5 +8,3 @@ import { z } from "zod";
 export const WorkIdParamSchema = z.object({
   workId: z.string(),
 });
-
-export type WorkIdParamSchemaType = z.infer<typeof WorkIdParamSchema>;

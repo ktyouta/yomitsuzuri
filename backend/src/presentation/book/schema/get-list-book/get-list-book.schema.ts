@@ -10,5 +10,3 @@ import { BookListPagination } from "../../../../domain/book";
 export const GetListBookQuerySchema = z.object({
   page: z.string().default(String(BookListPagination.MIN_PAGE)).transform(Number),
 });
-
-export type GetListBookQuerySchemaType = z.infer<typeof GetListBookQuerySchema>;

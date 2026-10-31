@@ -10,5 +10,3 @@ export const UpdateEventSchema = z.object({
   occurredTiming: z.string().nullish(),
   content: z.string(),
 });
-
-export type UpdateEventSchemaType = z.infer<typeof UpdateEventSchema>;

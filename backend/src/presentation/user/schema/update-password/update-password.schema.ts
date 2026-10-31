@@ -10,5 +10,3 @@ export const UpdatePasswordSchema = z.object({
   newPassword: z.string(),
   confirmPassword: z.string(),
 });
-
-export type UpdatePasswordSchemaType = z.infer<typeof UpdatePasswordSchema>;

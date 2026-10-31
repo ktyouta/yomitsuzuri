@@ -9,5 +9,3 @@ export const UserLoginSchema = z.object({
   name: z.string(),
   password: z.string(),
 });
-
-export type UserLoginSchemaType = z.infer<typeof UserLoginSchema>;

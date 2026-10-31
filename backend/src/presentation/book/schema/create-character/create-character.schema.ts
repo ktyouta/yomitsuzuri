@@ -14,5 +14,3 @@ export const CreateCharacterSchema = z.object({
   characteristic: z.string().nullish(),
   memo: z.string().nullish(),
 });
-
-export type CreateCharacterSchemaType = z.infer<typeof CreateCharacterSchema>;
