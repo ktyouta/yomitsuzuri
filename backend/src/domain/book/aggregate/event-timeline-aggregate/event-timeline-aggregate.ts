@@ -15,7 +15,7 @@ type UpdateEventTimelineSortParamType = {
 /**
  * 時系列順の更新の失敗
  */
-export type UpdateEventError ={ type: "EVENT_MISMATCH" }
+export type EventTimelineUpdateError = { type: "EVENT_MISMATCH" }
     | { type: "DUPLICATE_SORT_ORDER"; };
 
 type EventTimelineReconstructParamType = {
@@ -82,7 +82,7 @@ export class EventTimelineAggregate {
      * @param params 保持するすべての出来事の ID と、置き換え後の時系列順
      * @returns 成功時は undefined、引数の指定の誤り時はその内容を持つ Result
      */
-    update(params: UpdateEventTimelineSortParamType[]): Result<undefined, UpdateEventError> {
+    update(params: UpdateEventTimelineSortParamType[]): Result<undefined, EventTimelineUpdateError> {
         const updateEventMap = new Map(params.map((param) => [param.id.value, param]));
         if (this._events.some((event => !updateEventMap.has(event.id.value)))) {
             return err({ type: "EVENT_MISMATCH" });

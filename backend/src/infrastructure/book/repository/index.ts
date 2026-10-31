@@ -19,5 +19,6 @@ export * from "./reading-status-validity";
 export * from "./update-book";
 export * from "./update-character";
 export * from "./update-event";
+export * from "./update-event-order";
 export * from "./update-word";
 export * from "./word-text-uniqueness";

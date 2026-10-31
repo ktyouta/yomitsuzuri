@@ -14,6 +14,16 @@ describe("EventId", () => {
     });
   });
 
+  describe("fromInput", () => {
+    it.each(["01ARZ3NDEKTSV4RRFFQ69G5FAV", "invalid"])("空でなければ（%s）、そのまま保持すること（形式は判定しない）", (eventId) => {
+      expect(EventId.fromInput(eventId)._unsafeUnwrap().value).toBe(eventId);
+    });
+
+    it("空の場合は EVENT_ID_EMPTY を返すこと", () => {
+      expect(EventId.fromInput("")._unsafeUnwrapErr()).toEqual({ type: "EVENT_ID_EMPTY" });
+    });
+  });
+
   describe("create", () => {
     it("ULID 形式の ID を生成すること", () => {
       expect(EventId.create().value).toMatch(ULID_PATTERN);

@@ -1,4 +1,10 @@
+import { err, ok, type Result } from "neverthrow";
 import { ulid } from "ulid";
+
+/**
+ * 出来事IDの生成失敗
+ */
+export type EventIdError = { type: "EVENT_ID_EMPTY" };
 
 /**
  * 出来事ID（ULID）
@@ -29,6 +35,19 @@ export class EventId {
      */
     static create(): EventId {
         return new EventId(ulid());
+    }
+
+    /**
+     * 外部からの入力値から生成する（形式は判定しない。存在しない ID は出来事の照合で検出する）
+     * @param eventId 出来事ID
+     * @returns 成功時は出来事ID、空の場合はその内容を持つ Result
+     */
+    static fromInput(eventId: string): Result<EventId, EventIdError> {
+        if (!eventId) {
+            return err({ type: "EVENT_ID_EMPTY" });
+        }
+
+        return ok(new EventId(eventId));
     }
 
     /**

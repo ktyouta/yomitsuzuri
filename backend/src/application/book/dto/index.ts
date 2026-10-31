@@ -12,4 +12,5 @@ export * from "./get-work-result";
 export * from "./update-book-result";
 export * from "./update-character-result";
 export * from "./update-event-result";
+export * from "./update-event-order-result";
 export * from "./update-word-result";

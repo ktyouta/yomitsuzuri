@@ -1,6 +1,6 @@
 import type { EventEntity } from "../../../../domain/book";
 
-export type UpdateEventResultType = {
+type UpdateEventResultType = {
   id: string;
   workId: string;
   occurredTiming: string | null;

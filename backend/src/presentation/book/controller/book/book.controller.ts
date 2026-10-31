@@ -16,6 +16,7 @@ import { getWork } from "../get-work";
 import { updateBook } from "../update-book";
 import { updateCharacter } from "../update-character";
 import { updateEvent } from "../update-event";
+import { updateEventOrder } from "../update-event-order";
 import { updateWord } from "../update-word";
 
 const book = new Hono<AppEnv>()
@@ -29,6 +30,7 @@ const book = new Hono<AppEnv>()
     .route("/", createEvent)
     .route("/", deleteEvent)
     .route("/", updateEvent)
+    .route("/", updateEventOrder)
     .route("/", createWord)
     .route("/", updateWord)
     .route("/", deleteWord)
