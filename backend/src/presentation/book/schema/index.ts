@@ -2,6 +2,7 @@ export * from "./book-id-param";
 export * from "./character-id-param";
 export * from "./create-book";
 export * from "./create-character";
+export * from "./create-event";
 export * from "./create-word";
 export * from "./event-id-param";
 export * from "./get-list-book";
