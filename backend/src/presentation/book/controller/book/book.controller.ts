@@ -4,6 +4,7 @@ import { createBook } from "../create-book";
 import { createCharacter } from "../create-character";
 import { createEvent } from "../create-event";
 import { createWord } from "../create-word";
+import { deleteEvent } from "../delete-event";
 import { deleteWord } from "../delete-word";
 import { getBook } from "../get-book";
 import { getEvent } from "../get-event";
@@ -25,6 +26,7 @@ const book = new Hono<AppEnv>()
     .route("/", getListEvent)
     .route("/", getEvent)
     .route("/", createEvent)
+    .route("/", deleteEvent)
     .route("/", createWord)
     .route("/", updateWord)
     .route("/", deleteWord)

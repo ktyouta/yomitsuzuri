@@ -2,6 +2,7 @@ export * from "./create-book";
 export * from "./create-character";
 export * from "./create-event";
 export * from "./create-word";
+export * from "./delete-event";
 export * from "./delete-word";
 export * from "./get-book";
 export * from "./get-event";
