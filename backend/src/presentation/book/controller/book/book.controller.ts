@@ -15,6 +15,7 @@ import { getListWord } from "../get-list-word";
 import { getWork } from "../get-work";
 import { updateBook } from "../update-book";
 import { updateCharacter } from "../update-character";
+import { updateEvent } from "../update-event";
 import { updateWord } from "../update-word";
 
 const book = new Hono<AppEnv>()
@@ -27,6 +28,7 @@ const book = new Hono<AppEnv>()
     .route("/", getEvent)
     .route("/", createEvent)
     .route("/", deleteEvent)
+    .route("/", updateEvent)
     .route("/", createWord)
     .route("/", updateWord)
     .route("/", deleteWord)

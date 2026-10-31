@@ -13,4 +13,5 @@ export * from "./get-list-word";
 export * from "./get-work";
 export * from "./update-book";
 export * from "./update-character";
+export * from "./update-event";
 export * from "./update-word";
