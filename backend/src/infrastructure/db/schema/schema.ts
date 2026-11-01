@@ -195,6 +195,10 @@ export const characterRelationTransaction = sqliteTable(
       foreignColumns: [characterTransaction.id, characterTransaction.workId],
     }).onDelete("no action"),
     check("character_relation_not_self", sql`character_id <> target_character_id`),
+    // 2人の ID を小さい順に並べてから比べることで、向きが逆の同じ関係も重複として弾く
+    uniqueIndex("character_relation_transaction_pair_relation_unique")
+      .on(sql`min(character_id, target_character_id)`, sql`max(character_id, target_character_id)`, t.relation)
+      .where(sql`delete_flg = 0`),
     index("character_relation_transaction_work_id_idx").on(t.workId),
   ]
 );
