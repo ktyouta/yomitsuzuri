@@ -8,6 +8,8 @@ export * from "./character-id";
 export * from "./character-memo";
 export * from "./character-name";
 export * from "./character-occupation";
+export * from "./character-relation-id";
+export * from "./character-relation-name";
 export * from "./current-page";
 export * from "./event-content";
 export * from "./event-id";

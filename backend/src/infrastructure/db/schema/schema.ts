@@ -178,7 +178,7 @@ export const characterRelationTransaction = sqliteTable(
     workId: text("work_id").notNull().references(() => workTransaction.id, { onDelete: "no action" }), // FK → work_transaction.id
     characterId: text("character_id").notNull(),
     targetCharacterId: text("target_character_id").notNull(),
-    relation: text("relation").notNull(),
+    relationName: text("relation_name").notNull(),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
@@ -196,8 +196,8 @@ export const characterRelationTransaction = sqliteTable(
     }).onDelete("no action"),
     check("character_relation_not_self", sql`character_id <> target_character_id`),
     // 2人の ID を小さい順に並べてから比べることで、向きが逆の同じ関係も重複として弾く
-    uniqueIndex("character_relation_transaction_pair_relation_unique")
-      .on(sql`min(character_id, target_character_id)`, sql`max(character_id, target_character_id)`, t.relation)
+    uniqueIndex("character_relation_transaction_pair_relation_name_unique")
+      .on(sql`min(character_id, target_character_id)`, sql`max(character_id, target_character_id)`, t.relationName)
       .where(sql`delete_flg = 0`),
     index("character_relation_transaction_work_id_idx").on(t.workId),
   ]

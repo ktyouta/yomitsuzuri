@@ -8,7 +8,8 @@
 
 ## 前提（スキーマ）
 
-- 関係は「人物 → 相手 + 関係（文字列）」の向きを持つ（`character_id`・`target_character_id`・`relation`）
+- 関係は「人物 → 相手 + 関係（文字列）」の向きを持つ（`character_id`・`target_character_id`・`relation_name`）
+- 関係名の列は `relation_name`（2026-11-01 に `relation` から変更。テーブルの1行自体が「関係」のため、`relation` では行全体か関係名の文字列かが区別できない。ドメインの値オブジェクトは `CharacterRelationName`。既存の値オブジェクトと同じ「Entity 名 + 項目名」の命名）
 - 複合 FK により、同じ作品の人物同士でのみ作成できる。自分自身との関係は CHECK 制約で禁止
 - 関係は自由入力の文字列（マスタにしない）
 
@@ -18,10 +19,11 @@
 
 - U1: 同じ2人の間で同じ関係（trim 後に完全一致）は、向きを問わず重複として禁止する（2026-11-01）
   - 例: 「A → B：兄」がある状態で、「A → B：兄」「B → A：兄」はどちらも登録できない。「B → A：弟」は登録できる
-  - DB: 部分一意インデックス `character_relation_transaction_pair_relation_unique` を `schema.ts` に追加済み（`min(character_id, target_character_id)`・`max(character_id, target_character_id)`・`relation`。`delete_flg = 0` の行が対象）
+  - DB: 部分一意インデックス `character_relation_transaction_pair_relation_name_unique` を `schema.ts` に追加済み（`min(character_id, target_character_id)`・`max(character_id, target_character_id)`・`relation_name`。`delete_flg = 0` の行が対象）
   - ドメインでも判定する（登録・更新時に、(人物, 相手, 関係) または (相手, 人物, 関係) に一致する未削除の行があれば err。更新では自身の行を除外する）。画面からもまったく同じ関係は登録できないようにする
 - U2: 関係は、関係する両方の人物の画面に表示する
 - U3: マイグレーションは今回は生成・適用しない
+- U4: 関係名の上限は 50 文字（`CharacterRelationName.RELATION_NAME_MAX_LENGTH`。文の形で表示する短いラベルのため。職業と同じ上限）
 
 ### Claudeの提案（ユーザーは「お願い」とまとめを承認。以下の項目は個別の明示的な承認なし）
 
@@ -37,8 +39,8 @@
   | 操作 | メソッド・URL | リクエストボディ |
   |---|---|---|
   | 一覧 | `GET /api/v1/works/:workId/character-relations` | なし |
-  | 登録 | `POST /api/v1/works/:workId/character-relations` | `{ characterId, targetCharacterId, relation }` |
-  | 更新 | `PUT /api/v1/character-relations/:relationId` | `{ relation }`（編集できる範囲を関係の文字列だけにする場合。未決定事項を参照） |
+  | 登録 | `POST /api/v1/works/:workId/character-relations` | `{ characterId, targetCharacterId, relationName }` |
+  | 更新 | `PUT /api/v1/character-relations/:relationId` | `{ relationName }`（編集できる範囲を関係の文字列だけにする場合。未決定事項を参照） |
   | 削除 | `DELETE /api/v1/character-relations/:relationId` | なし |
 
   - 一覧・登録は作品の関係の集まり（コレクション）の URL、更新・削除は1件の URL にする。関係の ID（ULID）は全体で一意なため、1件は ID だけで識別する（`docs/work-detail/plan.md` P1 の浅いネスト）
