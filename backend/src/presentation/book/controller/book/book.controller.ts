@@ -10,6 +10,7 @@ import { getBook } from "../get-book";
 import { getEvent } from "../get-event";
 import { getListBook } from "../get-list-book";
 import { getListCharacter } from "../get-list-character";
+import { getListCharacterRelation } from "../get-list-character-relation";
 import { getListEvent } from "../get-list-event";
 import { getListWord } from "../get-list-word";
 import { getWork } from "../get-work";
@@ -24,6 +25,7 @@ const book = new Hono<AppEnv>()
     .route("/", getBook)
     .route("/", getWork)
     .route("/", getListCharacter)
+    .route("/", getListCharacterRelation)
     .route("/", getListWord)
     .route("/", getListEvent)
     .route("/", getEvent)
