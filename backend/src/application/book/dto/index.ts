@@ -12,6 +12,7 @@ export * from "./get-list-event-result";
 export * from "./get-list-word-result";
 export * from "./get-work-result";
 export * from "./update-book-result";
+export * from "./update-character-relation-result";
 export * from "./update-character-result";
 export * from "./update-event-order-result";
 export * from "./update-event-result";

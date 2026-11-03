@@ -18,6 +18,7 @@ import { getListWord } from "../get-list-word";
 import { getWork } from "../get-work";
 import { updateBook } from "../update-book";
 import { updateCharacter } from "../update-character";
+import { updateCharacterRelation } from "../update-character-relation";
 import { updateEvent } from "../update-event";
 import { updateEventOrder } from "../update-event-order";
 import { updateWord } from "../update-word";
@@ -29,6 +30,7 @@ const book = new Hono<AppEnv>()
     .route("/", getListCharacter)
     .route("/", getListCharacterRelation)
     .route("/", createCharacterRelation)
+    .route("/", updateCharacterRelation)
     .route("/", deleteCharacterRelation)
     .route("/", getListWord)
     .route("/", getListEvent)

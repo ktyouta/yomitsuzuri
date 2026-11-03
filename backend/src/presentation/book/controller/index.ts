@@ -17,6 +17,7 @@ export * from "./get-list-word";
 export * from "./get-work";
 export * from "./update-book";
 export * from "./update-character";
+export * from "./update-character-relation";
 export * from "./update-event";
 export * from "./update-event-order";
 export * from "./update-word";

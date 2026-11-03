@@ -10,6 +10,7 @@ export * from "./event-id-param";
 export * from "./get-list-book";
 export * from "./update-book";
 export * from "./update-character";
+export * from "./update-character-relation";
 export * from "./update-event";
 export * from "./update-event-order";
 export * from "./update-word";
