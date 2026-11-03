@@ -21,4 +21,14 @@ describe("CharacterId", () => {
     const id2 = CharacterId.create();
     expect(id1.value).not.toBe(id2.value);
   });
+
+  describe("fromInput", () => {
+    it.each(["01ARZ3NDEKTSV4RRFFQ69G5FAV", "invalid"])("空でなければ（%s）、そのまま保持すること（形式は判定しない）", (characterId) => {
+      expect(CharacterId.fromInput(characterId)._unsafeUnwrap().value).toBe(characterId);
+    });
+
+    it("空の場合は CHARACTER_ID_EMPTY を返すこと", () => {
+      expect(CharacterId.fromInput("")._unsafeUnwrapErr()).toEqual({ type: "CHARACTER_ID_EMPTY" });
+    });
+  });
 });

@@ -1,5 +1,6 @@
 export * from "./create-book";
 export * from "./create-character";
+export * from "./create-character-relation";
 export * from "./create-event";
 export * from "./create-word";
 export * from "./delete-event";

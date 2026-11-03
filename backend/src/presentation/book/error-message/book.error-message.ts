@@ -1,4 +1,4 @@
-import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CurrentPageError, EventContentError, EventIdError, EventOccurredTimingError, EventSortOrderError, EventTimelineUpdateError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, WordMemoError, WordPageError, WordTextError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
+import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterIdError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CharacterRelationNameError, CurrentPageError, EventContentError, EventIdError, EventOccurredTimingError, EventSortOrderError, EventTimelineUpdateError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, WordMemoError, WordPageError, WordTextError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
 
 /**
  * 書籍コンテキストの入力値の違反（値オブジェクトの制約違反、集約の作品の指定の誤り・不変条件の違反）
@@ -21,6 +21,8 @@ type BookInputError =
   | CharacterOccupationError
   | CharacterCharacteristicError
   | CharacterMemoError
+  | CharacterIdError
+  | CharacterRelationNameError
   | WordTextError
   | WordMemoError
   | WordPageError
@@ -87,6 +89,12 @@ export function toInputErrorMessage(error: BookInputError): string {
       return `特徴は${error.max}文字以内で入力してください`;
     case "CHARACTER_MEMO_TOO_LONG":
       return `メモは${error.max}文字以内で入力してください`;
+    case "CHARACTER_ID_EMPTY":
+      return "登場人物IDは必須です";
+    case "CHARACTER_RELATION_NAME_EMPTY":
+      return "関係名は必須です";
+    case "CHARACTER_RELATION_NAME_TOO_LONG":
+      return `関係名は${error.max}文字以内で入力してください`;
     case "WORD_EMPTY":
       return "ワードは必須です";
     case "WORD_TOO_LONG":

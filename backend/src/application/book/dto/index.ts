@@ -1,4 +1,5 @@
 export * from "./create-book-result";
+export * from "./create-character-relation-result";
 export * from "./create-character-result";
 export * from "./create-event-result";
 export * from "./create-word-result";
