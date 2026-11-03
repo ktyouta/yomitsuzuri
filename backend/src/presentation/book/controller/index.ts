@@ -4,6 +4,7 @@ export * from "./create-character";
 export * from "./create-character-relation";
 export * from "./create-event";
 export * from "./create-word";
+export * from "./delete-character-relation";
 export * from "./delete-event";
 export * from "./delete-word";
 export * from "./get-book";

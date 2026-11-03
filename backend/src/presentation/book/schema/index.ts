@@ -1,5 +1,6 @@
 export * from "./book-id-param";
 export * from "./character-id-param";
+export * from "./character-relation-id-param";
 export * from "./create-book";
 export * from "./create-character";
 export * from "./create-character-relation";
