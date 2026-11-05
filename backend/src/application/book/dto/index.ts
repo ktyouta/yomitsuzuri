@@ -4,6 +4,7 @@ export * from "./create-character-result";
 export * from "./create-event-result";
 export * from "./create-word-result";
 export * from "./get-book-result";
+export * from "./get-character-result";
 export * from "./get-event-result";
 export * from "./get-list-book-result";
 export * from "./get-list-character-relation-result";
