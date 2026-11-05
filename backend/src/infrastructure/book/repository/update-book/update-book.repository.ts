@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IUpdateBookRepository } from "../../../../domain";
 import { UserId } from "../../../../domain/shared";
 import { bookTransaction, workTransaction, type Database } from "../../../db";
@@ -97,6 +97,16 @@ export class UpdateBookRepository implements IUpdateBookRepository {
           updatedAt: now,
         })
         .where(and(eq(bookTransaction.deleteFlg, false), eq(bookTransaction.userId, bookSnapshot.userId), eq(bookTransaction.id, bookSnapshot.id))),
+      // 一意制約は1文ごとに判定されるため、作品名の入れ替えなどで途中の状態が重複しないよう、いったん一意な値（作品 ID）に置き換える。
+      // 同時に追加された作品の作品名を壊さないよう、更新対象の作品だけに限定する
+      this.db
+        .update(workTransaction)
+        .set({ title: sql`${workTransaction.id}` })
+        .where(and(
+          eq(workTransaction.bookId, bookSnapshot.id),
+          eq(workTransaction.deleteFlg, false),
+          inArray(workTransaction.id, bookSnapshot.works.map((e) => e.id))
+        )),
       ...bookSnapshot.works.map((e) =>
         this.db
           .insert(workTransaction)
