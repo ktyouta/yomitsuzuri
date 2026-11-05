@@ -7,7 +7,7 @@ const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";
 
 const CHARACTERS: CharacterListItem[] = [
-  { id: "01BX5ZZKBKACTAV9WEVGEMMVT0", name: "石神哲哉", age: "40代", occupation: "数学教師", updatedAt: "2026-10-01T00:00:00.000Z" },
+  { id: "01BX5ZZKBKACTAV9WEVGEMMVT0", name: "石神哲哉", age: "40代", occupation: "数学教師", updatedAt: "2026-10-01T00:00:00.000Z", deleteFlg: false },
 ];
 
 function createRepository(work: { id: string } | null, characters: CharacterListItem[]) {
@@ -24,6 +24,15 @@ describe("GetListCharacterUsecase", () => {
     const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID });
 
     expect(result._unsafeUnwrap().value).toEqual({ list: CHARACTERS });
+  });
+
+  it("論理削除済みの登場人物も、削除フラグを付けて返すこと", async () => {
+    const deleted: CharacterListItem = { ...CHARACTERS[0], deleteFlg: true };
+    const usecase = new GetListCharacterUsecase(createRepository({ id: WORK_ID }, [deleted]));
+
+    const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID });
+
+    expect(result._unsafeUnwrap().value).toEqual({ list: [deleted] });
   });
 
   it("登場人物が0件の場合、空の一覧を返すこと", async () => {

@@ -10,6 +10,7 @@ export type CharacterListItem = {
   age: string | null;
   occupation: string | null;
   updatedAt: string;
+  deleteFlg: boolean;
 };
 
 /**
@@ -28,7 +29,7 @@ export interface IGetListCharacterRepository {
    * 作品の登場人物一覧を更新日時の降順で取得
    * @param userId 書籍を所有するユーザーID
    * @param workId 登場人物が属する作品ID
-   * @returns 論理削除されていない登場人物一覧（作品が取得対象外の場合は空配列）
+   * @returns 論理削除済みを含む登場人物一覧（作品が取得対象外の場合は空配列）
    */
   findCharacterList(userId: UserId, workId: WorkId): Promise<CharacterListItem[]>;
 }

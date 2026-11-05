@@ -7,6 +7,7 @@ export type GetListCharacterResultType = {
     age: string | null;
     occupation: string | null;
     updatedAt: string;
+    deleteFlg: boolean;
   }[];
 };
 
@@ -17,7 +18,7 @@ export class GetListCharacterResultDto {
   private readonly _value: GetListCharacterResultType;
 
   /**
-   * @param list 作品の登場人物一覧
+   * @param list 作品の登場人物一覧（論理削除済みを含む）
    */
   constructor(list: CharacterListItem[]) {
     this._value = {
@@ -27,6 +28,7 @@ export class GetListCharacterResultDto {
         age: e.age,
         occupation: e.occupation,
         updatedAt: e.updatedAt,
+        deleteFlg: e.deleteFlg,
       })),
     };
   }

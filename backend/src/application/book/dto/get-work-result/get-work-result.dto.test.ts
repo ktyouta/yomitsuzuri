@@ -11,6 +11,7 @@ describe("GetWorkResultDto", () => {
       iconId: 4,
       icon: "📗",
       updatedAt: "2026-10-01T00:00:00.000Z",
+      deleteFlg: true,
     };
 
     const dto = new GetWorkResultDto(work);
@@ -22,6 +23,7 @@ describe("GetWorkResultDto", () => {
       iconId: 4,
       icon: "📗",
       updatedAt: "2026-10-01T00:00:00.000Z",
+      deleteFlg: true,
     });
   });
 });

@@ -7,6 +7,7 @@ export type GetWorkResultType = {
   iconId: number;
   icon: string | null;
   updatedAt: string;
+  deleteFlg: boolean;
 };
 
 /**
@@ -26,6 +27,7 @@ export class GetWorkResultDto {
       iconId: work.iconId,
       icon: work.icon,
       updatedAt: work.updatedAt,
+      deleteFlg: work.deleteFlg,
     };
   }
 

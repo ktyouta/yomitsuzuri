@@ -19,6 +19,7 @@ export class GetWorkRepository implements IGetWorkRepository {
         iconId: workTransaction.iconId,
         icon: iconMaster.emoji,
         updatedAt: workTransaction.updatedAt,
+        deleteFlg: workTransaction.deleteFlg,
       })
       .from(workTransaction)
       // 他ユーザー・論理削除済みの書籍の作品を返さないため、書籍側の条件で絞り込む
@@ -31,9 +32,9 @@ export class GetWorkRepository implements IGetWorkRepository {
           eq(iconMaster.deleteFlg, false)
         )
       )
+      // 削除済みの作品も詳細画面で削除済みとして表示するため、作品の削除フラグでは絞り込まない
       .where(and(
         eq(workTransaction.id, workId.value),
-        eq(workTransaction.deleteFlg, false),
         eq(bookTransaction.userId, userId.value),
         eq(bookTransaction.deleteFlg, false)
       ));

@@ -31,15 +31,14 @@ export class GetListCharacterRepository implements IGetListCharacterRepository {
         age: characterTransaction.age,
         occupation: characterTransaction.occupation,
         updatedAt: characterTransaction.updatedAt,
+        deleteFlg: characterTransaction.deleteFlg,
       })
       .from(characterTransaction)
       // 他ユーザー・論理削除済みの作品・書籍の登場人物を返さないため、作品・書籍側の条件で絞り込む
       .innerJoin(workTransaction, eq(characterTransaction.workId, workTransaction.id))
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
-      .where(and(
-        this.buildWorkCondition(userId, workId),
-        eq(characterTransaction.deleteFlg, false)
-      ))
+      // 削除済みの登場人物も一覧に薄いカードで表示するため、登場人物の削除フラグでは絞り込まない
+      .where(this.buildWorkCondition(userId, workId))
       // 更新日時が同じ登場人物の順序を固定するため id を第2キーにする
       .orderBy(desc(characterTransaction.updatedAt), desc(characterTransaction.id));
   }

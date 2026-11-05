@@ -13,6 +13,7 @@ const WORK: WorkType = {
   iconId: 1,
   icon: "📘",
   updatedAt: "2026-10-01T00:00:00.000Z",
+  deleteFlg: false,
 };
 
 function createRepository(work: WorkType | null) {
@@ -28,6 +29,15 @@ describe("GetWorkUsecase", () => {
     const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID });
 
     expect(result._unsafeUnwrap().value).toEqual(WORK);
+  });
+
+  it("論理削除済みの作品も、削除フラグを付けて返すこと", async () => {
+    const deleted: WorkType = { ...WORK, deleteFlg: true };
+    const usecase = new GetWorkUsecase(createRepository(deleted));
+
+    const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID });
+
+    expect(result._unsafeUnwrap().value).toEqual(deleted);
   });
 
   it("作品が取得できない場合、NOT_FOUND を返すこと", async () => {
