@@ -1,5 +1,5 @@
-import { and, eq, inArray } from "drizzle-orm";
-import type { IDeleteWordRepository, WordId } from "../../../../domain/book";
+import { and, eq } from "drizzle-orm";
+import { WordEntity, WordId, WordMemo, WordPage, WordText, WorkId, type IDeleteWordRepository } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import type { Database } from "../../../db";
 import { bookTransaction, wordTransaction, workTransaction } from "../../../db";
@@ -12,31 +12,63 @@ export class DeleteWordRepository implements IDeleteWordRepository {
   constructor(private readonly db: Database) { }
 
   /**
-   * ユーザーの気になるワードを1件物理削除
+   * ユーザーの気になるワードを1件取得
    * @param userId 書籍を所有するユーザーID
    * @param wordId 気になるワードID
-   * @returns 削除した場合は true（気になるワードが存在しない・他ユーザーの書籍の気になるワード・気になるワード、作品または書籍が論理削除済みの場合は削除せず false）
+   * @returns 気になるワード（気になるワードが存在しない・他ユーザーの書籍の気になるワード・気になるワード、作品または書籍が論理削除済みの場合は null）
    */
-  async deleteWord(userId: UserId, wordId: WordId): Promise<boolean> {
-    // SQLite の DELETE は JOIN できないため、他ユーザー・論理削除済みの作品や書籍の条件はサブクエリで付ける
-    const workIds = this.db
-      .select({ id: workTransaction.id })
-      .from(workTransaction)
+  async findWord(userId: UserId, wordId: WordId): Promise<WordEntity | null> {
+    const [word] = await this.db
+      .select({
+        id: wordTransaction.id,
+        workId: wordTransaction.workId,
+        text: wordTransaction.text,
+        memo: wordTransaction.memo,
+        page: wordTransaction.page,
+        deleteFlg: wordTransaction.deleteFlg,
+      })
+      .from(wordTransaction)
+      // 他ユーザー・論理削除済みの作品や書籍の気になるワードを返さないため、作品・書籍側の条件で絞り込む
+      .innerJoin(workTransaction, eq(wordTransaction.workId, workTransaction.id))
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
       .where(and(
+        eq(wordTransaction.id, wordId.value),
+        eq(wordTransaction.deleteFlg, false),
         eq(workTransaction.deleteFlg, false),
         eq(bookTransaction.userId, userId.value),
         eq(bookTransaction.deleteFlg, false),
       ));
 
-    const deleted = await this.db.delete(wordTransaction)
-      .where(and(
-        eq(wordTransaction.id, wordId.value),
-        eq(wordTransaction.deleteFlg, false),
-        inArray(wordTransaction.workId, workIds),
-      ))
-      .returning({ id: wordTransaction.id });
+    if (!word) {
+      return null;
+    }
 
-    return deleted.length > 0;
+    return WordEntity.reconstruct({
+      id: WordId.of(word.id),
+      workId: WorkId.of(word.workId),
+      text: WordText.of(word.text),
+      memo: WordMemo.of(word.memo),
+      page: WordPage.of(word.page),
+      deleteFlg: word.deleteFlg,
+    });
+  }
+
+  /**
+   * 気になるワードの削除状態を保存（論理削除）
+   * @param word 削除済みにした気になるワード
+   */
+  async deleteWord(word: WordEntity): Promise<void> {
+    const now = new Date().toISOString();
+    const snapshot = word.toSnapshot();
+
+    await this.db.update(wordTransaction)
+      .set({
+        deleteFlg: snapshot.deleteFlg,
+        updatedAt: now,
+      })
+      .where(and(
+        eq(wordTransaction.id, snapshot.id),
+        eq(wordTransaction.deleteFlg, false),
+      ));
   }
 }

@@ -125,4 +125,29 @@ describe("CharacterRelationEntity", () => {
       expect(relation.toSnapshot()).toEqual(before);
     });
   });
+
+  describe("delete", () => {
+    it("自身を削除済みにし、他の値は変更しないこと", () => {
+      const relation = reconstructRelation();
+
+      relation.delete();
+
+      expect(relation.toSnapshot()).toEqual({
+        id: RELATION_ID,
+        workId: WORK_ID,
+        characterId: CHARACTER_ID,
+        targetCharacterId: TARGET_CHARACTER_ID,
+        relationName: "兄",
+        deleteFlg: true,
+      });
+    });
+
+    it("既に削除済みの場合は throw し、自身は変更しないこと", () => {
+      const relation = reconstructRelation(true);
+      const before = relation.toSnapshot();
+
+      expect(() => relation.delete()).toThrow("既に削除済みの登場人物関係です。");
+      expect(relation.toSnapshot()).toEqual(before);
+    });
+  });
 });

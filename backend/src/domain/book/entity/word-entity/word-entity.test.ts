@@ -85,4 +85,29 @@ describe("WordEntity", () => {
       expect(word.toSnapshot()).toEqual(before);
     });
   });
+
+  describe("delete", () => {
+    it("自身を削除済みにし、他の値は変更しないこと", () => {
+      const word = createWord();
+
+      word.delete();
+
+      expect(word.toSnapshot()).toEqual({
+        id: WORD_ID,
+        workId: WORK_ID,
+        text: "赤い手帳",
+        memo: "メモ",
+        page: 42,
+        deleteFlg: true,
+      });
+    });
+
+    it("既に削除済みの場合は throw し、自身は変更しないこと", () => {
+      const word = createWord(true);
+      const before = word.toSnapshot();
+
+      expect(() => word.delete()).toThrow("既に削除済みの気になるワードです。");
+      expect(word.toSnapshot()).toEqual(before);
+    });
+  });
 });

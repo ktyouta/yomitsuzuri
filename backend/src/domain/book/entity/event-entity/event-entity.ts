@@ -42,7 +42,7 @@ export class EventEntity {
         private _occurredTiming: EventOccurredTiming,
         private _content: EventContent,
         private readonly _sortOrder: EventSortOrder,
-        private readonly _deleteFlg: boolean,
+        private _deleteFlg: boolean,
     ) { }
 
     get id() {
@@ -119,6 +119,23 @@ export class EventEntity {
 
         this._occurredTiming = params.occurredTiming;
         this._content = params.content;
+    }
+
+    /**
+     * 出来事削除（自身を削除済みにする）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 出来事が削除されていないこと
+     *
+     * 事後条件:
+     * - 自身を削除済みにする（時系列順を含む他の項目は変更しない）
+     * @throws 事前条件を満たさない場合
+     */
+    delete(): void {
+        if (this._deleteFlg) {
+            throw new Error(`既に削除済みの出来事です。`);
+        }
+        this._deleteFlg = true;
     }
 
     /**

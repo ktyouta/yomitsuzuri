@@ -84,4 +84,29 @@ describe("EventEntity", () => {
       expect(event.toSnapshot()).toEqual(before);
     });
   });
+
+  describe("delete", () => {
+    it("自身を削除済みにし、他の値は変更しないこと", () => {
+      const event = createEvent();
+
+      event.delete();
+
+      expect(event.toSnapshot()).toEqual({
+        id: EVENT_ID,
+        workId: WORK_ID,
+        occurredTiming: "3日目の夜",
+        content: "屋敷の主人が書斎で倒れているのが見つかる",
+        sortOrder: 2,
+        deleteFlg: true,
+      });
+    });
+
+    it("既に削除済みの場合は throw し、自身は変更しないこと", () => {
+      const event = createEvent(true);
+      const before = event.toSnapshot();
+
+      expect(() => event.delete()).toThrow("既に削除済みの出来事です。");
+      expect(event.toSnapshot()).toEqual(before);
+    });
+  });
 });

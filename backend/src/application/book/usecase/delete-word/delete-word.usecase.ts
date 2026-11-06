@@ -19,20 +19,24 @@ export class DeleteWordUsecase {
   ) { }
 
   /**
-   * 気になるワード削除（物理削除する）
+   * 気になるワード削除（論理削除する）
    * @param userId 書籍を所有するユーザーID
    * @param wordId 削除する気になるワードID
    * @returns 成功時は ok。
-   * 気になるワードが存在しない（他ユーザーの書籍の気になるワード・気になるワード、作品または書籍が論理削除済みを含む）場合はエラー（何も削除しない）
+   * 気になるワードが存在しない（他ユーザーの書籍の気になるワード・気になるワード、作品または書籍が論理削除済みを含む）場合はエラー（何も保存しない）
    * @throws wordId が空の場合（DB は問い合わせない）
    */
   async execute({ userId, wordId }: PropsType): Promise<Result<undefined, DeleteWordError>> {
     const id = WordId.of(wordId);
 
-    const deleted = await this.deleteWordRepository.deleteWord(userId, id);
-    if (!deleted) {
+    const word = await this.deleteWordRepository.findWord(userId, id);
+    if (!word) {
       return err({ type: "NOT_FOUND" });
     }
+
+    word.delete();
+
+    await this.deleteWordRepository.deleteWord(word);
 
     return ok(undefined);
   }

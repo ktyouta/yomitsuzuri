@@ -41,7 +41,7 @@ export class WordEntity {
         private _text: WordText,
         private _memo: WordMemo,
         private _page: WordPage,
-        private readonly _deleteFlg: boolean,
+        private _deleteFlg: boolean,
     ) { }
 
     get id() {
@@ -119,6 +119,23 @@ export class WordEntity {
         this._text = params.text;
         this._memo = params.memo;
         this._page = params.page;
+    }
+
+    /**
+     * 気になるワード削除（自身を削除済みにする）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 気になるワードが削除されていないこと
+     *
+     * 事後条件:
+     * - 自身を削除済みにする（他の項目は変更しない）
+     * @throws 事前条件を満たさない場合
+     */
+    delete(): void {
+        if (this._deleteFlg) {
+            throw new Error(`既に削除済みの気になるワードです。`);
+        }
+        this._deleteFlg = true;
     }
 
     /**
