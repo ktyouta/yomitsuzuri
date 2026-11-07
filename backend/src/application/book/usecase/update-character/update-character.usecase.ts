@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterNameUniquenessDomainService, CharacterOccupationError, GenderIdError, GenderValidityDomainService, IUpdateCharacterRepository } from "../../../../domain/book";
+import type { CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterNameUniquenessDomainService, CharacterNameUniquenessError, CharacterOccupationError, GenderIdError, GenderValidityDomainService, IUpdateCharacterRepository } from "../../../../domain/book";
 import { CharacterAge, CharacterCharacteristic, CharacterId, CharacterMemo, CharacterName, CharacterOccupation, GenderId } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import { UpdateCharacterResultDto } from "../../dto";
@@ -19,7 +19,7 @@ export type UpdateCharacterError =
   | { type: "INVALID_INPUT"; errors: UpdateCharacterInputError[] }
   | { type: "NOT_FOUND" }
   | { type: "INVALID_GENDER" }
-  | { type: "DUPLICATE_NAME" };
+  | CharacterNameUniquenessError;
 
 type UpdateCharacterBody = {
   name: string;
@@ -52,7 +52,7 @@ export class UpdateCharacterUsecase {
    * @param body 登場人物の更新内容
    * @returns 成功時は更新した登場人物の DTO。
    * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・登場人物が存在しない（他ユーザーの書籍の登場人物・登場人物、作品または書籍が論理削除済みを含む）・
-   * 性別が無効・作品内に自身以外の同名の登場人物が存在する場合はエラー（いずれも保存しない）
+   * 性別が無効・作品内に自身以外の同名の登場人物が存在する（削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_NAME）場合はエラー（いずれも保存しない）
    * @throws characterId が空の場合（DB は問い合わせない）
    */
   async execute({ userId, characterId, body }: PropsType): Promise<Result<UpdateCharacterResultDto, UpdateCharacterError>> {
@@ -84,8 +84,9 @@ export class UpdateCharacterUsecase {
     }
 
     // 作品内の名前重複（自身は除外する）
-    if (await this.uniquenessService.isDuplicated(userId, character.workId, character.id, name)) {
-      return err({ type: "DUPLICATE_NAME" });
+    const uniqueness = await this.uniquenessService.validate(userId, character.workId, character.id, name);
+    if (uniqueness.isErr()) {
+      return err(uniqueness.error);
     }
 
     character.update({ name, age, genderId, occupation, characteristic, memo });

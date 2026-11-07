@@ -19,7 +19,7 @@ const BODY = {
 type Options = {
   characterExists?: boolean;
   genderExists?: boolean;
-  duplicatedIds?: { id: string }[];
+  duplicatedIds?: { id: string, deleteFlg: boolean }[];
 };
 
 /**
@@ -141,12 +141,21 @@ describe("UpdateCharacterUsecase", () => {
     expect(updateCharacterRepository.updateCharacter).not.toHaveBeenCalled();
   });
 
-  it("作品内に自身以外の同名の登場人物が存在する場合、DUPLICATE_NAME を返し、保存しないこと", async () => {
-    const { usecase, updateCharacterRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVT1" }] });
+  it("作品内に自身以外の削除されていない同名の登場人物が存在する場合、DUPLICATE_NAME を返し、保存しないこと", async () => {
+    const { usecase, updateCharacterRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVT1", deleteFlg: false }] });
 
     const result = await usecase.execute({ userId: USER_ID, characterId: CHARACTER_ID, body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_NAME" });
+    expect(updateCharacterRepository.updateCharacter).not.toHaveBeenCalled();
+  });
+
+  it("作品内に自身以外の削除済みの同名の登場人物だけが存在する場合、DUPLICATE_DELETED_NAME を返し、保存しないこと", async () => {
+    const { usecase, updateCharacterRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVT1", deleteFlg: true }] });
+
+    const result = await usecase.execute({ userId: USER_ID, characterId: CHARACTER_ID, body: BODY });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_DELETED_NAME" });
     expect(updateCharacterRepository.updateCharacter).not.toHaveBeenCalled();
   });
 

@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterNameUniquenessDomainService, CharacterOccupationError, GenderIdError, GenderValidityDomainService, ICreateCharacterRepository } from "../../../../domain/book";
+import type { CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterNameUniquenessDomainService, CharacterNameUniquenessError, CharacterOccupationError, GenderIdError, GenderValidityDomainService, ICreateCharacterRepository } from "../../../../domain/book";
 import { CharacterAge, CharacterCharacteristic, CharacterEntity, CharacterMemo, CharacterName, CharacterOccupation, GenderId, WorkId } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import { CreateCharacterResultDto } from "../../dto";
@@ -19,7 +19,7 @@ export type CreateCharacterError =
   | { type: "INVALID_INPUT"; errors: CreateCharacterInputError[] }
   | { type: "NOT_FOUND" }
   | { type: "INVALID_GENDER" }
-  | { type: "DUPLICATE_NAME" };
+  | CharacterNameUniquenessError;
 
 type CreateCharacterBody = {
   name: string;
@@ -52,7 +52,7 @@ export class CreateCharacterUsecase {
    * @param body 登場人物の登録内容
    * @returns 成功時は作成した登場人物の DTO。
    * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・作品が存在しない（他ユーザーの書籍の作品・作品または書籍が論理削除済みを含む）・
-   * 性別が無効・作品内に同名の登場人物が存在する場合はエラー（いずれも保存しない）
+   * 性別が無効・作品内に同名の登場人物が存在する（削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_NAME）場合はエラー（いずれも保存しない）
    * @throws workId が空の場合（DB は問い合わせない）
    */
   async execute({ userId, workId, body }: PropsType): Promise<Result<CreateCharacterResultDto, CreateCharacterError>> {
@@ -85,8 +85,9 @@ export class CreateCharacterUsecase {
     const character = CharacterEntity.create({ workId: id, name, age, genderId, occupation, characteristic, memo });
 
     // 作品内の名前重複
-    if (await this.uniquenessService.isDuplicated(userId, id, character.id, name)) {
-      return err({ type: "DUPLICATE_NAME" });
+    const uniqueness = await this.uniquenessService.validate(userId, id, character.id, name);
+    if (uniqueness.isErr()) {
+      return err(uniqueness.error);
     }
 
     await this.createCharacterRepository.createCharacter(character);
