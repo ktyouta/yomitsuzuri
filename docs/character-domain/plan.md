@@ -6,6 +6,7 @@
 - 上限文字数: 名前 100 / 年齢 20 / 職業 50 / 特徴 500 / メモ 2000（名前・メモ以外は Claude の提案をユーザーが承認）
 - 性別は区分値（マスタ）にする
 - 作品内での登場人物名の重複は禁止する（未削除のものが対象）。ドメインサービス（CharacterNameUniquenessDomainService）で判定し、DB にも部分一意インデックス `(work_id, name) WHERE delete_flg = 0` を張る
+  - 変更予定（2026-11-07。未実装）: `docs/delete-restore/plan.md` の U11 により、削除済みの登場人物も含めて判定し、一意インデックスの `WHERE delete_flg = 0` を外す。削除済みの登場人物と重複した場合は、別の err にする
 - 既存の CharacterId の不備（コメント・引数名・例外メッセージが「書籍ID」のまま、テストが BookId を対象にしている）を直す
 - 性別マスタ `gender_master` を作り、`character_transaction.gender`（text）を `gender_id`（integer, FK → gender_master.id）に置き換える（schema.ts のみ変更済み。マイグレーションは今回行わない）
   - Claudeからの提案（未確認の前提）: テーブル構成は読書状況マスタと同じ（id・label・共通3カラム）、gender_id は null 可、FK の削除時は `restrict`
@@ -78,4 +79,5 @@
 |---|---|---|---|
 | execute({ userId, characterId, body }) | characterId が空でない（Error「登場人物IDが設定されていません。」。DB は問い合わせない） | 成功 → 名前・年齢・性別・職業・特徴・メモを置き換えて保存し、更新後の DTO を ok で返す（ID・作品・削除フラグは変えない）/ 入力値が制約違反 → err INVALID_INPUT（違反をすべて項目名付きで返し、DB は問い合わせない）/ 登場人物が存在しない（他ユーザー・登場人物・作品・書籍のいずれかが論理削除済みを含む）→ err NOT_FOUND / 性別がマスタに存在しない → err INVALID_GENDER / 同一作品内に自身以外の同名の登場人物（未削除）が存在する → err DUPLICATE_NAME。いずれのエラーでも保存しない | なし |
 
+- U11 の実装時に、上記の `DUPLICATE_NAME` の条件（自身以外の同名の登場人物（未削除））を、削除済みも含めた判定に変更する
 - **テストケース**: 更新内容で保存し DTO を返す / 自身と同じ名前のまま更新できる（重複判定から自身を除外して問い合わせる）/ INVALID_INPUT（全違反・該当項目のみ）/ NOT_FOUND / INVALID_GENDER / DUPLICATE_NAME / 空の characterId で throw（いずれのエラーでも保存しないこと・DB を問い合わせないことを含む）

@@ -21,6 +21,7 @@
   - 例: 「A → B：兄」がある状態で、「A → B：兄」「B → A：兄」はどちらも登録できない。「B → A：弟」は登録できる
   - DB: 部分一意インデックス `character_relation_transaction_pair_relation_name_unique` を `schema.ts` に追加済み（`min(character_id, target_character_id)`・`max(character_id, target_character_id)`・`relation_name`。`delete_flg = 0` の行が対象）
   - ドメインでも判定する（登録・更新時に、(人物, 相手, 関係) または (相手, 人物, 関係) に一致する未削除の行があれば err。更新では自身の行を除外する）。画面からもまったく同じ関係は登録できないようにする
+  - 変更予定（2026-11-07。未実装）: `docs/delete-restore/plan.md` の U11 により、削除済みの関係も含めて判定し、一意インデックスの `delete_flg = 0` の条件を外す。削除済みの関係と重複した場合は、別の err にする
 - U2: 関係は、関係する両方の人物の画面に表示する
 - U3: マイグレーションは今回は生成・適用しない
 - U4: 関係名の上限は 50 文字（`CharacterRelationName.RELATION_NAME_MAX_LENGTH`。文の形で表示する短いラベルのため。職業と同じ上限）

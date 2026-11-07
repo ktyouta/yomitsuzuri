@@ -10,6 +10,7 @@
 
 - 実装範囲は気になるワード作成 API のバックエンドのみ（「気になるワード作成（create-word）もつくってほしい。create-characterが参考になるはず」）
 - 作品内で同じワード（text）の重複を禁止する（未削除のワード同士。登場人物名と同じ扱い）
+  - 変更予定（2026-11-07。未実装）: `docs/delete-restore/plan.md` の U11 により、削除済みのワードも含めて判定し、一意インデックスの `delete_flg = 0` の条件を外す。削除済みのワードと重複した場合は、別の err にする
 
 ### Claudeの提案（Step 3 の設計確認でユーザーが「お願い」と承認。マイグレーションは案A）
 
@@ -70,6 +71,7 @@
 |---|---|---|---|
 | execute({ userId, workId, body }) | workId が空でない（Error。違反時は DB を問い合わせない） | 入力値の違反があればすべてを項目名付きで `INVALID_INPUT`（DB を問い合わせず保存しない） / 作品が取得できなければ `NOT_FOUND`（保存しない） / 作品内に同じ text の未削除のワードがあれば `DUPLICATE_TEXT`（保存しない） / それ以外は削除されていないワードを1件保存し、保存した内容の DTO を返す（text・memo は前後の空白を除去、空の memo・未入力の page は null） | ID の採番（`WordEntity.create`） |
 
+- U11 の実装時に、上記の `DUPLICATE_TEXT` の条件（同じ text の未削除のワード）を、削除済みも含めた判定に変更する
 - **テストケース**: 保存して内容を返す / memo・page 省略時は null で保存 / 作品が null で NOT_FOUND・保存しない / 重複ありで DUPLICATE_TEXT・保存しない / findWork・findWord に渡す値（text は前後の空白を除去した値） / 違反をすべて返し DB を問い合わせない / 違反した項目だけ返す / workId が空で例外・DB を問い合わせない
 
 ### WordTextUniquenessDomainService（ドメインサービス）
