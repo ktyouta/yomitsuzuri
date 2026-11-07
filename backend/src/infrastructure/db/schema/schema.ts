@@ -106,7 +106,8 @@ export const bookTransaction = sqliteTable(
   (t) => [
     // book_tag_transaction の複合 FK の参照先にするため（SQLite は参照先に UNIQUE が必要）
     unique("book_transaction_id_user_id_unique").on(t.id, t.userId),
-    uniqueIndex("book_transaction_user_id_title_unique").on(t.userId, t.title).where(sql`delete_flg = 0`),
+    // 削除済みも含めて重複を禁止する（復元したときに重複させないため。docs/delete-restore/plan.md の U11）
+    uniqueIndex("book_transaction_user_id_title_unique").on(t.userId, t.title),
     index("book_transaction_user_id_idx").on(t.userId),
   ]
 );
@@ -131,7 +132,8 @@ export const workTransaction = sqliteTable(
     updatedAt: text("updated_at").notNull(),
   },
   (t) => [
-    uniqueIndex("work_transaction_book_id_title_unique").on(t.bookId, t.title).where(sql`delete_flg = 0`),
+    // 削除済みも含めて重複を禁止する（復元したときに重複させないため。docs/delete-restore/plan.md の U11）
+    uniqueIndex("work_transaction_book_id_title_unique").on(t.bookId, t.title),
     index("work_transaction_book_id_idx").on(t.bookId),
   ]
 );
@@ -160,7 +162,8 @@ export const characterTransaction = sqliteTable(
   (t) => [
     // character_relation_transaction の複合 FK の参照先にするため（SQLite は参照先に UNIQUE が必要）
     unique("character_transaction_id_work_id_unique").on(t.id, t.workId),
-    uniqueIndex("character_transaction_work_id_name_unique").on(t.workId, t.name).where(sql`delete_flg = 0`),
+    // 削除済みも含めて重複を禁止する（復元したときに重複させないため。docs/delete-restore/plan.md の U11）
+    uniqueIndex("character_transaction_work_id_name_unique").on(t.workId, t.name),
     index("character_transaction_work_id_idx").on(t.workId),
   ]
 );
@@ -197,9 +200,9 @@ export const characterRelationTransaction = sqliteTable(
     }).onDelete("no action"),
     check("character_relation_not_self", sql`character_id <> target_character_id`),
     // 2人の ID を小さい順に並べてから比べることで、向きが逆の同じ関係も重複として弾く
+    // 削除済みも含めて重複を禁止する（復元したときに重複させないため。docs/delete-restore/plan.md の U11）
     uniqueIndex("character_relation_transaction_pair_relation_name_unique")
-      .on(sql`min(character_id, target_character_id)`, sql`max(character_id, target_character_id)`, t.relationName)
-      .where(sql`delete_flg = 0`),
+      .on(sql`min(character_id, target_character_id)`, sql`max(character_id, target_character_id)`, t.relationName),
     index("character_relation_transaction_work_id_idx").on(t.workId),
   ]
 );
@@ -223,7 +226,8 @@ export const wordTransaction = sqliteTable(
     updatedAt: text("updated_at").notNull(),
   },
   (t) => [
-    uniqueIndex("word_transaction_work_id_text_unique").on(t.workId, t.text).where(sql`delete_flg = 0`),
+    // 削除済みも含めて重複を禁止する（復元したときに重複させないため。docs/delete-restore/plan.md の U11）
+    uniqueIndex("word_transaction_work_id_text_unique").on(t.workId, t.text),
     index("word_transaction_work_id_idx").on(t.workId),
   ]
 );
@@ -289,8 +293,8 @@ export const tagMaster = sqliteTable(
     updatedAt: text("updated_at").notNull(),
   },
   (t) => [
-    // 論理削除済みの行は除外し、削除後に同名タグを再作成できるようにする
-    uniqueIndex("tag_master_user_id_name_unique").on(t.userId, t.name).where(sql`delete_flg = 0`),
+    // タグは論理削除せず物理削除するため、delete_flg で絞り込まない（docs/delete-restore/plan.md の U15）
+    uniqueIndex("tag_master_user_id_name_unique").on(t.userId, t.name),
     // book_tag_transaction の複合 FK の参照先にするため（SQLite は参照先に UNIQUE が必要）
     unique("tag_master_id_user_id_unique").on(t.id, t.userId),
     index("tag_master_user_id_idx").on(t.userId),
@@ -326,8 +330,8 @@ export const bookTagTransaction = sqliteTable(
       columns: [t.tagId, t.userId],
       foreignColumns: [tagMaster.id, tagMaster.userId],
     }).onDelete("no action"),
-    // 論理削除済みの行は除外し、タグを外した後に再付与できるようにする
-    uniqueIndex("book_tag_transaction_book_id_tag_id_unique").on(t.bookId, t.tagId).where(sql`delete_flg = 0`),
+    // タグを外すと物理削除し、論理削除するのは書籍の削除に連鎖したときだけのため、delete_flg で絞り込まない（docs/delete-restore/plan.md の U15）
+    uniqueIndex("book_tag_transaction_book_id_tag_id_unique").on(t.bookId, t.tagId),
     index("book_tag_transaction_book_id_idx").on(t.bookId),
     index("book_tag_transaction_tag_id_idx").on(t.tagId),
   ]
