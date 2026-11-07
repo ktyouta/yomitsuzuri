@@ -11,21 +11,21 @@ export class BookTitleUniquenessRepository implements IBookTitleUniquenessReposi
   constructor(private readonly db: Database) { }
 
   /**
-   * 同名書籍の取得（同一ユーザー内・未削除のもの）
+   * 同名書籍の取得（同一ユーザー内・削除済みを含む）
    * bookId 自身は除外する（更新時の自己重複を防ぐ）。
    * @param userId 書籍を所有するユーザーID
    * @param bookId 判定対象から除外する書籍ID
    * @param bookTitle 書籍タイトル
-   * @returns 同名書籍の ID 一覧
+   * @returns 同名書籍の ID と削除フラグの一覧
    */
-  async findBook(userId: UserId, bookId: BookId, bookTitle: BookTitle): Promise<{ id: string }[]> {
+  async findBook(userId: UserId, bookId: BookId, bookTitle: BookTitle): Promise<{ id: string, deleteFlg: boolean }[]> {
     const result = await this.db
       .select({
         id: bookTransaction.id,
+        deleteFlg: bookTransaction.deleteFlg,
       })
       .from(bookTransaction)
       .where(and(
-        eq(bookTransaction.deleteFlg, false),
         eq(bookTransaction.userId, userId.value),
         eq(bookTransaction.title, bookTitle.value),
         ne(bookTransaction.id, bookId.value),

@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type UpdateWorkError, type UserId, type WorkMemoError, type WorkSortError, type WorkTitleError } from "../../../../domain";
+import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type BookTitleUniquenessError, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type UpdateWorkError, type UserId, type WorkMemoError, type WorkSortError, type WorkTitleError } from "../../../../domain";
 import { UpdateBookResultDto } from "../../dto";
 
 /**
@@ -19,7 +19,7 @@ export type UpdateBookInputError =
 
 export type UpdateBookError =
     | { type: "INVALID_INPUT"; errors: UpdateBookInputError[] }
-    | { type: "DUPLICATE_TITLE" }
+    | BookTitleUniquenessError
     | { type: "NOT_FOUND" }
     | { type: "INVALID_ICON" }
     | { type: "INVALID_READING_STATUS" }
@@ -88,7 +88,7 @@ export class UpdateBookUsecase {
      * @param bookId 更新対象の書籍ID
      * @param body 書籍・作品の更新内容（既に削除済みの作品は含めても含めなくてもよい）
      * @returns 成功時は更新後の書籍と作品の DTO（作品は削除済みを含む）。
-     * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・書籍が存在しない・書籍または作品のアイコンが無効・読書状況が無効・同名書籍が存在する（自身を除く）・
+     * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・書籍が存在しない・書籍または作品のアイコンが無効・読書状況が無効・同名書籍が存在する（自身を除き、削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_TITLE）・
      * 作品の指定に誤りがある・作品の指定が既存の作品と一致しない・作品が不変条件に違反する場合はエラー（いずれも保存しない）
      * @throws bookId が空の場合（DB は問い合わせない）
      */
@@ -130,8 +130,9 @@ export class UpdateBookUsecase {
         }
 
         // タイトルの重複チェック
-        if (await this.uniquenessService.isDuplicated(userId, id, title)) {
-            return err({ type: "DUPLICATE_TITLE" });
+        const uniqueness = await this.uniquenessService.validate(userId, id, title);
+        if (uniqueness.isErr()) {
+            return err(uniqueness.error);
         }
 
         // 書籍・作品情報更新

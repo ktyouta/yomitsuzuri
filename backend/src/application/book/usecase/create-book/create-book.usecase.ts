@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { BookMemoError, BookTitleError, BookTitleUniquenessDomainService, CurrentPageError, IconIdError, IconValidityDomainService, ICreateBookRepository, PublishedDateError } from "../../../../domain/book";
+import type { BookMemoError, BookTitleError, BookTitleUniquenessDomainService, BookTitleUniquenessError, CurrentPageError, IconIdError, IconValidityDomainService, ICreateBookRepository, PublishedDateError } from "../../../../domain/book";
 import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import { CreateBookResultDto } from "../../dto";
@@ -16,7 +16,7 @@ export type CreateBookInputError =
 
 export type CreateBookError =
   | { type: "INVALID_INPUT"; errors: CreateBookInputError[] }
-  | { type: "DUPLICATE_TITLE" }
+  | BookTitleUniquenessError
   | { type: "INVALID_ICON" };
 
 type CreateBookBody = {
@@ -47,7 +47,7 @@ export class CreateBookUsecase {
    * @param userId 書籍を所有するユーザーID
    * @param body 書籍の登録内容
    * @returns 成功時は作成した書籍と作品の DTO。
-   * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・アイコンが無効・同名書籍が存在する場合はエラー（いずれも保存しない）
+   * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・アイコンが無効・同名書籍が存在する（削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_TITLE）場合はエラー（いずれも保存しない）
    */
   async execute({ userId, body }: PropsType): Promise<Result<CreateBookResultDto, CreateBookError>> {
 
@@ -73,8 +73,9 @@ export class CreateBookUsecase {
     const book = BookAggregate.create({ userId, title, publishedDate, currentPage, memo, iconId });
 
     // タイトル重複
-    if (await this.uniquenessService.isDuplicated(userId, book.id, title)) {
-      return err({ type: "DUPLICATE_TITLE" });
+    const uniqueness = await this.uniquenessService.validate(userId, book.id, title);
+    if (uniqueness.isErr()) {
+      return err(uniqueness.error);
     }
 
     await this.createBookRepository.createBook(book);

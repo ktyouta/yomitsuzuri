@@ -48,7 +48,7 @@ type Options = {
   book?: BookAggregate | null;
   invalidIconIds?: number[];
   readingStatusExists?: boolean;
-  duplicatedIds?: { id: string }[];
+  duplicatedIds?: { id: string, deleteFlg: boolean }[];
 };
 
 function createUsecase({ book = createBook(), invalidIconIds = [], readingStatusExists = true, duplicatedIds = [] }: Options = {}) {
@@ -157,12 +157,21 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
-  it("同名の書籍が存在する場合、DUPLICATE_TITLE を返し、保存しないこと", async () => {
-    const { usecase, updateBookRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVRZ" }] });
+  it("削除されていない同名の書籍が存在する場合、DUPLICATE_TITLE を返し、保存しないこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVRZ", deleteFlg: false }] });
 
     const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_TITLE" });
+    expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
+  });
+
+  it("削除済みの同名の書籍だけが存在する場合、DUPLICATE_DELETED_TITLE を返し、保存しないこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVRZ", deleteFlg: true }] });
+
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_DELETED_TITLE" });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 

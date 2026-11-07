@@ -42,6 +42,8 @@ const updateBook = new Hono<AppEnv>().put(
             return c.json({ message: "書籍が見つかりませんでした。" }, HTTP_STATUS.NOT_FOUND);
           case "DUPLICATE_TITLE":
             return c.json({ message: "同名の書籍が既に登録されています。" }, HTTP_STATUS.CONFLICT);
+          case "DUPLICATE_DELETED_TITLE":
+            return c.json({ message: "削除済みの書籍に同じタイトルのものがあります。復元するか、別のタイトルにしてください。" }, HTTP_STATUS.CONFLICT);
           case "INVALID_ICON":
             return c.json({ message: "指定されたアイコンは存在しません。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           case "INVALID_READING_STATUS":
