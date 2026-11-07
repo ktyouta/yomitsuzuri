@@ -65,14 +65,12 @@ export function toInputErrorMessage(error: BookInputError): string {
       return `作品メモは${error.max}文字以内で入力してください`;
     case "DUPLICATE_WORK_ID":
       return "作品IDが重複しています。";
-    case "NEW_WORK_DELETED":
-      return "新規の作品を削除済みにすることはできません。";
     case "DUPLICATE_WORK_TITLE":
       return `作品タイトル「${error.title}」が重複しています。`;
+    case "DUPLICATE_DELETED_WORK_TITLE":
+      return `作品タイトル「${error.title}」が重複しています（削除済み）。復元するか、別の作品タイトルにしてください。`;
     case "DUPLICATE_WORK_SORT":
       return `表示順「${error.sort}」が重複しています。`;
-    case "ALL_DELETED":
-      return "作品をすべて削除することはできません。";
     case "BOOK_LIST_PAGE_INVALID":
       return `ページ番号は${error.min}以上の整数で指定してください`;
     case "CHARACTER_NAME_EMPTY":

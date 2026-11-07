@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { UpdateBookSchema } from "..";
 
-const WORK = { id: "01ARZ3NDEKTSV4RRFFQ69G5FAX", title: "作品1", sort: 1, memo: "メモ", iconId: 3, deleteFlg: false };
+const WORK = { id: "01ARZ3NDEKTSV4RRFFQ69G5FAX", title: "作品1", sort: 1, memo: "メモ", iconId: 3 };
 
 const VALID_BODY = {
   title: "容疑者Xの献身",
@@ -23,7 +23,7 @@ describe("UpdateBookSchema", () => {
   });
 
   it("作品IDが null（新規の作品）・作品メモが未指定の場合、通ること", () => {
-    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ id: null, title: "作品1", sort: 1, iconId: 3, deleteFlg: false }] });
+    const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ id: null, title: "作品1", sort: 1, iconId: 3 }] });
     expect(result.success).toBe(true);
   });
 
@@ -44,10 +44,9 @@ describe("UpdateBookSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("作品の指定の妥当性（0件・ID重複・新規作品の削除済み指定）は判定しないこと（集約で判定する）", () => {
+  it("作品の指定の妥当性（0件・ID重複）は判定しないこと（集約で判定する）", () => {
     expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [] }).success).toBe(true);
     expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [WORK, WORK] }).success).toBe(true);
-    expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, id: null, deleteFlg: true }] }).success).toBe(true);
   });
 
   it.each(["title", "readingStatus", "iconId", "works"])("%s がない場合、エラーになること", (key) => {
@@ -56,7 +55,7 @@ describe("UpdateBookSchema", () => {
     expect(UpdateBookSchema.safeParse(body).success).toBe(false);
   });
 
-  it.each(["id", "title", "sort", "iconId", "deleteFlg"])("作品の %s がない場合、エラーになること", (key) => {
+  it.each(["id", "title", "sort", "iconId"])("作品の %s がない場合、エラーになること", (key) => {
     const work: Record<string, unknown> = { ...WORK };
     delete work[key];
     expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [work] }).success).toBe(false);
@@ -81,7 +80,6 @@ describe("UpdateBookSchema", () => {
     { sort: "1" },
     { memo: 1 },
     { iconId: "3" },
-    { deleteFlg: "false" },
   ])("作品の型が異なる場合（%j）、エラーになること", (override) => {
     const result = UpdateBookSchema.safeParse({ ...VALID_BODY, works: [{ ...WORK, ...override }] });
     expect(result.success).toBe(false);

@@ -11,7 +11,7 @@ export type CreateBookResultType = {
   works: {
     id: string;
     title: string;
-    sort: number;
+    sort: number | null;
     memo: string | null;
     iconId: number;
   }[];

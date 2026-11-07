@@ -18,6 +18,10 @@ describe("WorkSort", () => {
       expect(WorkSort.of(3).value).toBe(3);
     });
 
+    it("null の場合、表示順を持たない値で生成できること", () => {
+      expect(WorkSort.of(null).value).toBeNull();
+    });
+
     it("制約を満たさない値の場合は throw すること", () => {
       expect(() => WorkSort.of(0)).toThrow();
     });
@@ -25,5 +29,16 @@ describe("WorkSort", () => {
 
   it("先頭の表示順は1であること", () => {
     expect(WorkSort.first().value).toBe(1);
+  });
+
+  describe("reset", () => {
+    it("表示順を持たない値を返し、自身は変更しないこと", () => {
+      const sort = WorkSort.of(3);
+
+      const reset = sort.reset();
+
+      expect(reset.value).toBeNull();
+      expect(sort.value).toBe(3);
+    });
   });
 });

@@ -124,7 +124,7 @@ export const workTransaction = sqliteTable(
     id: text("id").primaryKey(), // ULID
     bookId: text("book_id").notNull().references(() => bookTransaction.id, { onDelete: "no action" }), // FK → book_transaction.id
     title: text("title").notNull(),
-    sortOrder: integer("sort_order").notNull(),
+    sortOrder: integer("sort_order"), // 個別に削除した作品は NULL にする（docs/delete-restore/plan.md の U13）
     memo: text("memo"),
     iconId: integer("icon_id").notNull().default(1).references(() => iconMaster.id, { onDelete: "restrict" }),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),

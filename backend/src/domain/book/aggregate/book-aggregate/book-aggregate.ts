@@ -31,7 +31,6 @@ type UpdateWorkParamType = {
     memo: WorkMemo;
     sort: WorkSort;
     iconId: IconId;
-    deleteFlg: boolean;
 }
 
 type UpdateBookParamType = {
@@ -48,10 +47,9 @@ type UpdateBookParamType = {
  * 作品情報更新時の作品の指定の誤り・不変条件の違反
  */
 export type BookValidationError = { type: "DUPLICATE_WORK_ID"; id: string }
-    | { type: "NEW_WORK_DELETED" }
     | { type: "DUPLICATE_WORK_TITLE"; title: string }
-    | { type: "DUPLICATE_WORK_SORT"; sort: number }
-    | { type: "ALL_DELETED"; };
+    | { type: "DUPLICATE_DELETED_WORK_TITLE"; title: string }
+    | { type: "DUPLICATE_WORK_SORT"; sort: number };
 
 /**
  * 作品情報更新の失敗
@@ -72,9 +70,11 @@ type UpdateSingleWorkParamType = {
  * 作品1件の更新の失敗
  * - WORK_NOT_FOUND: 更新対象の作品が書籍に存在しない、または削除済み
  * - DUPLICATE_WORK_TITLE: 削除されていない他の作品と作品名が重複する
+ * - DUPLICATE_DELETED_WORK_TITLE: 削除済みの他の作品とだけ作品名が重複する（復元するか、別の作品名にする必要がある）
  */
 export type UpdateSingleWorkError = { type: "WORK_NOT_FOUND" }
-    | { type: "DUPLICATE_WORK_TITLE"; title: string };
+    | { type: "DUPLICATE_WORK_TITLE"; title: string }
+    | { type: "DUPLICATE_DELETED_WORK_TITLE"; title: string };
 
 type BookSnapshotType = {
     id: string;
@@ -138,29 +138,29 @@ export class BookAggregate {
     }
 
     /**
-     * 書籍更新（書籍情報と作品一覧をまとめて置き換える。既に削除済みの作品は変更しない）
+     * 書籍更新（書籍情報と、削除されていない作品の一覧をまとめて置き換える。作品の削除・復元は行わない）
+     * 作品の削除は作品単位の操作で行う（書籍の編集の保存に紛れて、子データごと削除されることを防ぐため。docs/delete-restore/plan.md）
      *
      * 事前条件（満たさない場合は throw）:
      * - 書籍が削除されていないこと
      *
      * 作品の指定の誤り（違反はすべて収集して INVALID_WORKS の err で返す。この場合は以降の判定を行わない）:
      * - 作品 ID が重複していること
-     * - 新規の作品（id が null）が削除済みであること
      *
-     * 作品の指定が既存の作品と一致しない場合（削除されていない既存の作品が欠けている・既存にない ID が含まれる）は WORKS_MISMATCH を err で返す。
+     * 作品の指定が、削除されていない既存の作品と過不足なく一致しない場合（欠けている・既存にない ID が含まれる・削除済みの作品の ID が含まれる）は WORKS_MISMATCH を err で返す。
      * 画面の表示後に作品が変更された場合など、利用者が再読み込みで復帰できるため throw にしない。
-     * 既に削除済みの作品は照合の対象外とし、引数に含まれていても含まれていなくてもよい。
+     * 削除済みの作品の ID も不一致とするのは、画面の表示後に削除された作品への変更を黙って捨てないため。
      *
      * 不変条件（置き換え後の作品一覧で判定し、違反はすべて収集して INVALID_WORKS の err で返す）:
-     * - 削除されていない作品が1件以上あること
-     * - 削除されていない作品同士でタイトルが重複しないこと
-     * - 削除されていない作品同士で表示順が重複しないこと
+     * - 削除済みを含むすべての作品でタイトルが重複しないこと（復元したときに重複させないため。docs/delete-restore/plan.md の U11）
+     *   削除されていない作品同士で重複する場合は DUPLICATE_WORK_TITLE、それ以外（削除済みの作品との重複）は DUPLICATE_DELETED_WORK_TITLE
+     * - 表示順を持つ作品同士で表示順が重複しないこと（個別に削除した作品は表示順を持たない。docs/delete-restore/plan.md の U13）
      *
      * 事後条件:
      * - ok の場合: 自身の書籍情報と削除されていない作品を引数の内容に置き換え、新規の作品に ID を採番する。
-     *   既に削除済みの作品は、引数の内容（削除フラグを含む）に関係なく変更せずに保持する（復元しない）
+     *   削除済みの作品は変更せずに保持する
      * - err の場合: 自身は変更しない
-     * @param params 更新後の書籍情報と作品一覧（既に削除済みの作品は含めても含めなくてもよい）
+     * @param params 更新後の書籍情報と、削除されていない作品の一覧（新規の作品は id が null）
      * @returns 成功時は ok、作品の指定の誤り・不一致・不変条件の違反時はその内容を持つ Result
      * @throws 事前条件を満たさない場合
      */
@@ -188,8 +188,8 @@ export class BookAggregate {
     /**
      * 作品一覧を検証し、置き換え後の作品エンティティを作成する（新規の作品には ID を採番する）
      * err の条件は update を参照
-     * @param works 更新後の作品一覧（既に削除済みの作品は含めても含めなくてもよい）
-     * @returns 成功時は置き換え後の作品エンティティ（既に削除済みの作品を含む）、作品の指定の誤り・不一致・不変条件の違反時はその内容を持つ Result
+     * @param works 更新後の、削除されていない作品の一覧
+     * @returns 成功時は置き換え後の作品エンティティ（削除済みの作品を含む）、作品の指定の誤り・不一致・不変条件の違反時はその内容を持つ Result
      */
     private replaceWorks(works: UpdateWorkParamType[]): Result<WorkEntity[], UpdateWorkError> {
         // 不一致の判定は作品 ID の重複がないことを前提とするため、先に判定する
@@ -203,8 +203,7 @@ export class BookAggregate {
             return err({ type: "WORKS_MISMATCH" });
         }
 
-        const nowWorkMap = new Map(this._works.map((work) => [work.id.value, work]));
-        // 新規の作品が削除済みでないことは collectWorkSpecErrors で判定済み
+        // 既存の作品 ID は matchesExistingWorks で、削除されていない作品と一致することを確認済み
         const newWorks = works.map((work) => {
             const workId = work.id;
             if (!workId) {
@@ -216,34 +215,18 @@ export class BookAggregate {
                 });
             }
 
-            const nowWork = nowWorkMap.get(workId.value);
-            if (!nowWork) {
-                throw new Error(`照合済みの作品が見つかりません。(ID: ${workId.value})`);
-            }
-
-            // 既に削除済みの作品は、引数の内容（削除フラグを含む）に関係なく変更しない
-            const isNowDeleted = nowWork.deleteFlg;
-            if (isNowDeleted) {
-                return nowWork;
-            }
-
             return WorkEntity.reconstruct({
                 id: workId,
                 title: work.title,
                 sort: work.sort,
                 memo: work.memo,
                 iconId: work.iconId,
-                deleteFlg: work.deleteFlg,
+                deleteFlg: false,
             });
-        }
-        );
+        });
 
-        // 引数に含まれていない既に削除済みの作品も、そのまま保持する
-        for (const work of this._works) {
-            if (!newWorks.some((newWork) => newWork.id.value === work.id.value)) {
-                newWorks.push(work);
-            }
-        }
+        // 削除済みの作品は、そのまま保持する
+        newWorks.push(...this._works.filter((work) => work.deleteFlg));
 
         const errors = this.collectWorkErrors(newWorks);
         if (errors.length > 0) {
@@ -274,7 +257,7 @@ export class BookAggregate {
     }
 
     /**
-     * 作品の指定の誤り（作品 ID の重複・新規の作品の削除済み指定）をすべて収集する
+     * 作品の指定の誤り（作品 ID の重複）をすべて収集する
      * @param works 更新後の作品一覧
      * @returns 誤りの一覧（誤りがなければ空配列）
      */
@@ -286,49 +269,42 @@ export class BookAggregate {
             errors.push({ type: "DUPLICATE_WORK_ID", id });
         }
 
-        // 削除済み作品追加チェック
-        if (works.some((work) => !work.id && work.deleteFlg)) {
-            errors.push({ type: "NEW_WORK_DELETED" });
-        }
-
         return errors;
     }
 
     /**
-     * 引数の作品 ID（新規・既に削除済みの作品を除く）が、削除されていない既存の作品 ID と過不足なく一致するか判定する（重複がないことが前提）
+     * 引数の作品 ID（新規の作品を除く）が、削除されていない既存の作品 ID と過不足なく一致するか判定する（重複がないことが前提）
+     * 削除済みの作品の ID が含まれる場合は一致しない
      * @param works 更新後の作品一覧
      * @returns 一致する場合は true
      */
     private matchesExistingWorks(works: UpdateWorkParamType[]): boolean {
-        const existingIds = new Set(this._works.filter((work) => !work.deleteFlg).map((work) => work.id.value));
-        const deletedIds = new Set(this._works.filter((work) => work.deleteFlg).map((work) => work.id.value));
-        const paramIds = works.flatMap((work) => work.id && !deletedIds.has(work.id.value) ? [work.id.value] : []);
+        const existingIds = new Set(this._works.flatMap((work) => !work.deleteFlg ? [work.id.value] : []));
+        const paramIds = works.flatMap((work) => work.id ? [work.id.value] : []);
 
         return paramIds.length === existingIds.size
             && paramIds.every((id) => existingIds.has(id));
     }
 
     /**
-     * 削除されていない作品について、不変条件の違反をすべて収集する
-     * @param works 置き換え後の作品一覧（既に削除済みの作品を含む）
+     * 置き換え後の作品一覧について、不変条件の違反をすべて収集する（タイトルの重複は削除済みの作品も対象にする）
+     * @param works 置き換え後の作品一覧（削除済みの作品を含む）
      * @returns 違反一覧（違反がなければ空配列）
      */
     private collectWorkErrors(works: WorkEntity[]): BookValidationError[] {
         const activeWorks = works.filter((work) => !work.deleteFlg);
         const errors: BookValidationError[] = [];
 
-        // 全作品削除済みエラー
-        if (activeWorks.length === 0) {
-            errors.push({ type: "ALL_DELETED" });
-        }
-
-        // タイトル重複チェック
-        for (const title of this.findDuplicates(activeWorks.map((work) => work.title.value))) {
-            errors.push({ type: "DUPLICATE_WORK_TITLE", title });
+        // タイトル重複チェック（削除済みの作品も対象にする。復元したときに重複させないため）
+        const activeDuplicateTitles = new Set(this.findDuplicates(activeWorks.map((work) => work.title.value)));
+        for (const title of this.findDuplicates(works.map((work) => work.title.value))) {
+            errors.push(activeDuplicateTitles.has(title)
+                ? { type: "DUPLICATE_WORK_TITLE", title }
+                : { type: "DUPLICATE_DELETED_WORK_TITLE", title });
         }
 
         // 並び順重複チェック
-        for (const sort of this.findDuplicates(activeWorks.map((work) => work.sort.value))) {
+        for (const sort of this.findDuplicates(works.flatMap((work) => work.sort.value !== null ? [work.sort.value] : []))) {
             errors.push({ type: "DUPLICATE_WORK_SORT", sort });
         }
 
@@ -405,7 +381,8 @@ export class BookAggregate {
      *
      * err の条件:
      * - WORK_NOT_FOUND: 更新対象の作品が書籍に存在しない、または削除済みであること
-     * - DUPLICATE_WORK_TITLE: 削除されていない他の作品と作品名が重複すること
+     * - DUPLICATE_WORK_TITLE: 削除されていない他の作品と作品名が重複すること（削除済みの作品とも重複する場合を含む）
+     * - DUPLICATE_DELETED_WORK_TITLE: 削除済みの他の作品とだけ作品名が重複すること
      *
      * 事後条件:
      * - ok の場合: 自身の作品のうち、更新対象の作品だけを引数の内容に置き換える
@@ -427,12 +404,16 @@ export class BookAggregate {
             return err({ type: "WORK_NOT_FOUND" });
         }
 
-        const isDuplicate = this._works.some((work) => {
-            return work.id.value !== target.id.value && work.title.value === param.title.value && !work.deleteFlg;
+        // 削除済みの作品も対象にする（復元したときに重複させないため）
+        const duplicates = this._works.filter((work) => {
+            return work.id.value !== target.id.value && work.title.value === param.title.value;
         });
 
-        if (isDuplicate) {
+        if (duplicates.some((work) => !work.deleteFlg)) {
             return err({ type: "DUPLICATE_WORK_TITLE", title: param.title.value });
+        }
+        if (duplicates.length > 0) {
+            return err({ type: "DUPLICATE_DELETED_WORK_TITLE", title: param.title.value });
         }
 
         this._works = this._works.map((work) => {

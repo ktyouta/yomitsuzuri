@@ -43,6 +43,7 @@
 - 書籍更新 API（Phase 2）:
   - 既存の `toWorkErrorMessage` も `toInputErrorMessage` へ統合する
   - 作品IDの重複・新規作品の削除済み指定は `BookValidationError` に追加し（`DUPLICATE_WORK_ID`・`NEW_WORK_DELETED`）、`INVALID_WORKS` で返す。不一致の判定（`WORKS_MISMATCH`）より前に判定する
+    - 2026-11-07: `docs/delete-restore/plan.md` の U16 で書籍更新から作品の削除を外したため、`NEW_WORK_DELETED` は削除した
   - 作品 0 件のリクエストは `WORKS_MISMATCH` のままにする（通常の画面操作では起こらないため、判定順は変えない）
 - user（Phase 4）:
   - U5: 新しく設定するパスワードの方針（8文字以上・半角英数記号）は `NewPassword`（auth ドメイン）で判定する。ハッシュ済みの値を表す `UserPassword` は流用しない
@@ -211,7 +212,7 @@ class WorkTitle {
 | 上記 VO の `of` | 事後条件 | `create` が ok ならその値を返し、err なら throw（呼び出し側の不具合） |
 | `WorkTitle.initial` | 事前条件 | 書籍タイトルの上限文字数 ≤ 作品タイトルの上限文字数（テストで保証）。満たさない場合は `of` が throw |
 | `BookAggregate.update` | 事前条件（throw） | 書籍が削除されていないこと |
-| `BookAggregate.update` | err | 作品IDの重複（`DUPLICATE_WORK_ID`）・新規作品の削除済み指定（`NEW_WORK_DELETED`）があれば `INVALID_WORKS`（この場合は不一致の判定を行わない）。作品の指定が既存の作品と一致しなければ `WORKS_MISMATCH`。不変条件の違反（全件削除・タイトル重複・表示順重複）はすべて収集して `INVALID_WORKS`。`docs/delete-restore/plan.md` の U11・U13（2026-11-07。未実装）により、タイトル重複は削除済みの作品も含めて判定し、表示順は削除済みの作品を NULL にする形に変更する |
+| `BookAggregate.update` | err | 作品IDの重複（`DUPLICATE_WORK_ID`）があれば `INVALID_WORKS`（この場合は不一致の判定を行わない）。作品の指定が削除されていない既存の作品と一致しなければ（削除済みの作品の ID を含む）`WORKS_MISMATCH`。不変条件の違反（タイトル重複・表示順重複）はすべて収集して `INVALID_WORKS`。タイトル重複は削除済みの作品も含めて判定する（削除済みの作品との重複は `DUPLICATE_DELETED_WORK_TITLE`）。2026-11-07 に `docs/delete-restore/plan.md` の U11・U16 により変更（作品の削除を外し、`NEW_WORK_DELETED`・`ALL_DELETED` を削除） |
 | `BookAggregate.update` | 事後条件 | ok の場合は自身の書籍情報と作品一覧を引数の内容に置き換え、新規の作品に ID を採番する。err の場合は自身を変更しない |
 | `UpdateBookUsecase.execute` | 事後条件 | 入力値の制約違反はすべて `field` 付きで `INVALID_INPUT` として返し、DB は問い合わせない・保存しない。`@throws` はコードの不具合のみ |
 

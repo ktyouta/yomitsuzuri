@@ -31,7 +31,6 @@ type UpdateWorkBody = {
     sort: number;
     memo?: string | null;
     iconId: number;
-    deleteFlg: boolean;
 };
 
 type UpdateBookBody = {
@@ -71,7 +70,7 @@ function createWorkParam(work: UpdateWorkBody, index: number) {
     // 空の作品IDは新規の作品として扱う。形式は判定せず、存在しない ID は集約の作品の照合で検出する
     const id = work.id ? WorkId.of(work.id) : null;
 
-    return ok({ id, title, memo, sort, iconId, deleteFlg: work.deleteFlg });
+    return ok({ id, title, memo, sort, iconId });
 }
 
 export class UpdateBookUsecase {
@@ -83,10 +82,10 @@ export class UpdateBookUsecase {
 
     /**
      * 書籍更新
-     * 書籍情報と、書籍に収録された作品をまとめて更新する（既に削除済みの作品は、含まれていても変更しない）。
+     * 書籍情報と、書籍に収録された削除されていない作品をまとめて更新する（作品の削除・復元は行わない。削除済みの作品は変更しない）。
      * @param userId 書籍を所有するユーザーID
      * @param bookId 更新対象の書籍ID
-     * @param body 書籍・作品の更新内容（既に削除済みの作品は含めても含めなくてもよい）
+     * @param body 書籍と、削除されていない作品の更新内容（削除済みの作品を含めると WORKS_MISMATCH）
      * @returns 成功時は更新後の書籍と作品の DTO（作品は削除済みを含む）。
      * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・書籍が存在しない・書籍または作品のアイコンが無効・読書状況が無効・同名書籍が存在する（自身を除き、削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_TITLE）・
      * 作品の指定に誤りがある・作品の指定が既存の作品と一致しない・作品が不変条件に違反する場合はエラー（いずれも保存しない）

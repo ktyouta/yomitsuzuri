@@ -25,7 +25,8 @@ export type BookItem = {
 export type WorkItem = {
   id: string;
   title: string;
-  sort: number;
+  // 個別に削除した作品は null
+  sort: number | null;
   memo: string | null;
   iconId: number;
   // 論理削除されたアイコンの場合は null

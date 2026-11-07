@@ -17,14 +17,16 @@ const BODY = {
   memo: "メモ",
   iconId: 2,
   works: [
-    { id: WORK_ID_1, title: "作品1改", sort: 2, memo: "作品メモ", iconId: 4, deleteFlg: false },
-    { id: WORK_ID_2, title: "作品2", sort: 1, memo: "", iconId: 1, deleteFlg: true },
-    { id: null, title: "作品3", sort: 1, memo: "", iconId: 5, deleteFlg: false },
+    { id: WORK_ID_1, title: "作品1改", sort: 2, memo: "作品メモ", iconId: 4 },
+    { id: WORK_ID_2, title: "作品2", sort: 1, memo: "", iconId: 1 },
+    { id: null, title: "作品3", sort: 3, memo: "", iconId: 5 },
   ],
 };
 
+const DELETED_WORK_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
+
 /**
- * 更新前の書籍集約（作品2件を持つ）
+ * 更新前の書籍集約（削除されていない作品2件と、削除済みの作品1件を持つ）
  */
 function createBook(): BookAggregate {
   return BookAggregate.reconstruct({
@@ -40,6 +42,7 @@ function createBook(): BookAggregate {
     works: [
       WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false }),
       WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false }),
+      WorkEntity.reconstruct({ id: WorkId.of(DELETED_WORK_ID), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(null), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: true }),
     ],
   });
 }
@@ -97,8 +100,10 @@ describe("UpdateBookUsecase", () => {
       deleteFlg: false,
       works: [
         { id: WORK_ID_1, title: "作品1改", sort: 2, memo: "作品メモ", iconId: 4, deleteFlg: false },
-        { id: WORK_ID_2, title: "作品2", sort: 1, memo: null, iconId: 1, deleteFlg: true },
-        { id: expect.stringMatching(ULID_PATTERN), title: "作品3", sort: 1, memo: null, iconId: 5, deleteFlg: false },
+        { id: WORK_ID_2, title: "作品2", sort: 1, memo: null, iconId: 1, deleteFlg: false },
+        { id: expect.stringMatching(ULID_PATTERN), title: "作品3", sort: 3, memo: null, iconId: 5, deleteFlg: false },
+        // 削除済みの作品は送らなくても、変更せずに保持する
+        { id: DELETED_WORK_ID, title: "削除済み作品", sort: null, memo: null, iconId: 1, deleteFlg: true },
       ],
     });
 
@@ -107,10 +112,11 @@ describe("UpdateBookUsecase", () => {
     expect(dto.value.title).toBe("容疑者Xの献身");
     expect(dto.value.works.map((e) => ({ title: e.title, deleteFlg: e.deleteFlg }))).toEqual(expect.arrayContaining([
       { title: "作品1改", deleteFlg: false },
-      { title: "作品2", deleteFlg: true },
+      { title: "作品2", deleteFlg: false },
       { title: "作品3", deleteFlg: false },
+      { title: "削除済み作品", deleteFlg: true },
     ]));
-    expect(dto.value.works).toHaveLength(3);
+    expect(dto.value.works).toHaveLength(4);
   });
 
   it("指定したユーザー・書籍IDで更新対象を取得すること", async () => {
@@ -195,8 +201,8 @@ describe("UpdateBookUsecase", () => {
       body: {
         ...BODY,
         works: [
-          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1, deleteFlg: false },
-          { id: WORK_ID_2, title: "作品1", sort: 2, memo: "", iconId: 1, deleteFlg: false },
+          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 },
+          { id: WORK_ID_2, title: "作品1", sort: 2, memo: "", iconId: 1 },
         ],
       },
     });
@@ -214,7 +220,7 @@ describe("UpdateBookUsecase", () => {
     const result = await usecase.execute({
       userId: USER_ID,
       bookId: BOOK_ID.value,
-      body: { ...BODY, works: [{ id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1, deleteFlg: false }] },
+      body: { ...BODY, works: [{ id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 }] },
     });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
@@ -230,8 +236,8 @@ describe("UpdateBookUsecase", () => {
       body: {
         ...BODY,
         works: [
-          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1, deleteFlg: false },
-          { id: "invalid", title: "作品2", sort: 2, memo: "", iconId: 1, deleteFlg: false },
+          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 },
+          { id: "invalid", title: "作品2", sort: 2, memo: "", iconId: 1 },
         ],
       },
     });
@@ -249,8 +255,8 @@ describe("UpdateBookUsecase", () => {
       body: {
         ...BODY,
         works: [
-          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1, deleteFlg: false },
-          { id: WORK_ID_1, title: "作品2", sort: 2, memo: "", iconId: 1, deleteFlg: false },
+          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 },
+          { id: WORK_ID_1, title: "作品2", sort: 2, memo: "", iconId: 1 },
         ],
       },
     });
@@ -273,8 +279,8 @@ describe("UpdateBookUsecase", () => {
         memo: "あ".repeat(2001),
         iconId: 0,
         works: [
-          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1, deleteFlg: false },
-          { id: "invalid", title: "", sort: 0, memo: "あ".repeat(2001), iconId: 0, deleteFlg: false },
+          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 },
+          { id: "invalid", title: "", sort: 0, memo: "あ".repeat(2001), iconId: 0 },
         ],
       },
     });
@@ -307,7 +313,7 @@ describe("UpdateBookUsecase", () => {
     const result = await usecase.execute({
       userId: USER_ID,
       bookId: BOOK_ID.value,
-      body: { ...BODY, works: [{ id: null, title: "あ".repeat(101), sort: 1, iconId: 1, deleteFlg: false }] },
+      body: { ...BODY, works: [{ id: null, title: "あ".repeat(101), sort: 1, iconId: 1 }] },
     });
 
     expect(result._unsafeUnwrapErr()).toEqual({

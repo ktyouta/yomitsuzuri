@@ -19,7 +19,7 @@ type WorkReconstructParamType = {
 export type WorkSnapshotType = {
     id: string;
     title: string;
-    sort: number;
+    sort: number | null;
     memo: string | null;
     iconId: number;
     deleteFlg: boolean;
