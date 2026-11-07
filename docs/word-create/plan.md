@@ -10,7 +10,8 @@
 
 - 実装範囲は気になるワード作成 API のバックエンドのみ（「気になるワード作成（create-word）もつくってほしい。create-characterが参考になるはず」）
 - 作品内で同じワード（text）の重複を禁止する（未削除のワード同士。登場人物名と同じ扱い）
-  - 変更予定（2026-11-07。未実装）: `docs/delete-restore/plan.md` の U11 により、削除済みのワードも含めて判定し、一意インデックスの `delete_flg = 0` の条件を外す。削除済みのワードと重複した場合は、別の err にする
+  - 2026-11-07 に変更済み: `docs/delete-restore/plan.md` の U11 により、削除済みのワードも含めて判定し、一意インデックスの `delete_flg = 0` の条件を外した（マイグレーションは未作成）。判定はドメインサービスの `validate`（Result）で行う。削除済みのワードとだけ重複した場合は `DUPLICATE_DELETED_TEXT`（409「同じワードが既に登録されています（削除済み）。復元するか、別のワードにしてください。」。文言は Claude の提案をユーザーが承認）
+    - ワードの復元 API は未実装のため、現時点では文言の「復元」を行う手段がない
 
 ### Claudeの提案（Step 3 の設計確認でユーザーが「お願い」と承認。マイグレーションは案A）
 
@@ -29,7 +30,7 @@
 ## 設計
 
 - schema: `word_transaction` に部分ユニークインデックス `word_transaction_work_id_text_unique`（`work_id, text`、`delete_flg = 0`）を追加する（登場人物名と同じ）
-- 重複判定: `WordTextUniquenessDomainService.isDuplicated(userId, workId, wordId, text)`。Repository `IWordTextUniquenessRepository.findWord` が同一ユーザーの同一作品内の未削除・同じ text・wordId 以外のワードを返す（wordId を除外するのは、更新 API でも同じ判定を使えるようにするため。登場人物名と同じ）
+- 重複判定: `WordTextUniquenessDomainService.validate(userId, workId, wordId, text)`（2026-11-07 に `isDuplicated` から変更）。Repository `IWordTextUniquenessRepository.findWord` が同一ユーザーの同一作品内の同じ text・wordId 以外のワードを、削除済みを含めて ID と削除フラグで返す（wordId を除外するのは、更新 API でも同じ判定を使えるようにするため。登場人物名と同じ）
 - Usecase の処理の流れ: 入力値の制約チェック（違反はすべて返す） → 作品の存在・所有者チェック → エンティティ生成 → 作品内の重複チェック → 保存
 - workId は `WorkIdParamSchema` で受け取り、Usecase が `WorkId.of` で包む
 
@@ -71,16 +72,17 @@
 |---|---|---|---|
 | execute({ userId, workId, body }) | workId が空でない（Error。違反時は DB を問い合わせない） | 入力値の違反があればすべてを項目名付きで `INVALID_INPUT`（DB を問い合わせず保存しない） / 作品が取得できなければ `NOT_FOUND`（保存しない） / 作品内に同じ text の未削除のワードがあれば `DUPLICATE_TEXT`（保存しない） / それ以外は削除されていないワードを1件保存し、保存した内容の DTO を返す（text・memo は前後の空白を除去、空の memo・未入力の page は null） | ID の採番（`WordEntity.create`） |
 
-- U11 の実装時に、上記の `DUPLICATE_TEXT` の条件（同じ text の未削除のワード）を、削除済みも含めた判定に変更する
+- U11（2026-11-07 に変更済み）により、上記の `DUPLICATE_TEXT` は「同じ text の削除されていないワードあり」、`DUPLICATE_DELETED_TEXT` は「同じ text の削除済みのワードだけあり」（どちらも保存しない）
 - **テストケース**: 保存して内容を返す / memo・page 省略時は null で保存 / 作品が null で NOT_FOUND・保存しない / 重複ありで DUPLICATE_TEXT・保存しない / findWork・findWord に渡す値（text は前後の空白を除去した値） / 違反をすべて返し DB を問い合わせない / 違反した項目だけ返す / workId が空で例外・DB を問い合わせない
 
 ### WordTextUniquenessDomainService（ドメインサービス）
 
 | メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
 |---|---|---|---|
-| isDuplicated(userId, workId, wordId, text) | なし | 該当するワードが1件以上なら true、0件なら false | なし |
+| validate(userId, workId, wordId, text) | なし | wordId 以外の同じワード（削除済みを含む）のうち、削除されていないものがあれば err `DUPLICATE_TEXT` / 削除済みのものだけなら err `DUPLICATE_DELETED_TEXT` / 0件なら ok | なし |
 
-- **テストケース**: 1件で true / 0件で false / 引数をそのまま Repository に渡す
+- 2026-11-07 に `isDuplicated`（boolean）から変更した（`docs/delete-restore/plan.md` U11）
+- **テストケース**: 削除されていないもので DUPLICATE_TEXT / 削除済みだけで DUPLICATE_DELETED_TEXT / 両方ありで DUPLICATE_TEXT / 0件で ok / 引数をそのまま Repository に渡す
 
 ### CreateWordResultDto（DTO）
 

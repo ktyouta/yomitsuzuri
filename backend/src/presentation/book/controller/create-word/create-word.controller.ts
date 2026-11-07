@@ -40,6 +40,8 @@ const createWord = new Hono<AppEnv>().post(
             return c.json({ message: "作品が見つかりませんでした。" }, HTTP_STATUS.NOT_FOUND);
           case "DUPLICATE_TEXT":
             return c.json({ message: "同じワードが既に登録されています。" }, HTTP_STATUS.CONFLICT);
+          case "DUPLICATE_DELETED_TEXT":
+            return c.json({ message: "同じワードが既に登録されています（削除済み）。復元するか、別のワードにしてください。" }, HTTP_STATUS.CONFLICT);
           default: {
             // 全てのエラー種別を網羅していることを型で保証する
             error satisfies never;

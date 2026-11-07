@@ -46,7 +46,7 @@ const createCharacterRelation = new Hono<AppEnv>().post(
           case "DUPLICATE_RELATION":
             return c.json({ message: "同じ関係が既に登録されています。" }, HTTP_STATUS.CONFLICT);
           case "DUPLICATE_DELETED_RELATION":
-            return c.json({ message: "削除済みの人物関係に同じ関係があります。復元するか、別の関係にしてください。" }, HTTP_STATUS.CONFLICT);
+            return c.json({ message: "同じ関係が既に登録されています（削除済み）。復元するか、別の関係名にしてください。" }, HTTP_STATUS.CONFLICT);
           default: {
             // 全てのエラー種別を網羅していることを型で保証する
             error satisfies never;

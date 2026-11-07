@@ -15,7 +15,7 @@ const BODY = {
 
 type Options = {
   workExists?: boolean;
-  duplicatedIds?: { id: string }[];
+  duplicatedIds?: { id: string, deleteFlg: boolean }[];
 };
 
 function createUsecase({ workExists = true, duplicatedIds = [] }: Options = {}) {
@@ -80,12 +80,21 @@ describe("CreateWordUsecase", () => {
     expect(createWordRepository.createWord).not.toHaveBeenCalled();
   });
 
-  it("作品内に同じワードが存在する場合、DUPLICATE_TEXT を返し、保存しないこと", async () => {
-    const { usecase, createWordRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVT0" }] });
+  it("作品内に削除されていない同じワードが存在する場合、DUPLICATE_TEXT を返し、保存しないこと", async () => {
+    const { usecase, createWordRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVT0", deleteFlg: false }] });
 
     const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID, body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_TEXT" });
+    expect(createWordRepository.createWord).not.toHaveBeenCalled();
+  });
+
+  it("作品内に同じワードが削除済みのものだけ存在する場合、DUPLICATE_DELETED_TEXT を返し、保存しないこと", async () => {
+    const { usecase, createWordRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVT0", deleteFlg: true }] });
+
+    const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID, body: BODY });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_DELETED_TEXT" });
     expect(createWordRepository.createWord).not.toHaveBeenCalled();
   });
 

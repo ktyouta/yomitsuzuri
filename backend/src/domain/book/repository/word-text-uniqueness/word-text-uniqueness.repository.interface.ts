@@ -6,13 +6,13 @@ import type { WordId, WordText, WorkId } from "../../value-object";
  */
 export interface IWordTextUniquenessRepository {
     /**
-     * 同じワードの取得（同一ユーザーの同一作品内・未削除のもの）
+     * 同じワードの取得（同一ユーザーの同一作品内・削除済みを含む）
      * wordId 自身は判定対象から除外する（更新時の自己重複を防ぐ）。
      * @param userId 書籍を所有するユーザーID
      * @param workId 気になるワードが属する作品ID
      * @param wordId 判定対象から除外する気になるワードID
      * @param wordText 気になるワード
-     * @returns 同じワードの ID 一覧
+     * @returns 同じワードの ID と削除フラグの一覧
      */
-    findWord(userId: UserId, workId: WorkId, wordId: WordId, wordText: WordText): Promise<{ id: string }[]>;
+    findWord(userId: UserId, workId: WorkId, wordId: WordId, wordText: WordText): Promise<{ id: string, deleteFlg: boolean }[]>;
 }

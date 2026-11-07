@@ -10,7 +10,7 @@
 
 - 実装範囲は気になるワード更新 API のバックエンドのみ（「気になるワードの更新（update-word）もお願い。update-characterが参考になる認識」）
 - 作品内で同じワード（text）の重複を禁止する（作成 API で決定済み。更新では自身を除外して判定する）
-  - 変更予定（2026-11-07。未実装）: `docs/delete-restore/plan.md` の U11 により、削除済みのワードも含めて判定する（作成 API と同じ判定を使う）
+  - 2026-11-07 に変更済み: `docs/delete-restore/plan.md` の U11 により、削除済みのワードも含めて判定する（作成 API と同じ判定を使う）。削除済みのワードとだけ重複した場合は `DUPLICATE_DELETED_TEXT`（409。文言は作成 API と同じ）
 
 ### Claudeの提案（Step 3 の設計確認でユーザーが「お願い」と承認）
 
@@ -61,7 +61,7 @@
 |---|---|---|---|
 | execute({ userId, wordId, body }) | wordId が空でない（Error。違反時は DB を問い合わせない） | 入力値の違反があればすべてを項目名付きで `INVALID_INPUT`（DB を問い合わせず保存しない） / ワードが取得できなければ `NOT_FOUND`（保存しない） / 作品内に自身以外の同じ text の未削除のワードがあれば `DUPLICATE_TEXT`（保存しない） / それ以外は text・memo・page を置き換えて保存し（id・作品・削除フラグは変えない）、保存した内容の DTO を返す（省略した memo・page は null） | なし |
 
-- U11 の実装時に、上記の `DUPLICATE_TEXT` の条件（自身以外の同じ text の未削除のワード）を、削除済みも含めた判定に変更する
+- U11（2026-11-07 に変更済み）により、上記の `DUPLICATE_TEXT` は「自身以外の同じ text の削除されていないワードあり」、`DUPLICATE_DELETED_TEXT` は「自身以外の同じ text の削除済みのワードだけあり」（どちらも保存しない）
 - **テストケース**: 更新内容で保存し内容を返す / text のみで memo・page が null で保存 / findWord・重複判定に渡す値（取得したワードの作品・自身の ID・前後の空白を除去した text） / NOT_FOUND・保存しない / DUPLICATE_TEXT・保存しない / 違反をすべて返し DB を問い合わせない / 違反した項目だけ返す / wordId が空で例外・DB を問い合わせない
 
 ### UpdateWordResultDto（DTO）

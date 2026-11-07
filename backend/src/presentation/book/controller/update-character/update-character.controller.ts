@@ -44,7 +44,7 @@ const updateCharacter = new Hono<AppEnv>().put(
           case "DUPLICATE_NAME":
             return c.json({ message: "同名の登場人物が既に登録されています。" }, HTTP_STATUS.CONFLICT);
           case "DUPLICATE_DELETED_NAME":
-            return c.json({ message: "削除済みの登場人物に同じ名前のものがあります。復元するか、別の名前にしてください。" }, HTTP_STATUS.CONFLICT);
+            return c.json({ message: "同名の登場人物が既に登録されています（削除済み）。復元するか、別の名前にしてください。" }, HTTP_STATUS.CONFLICT);
           default: {
             // 全てのエラー種別を網羅していることを型で保証する
             error satisfies never;

@@ -37,7 +37,7 @@ const createBook = new Hono<AppEnv>().post(
           case "DUPLICATE_TITLE":
             return c.json({ message: "同名の書籍が既に登録されています。" }, HTTP_STATUS.CONFLICT);
           case "DUPLICATE_DELETED_TITLE":
-            return c.json({ message: "削除済みの書籍に同じタイトルのものがあります。復元するか、別のタイトルにしてください。" }, HTTP_STATUS.CONFLICT);
+            return c.json({ message: "同名の書籍が既に登録されています（削除済み）。復元するか、別のタイトルにしてください。" }, HTTP_STATUS.CONFLICT);
           case "INVALID_ICON":
             return c.json({ message: "入力エラー", data: [{ field: "iconId", message: "指定されたアイコンは存在しません。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           default: {

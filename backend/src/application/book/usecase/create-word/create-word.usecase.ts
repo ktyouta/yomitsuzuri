@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { ICreateWordRepository, WordMemoError, WordPageError, WordTextError, WordTextUniquenessDomainService } from "../../../../domain/book";
+import type { ICreateWordRepository, WordMemoError, WordPageError, WordTextError, WordTextUniquenessDomainService, WordTextUniquenessError } from "../../../../domain/book";
 import { WordEntity, WordMemo, WordPage, WordText, WorkId } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import { CreateWordResultDto } from "../../dto";
@@ -15,7 +15,7 @@ export type CreateWordInputError =
 export type CreateWordError =
   | { type: "INVALID_INPUT"; errors: CreateWordInputError[] }
   | { type: "NOT_FOUND" }
-  | { type: "DUPLICATE_TEXT" };
+  | WordTextUniquenessError;
 
 type CreateWordBody = {
   text: string;
@@ -44,7 +44,7 @@ export class CreateWordUsecase {
    * @param body 気になるワードの登録内容
    * @returns 成功時は作成した気になるワードの DTO。
    * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・作品が存在しない（他ユーザーの書籍の作品・作品または書籍が論理削除済みを含む）・
-   * 作品内に同じワードが存在する場合はエラー（いずれも保存しない）
+   * 作品内に同じワードが存在する（削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_TEXT）場合はエラー（いずれも保存しない）
    * @throws workId が空の場合（DB は問い合わせない）
    */
   async execute({ userId, workId, body }: PropsType): Promise<Result<CreateWordResultDto, CreateWordError>> {
@@ -69,8 +69,9 @@ export class CreateWordUsecase {
     const word = WordEntity.create({ workId: id, text, memo, page });
 
     // 作品内のワード重複
-    if (await this.uniquenessService.isDuplicated(userId, id, word.id, text)) {
-      return err({ type: "DUPLICATE_TEXT" });
+    const uniqueness = await this.uniquenessService.validate(userId, id, word.id, text);
+    if (uniqueness.isErr()) {
+      return err(uniqueness.error);
     }
 
     await this.createWordRepository.createWord(word);

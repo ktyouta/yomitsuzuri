@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { IUpdateWordRepository, WordMemoError, WordPageError, WordTextError, WordTextUniquenessDomainService } from "../../../../domain/book";
+import type { IUpdateWordRepository, WordMemoError, WordPageError, WordTextError, WordTextUniquenessDomainService, WordTextUniquenessError } from "../../../../domain/book";
 import { WordId, WordMemo, WordPage, WordText } from "../../../../domain/book";
 import type { UserId } from "../../../../domain/shared";
 import { UpdateWordResultDto } from "../../dto";
@@ -15,7 +15,7 @@ export type UpdateWordInputError =
 export type UpdateWordError =
   | { type: "INVALID_INPUT"; errors: UpdateWordInputError[] }
   | { type: "NOT_FOUND" }
-  | { type: "DUPLICATE_TEXT" };
+  | WordTextUniquenessError;
 
 type UpdateWordBody = {
   text: string;
@@ -44,7 +44,7 @@ export class UpdateWordUsecase {
    * @param body 気になるワードの更新内容
    * @returns 成功時は更新した気になるワードの DTO。
    * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・気になるワードが存在しない（他ユーザーの書籍の気になるワード・気になるワード、作品または書籍が論理削除済みを含む）・
-   * 作品内に自身以外の同じワードが存在する場合はエラー（いずれも保存しない）
+   * 作品内に自身以外の同じワードが存在する（削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_TEXT）場合はエラー（いずれも保存しない）
    * @throws wordId が空の場合（DB は問い合わせない）
    */
   async execute({ userId, wordId, body }: PropsType): Promise<Result<UpdateWordResultDto, UpdateWordError>> {
@@ -68,8 +68,9 @@ export class UpdateWordUsecase {
     }
 
     // 作品内のワード重複（自身は除外する）
-    if (await this.uniquenessService.isDuplicated(userId, word.workId, word.id, text)) {
-      return err({ type: "DUPLICATE_TEXT" });
+    const uniqueness = await this.uniquenessService.validate(userId, word.workId, word.id, text);
+    if (uniqueness.isErr()) {
+      return err(uniqueness.error);
     }
 
     word.update({ text, memo, page });
