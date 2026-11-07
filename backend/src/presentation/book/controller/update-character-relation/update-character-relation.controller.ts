@@ -45,6 +45,8 @@ const updateCharacterRelation = new Hono<AppEnv>().put(
             return c.json({ message: "入力エラー", data: error.fields.map((field) => ({ field, message: "指定された登場人物は存在しません。" })) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           case "DUPLICATE_RELATION":
             return c.json({ message: "同じ関係が既に登録されています。" }, HTTP_STATUS.CONFLICT);
+          case "DUPLICATE_DELETED_RELATION":
+            return c.json({ message: "削除済みの人物関係に同じ関係があります。復元するか、別の関係にしてください。" }, HTTP_STATUS.CONFLICT);
           default: {
             // 全てのエラー種別を網羅していることを型で保証する
             error satisfies never;

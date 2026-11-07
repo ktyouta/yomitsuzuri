@@ -21,7 +21,8 @@
   - 例: 「A → B：兄」がある状態で、「A → B：兄」「B → A：兄」はどちらも登録できない。「B → A：弟」は登録できる
   - DB: 部分一意インデックス `character_relation_transaction_pair_relation_name_unique` を `schema.ts` に追加済み（`min(character_id, target_character_id)`・`max(character_id, target_character_id)`・`relation_name`。`delete_flg = 0` の行が対象）
   - ドメインでも判定する（登録・更新時に、(人物, 相手, 関係) または (相手, 人物, 関係) に一致する未削除の行があれば err。更新では自身の行を除外する）。画面からもまったく同じ関係は登録できないようにする
-  - 変更予定（2026-11-07。未実装）: `docs/delete-restore/plan.md` の U11 により、削除済みの関係も含めて判定し、一意インデックスの `delete_flg = 0` の条件を外す。削除済みの関係と重複した場合は、別の err にする
+  - 2026-11-07 に変更済み: `docs/delete-restore/plan.md` の U11 により、削除済みの関係も含めて判定し、一意インデックスの `delete_flg = 0` の条件を外した（マイグレーションは未作成）。判定はドメインサービスの `validate`（Result）で行う。削除されていない関係と重複した場合は `DUPLICATE_RELATION`、削除済みの関係とだけ重複した場合は `DUPLICATE_DELETED_RELATION`（409「削除済みの人物関係に同じ関係があります。復元するか、別の関係にしてください。」。文言は Claude の提案をユーザーが承認）
+    - 関係の復元 API・操作場所は未定のため、現時点では文言の「復元」を行う手段がない
 - U2: 関係は、関係する両方の人物の画面に表示する
 - U3: マイグレーションは今回は生成・適用しない
 - U4: 関係名の上限は 50 文字（`CharacterRelationName.RELATION_NAME_MAX_LENGTH`。文の形で表示する短いラベルのため。職業と同じ上限）
@@ -60,6 +61,7 @@
   | 人物と相手が同じ | `CHARACTER_RELATION_SELF` | 422 | `targetCharacterId` の項目エラー |
   | 人物・相手が同じ作品の削除されていない人物ではない | `INVALID_CHARACTER` | 422 | 問題のある項目ごとの項目エラー（`characterId`・`targetCharacterId`） |
   | 同じ2人の間に同じ関係名の関係がある | `DUPLICATE_RELATION` | 409 | メッセージのみ |
+  | 同じ2人の間に同じ関係名の関係が削除済みのものだけある（U1 の 2026-11-07 の変更） | `DUPLICATE_DELETED_RELATION` | 409 | メッセージのみ |
 
 - P7: U8 のドメインサービスは、true / false ではなく問題のある項目の一覧を返す（`findInvalidFields`）。人物と相手のどちらが問題かを項目エラーで返すため
 - P8: 削除済みの人物を指定した場合も、存在しない場合と同じ文言（「指定された登場人物は存在しません。」）を返す

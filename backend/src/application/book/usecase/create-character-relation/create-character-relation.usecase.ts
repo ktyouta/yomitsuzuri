@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { CharacterId, CharacterRelationEntity, CharacterRelationName, CharacterRelationUniquenessDomainService, CharacterValidityDomainService, UserId, WorkId, type CharacterField, type CharacterIdError, type CharacterRelationNameError, type ICreateCharacterRelationRepository } from "../../../../domain";
+import { CharacterId, CharacterRelationEntity, CharacterRelationName, CharacterRelationUniquenessDomainService, CharacterValidityDomainService, UserId, WorkId, type CharacterField, type CharacterIdError, type CharacterRelationNameError, type CharacterRelationUniquenessError, type ICreateCharacterRelationRepository } from "../../../../domain";
 import { CreateCharacterRelationResultDto } from "../../dto";
 
 /**
@@ -15,7 +15,7 @@ export type CreateCharacterRelationError =
   | { type: "NOT_FOUND" }
   | { type: "CHARACTER_RELATION_SELF" }
   | { type: "INVALID_CHARACTER"; fields: CharacterField[] }
-  | { type: "DUPLICATE_RELATION" };
+  | CharacterRelationUniquenessError;
 
 type CreateCharacterRelationBody = {
   characterId: string;
@@ -45,7 +45,7 @@ export class CreateCharacterRelationUsecase {
    * @param body 登場人物関係の登録内容
    * @returns 成功時は作成した登場人物関係の DTO。
    * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・作品が存在しない（他ユーザーの書籍の作品・作品または書籍が論理削除済みを含む）・
-   * 人物と相手が同じ・人物または相手がその作品の削除されていない登場人物ではない・同じ2人の間（向きを問わない）に同じ関係名の関係が存在する場合はエラー（いずれも保存しない）
+   * 人物と相手が同じ・人物または相手がその作品の削除されていない登場人物ではない・同じ2人の間（向きを問わない）に同じ関係名の関係が存在する（削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_RELATION）場合はエラー（いずれも保存しない）
    * @throws workId が空の場合（DB は問い合わせない）
    */
   async execute({ userId, workId, body }: PropsType): Promise<Result<CreateCharacterRelationResultDto, CreateCharacterRelationError>> {
@@ -87,8 +87,9 @@ export class CreateCharacterRelationUsecase {
     }
 
     // 同じ2人の間（向きを問わない）の関係名の重複
-    if (await this.characterRelationUniquenessDomainService.isDuplicated(userId, characterRelation)) {
-      return err({ type: "DUPLICATE_RELATION" });
+    const uniqueness = await this.characterRelationUniquenessDomainService.validate(userId, characterRelation);
+    if (uniqueness.isErr()) {
+      return err(uniqueness.error);
     }
 
     await this.createCharacterRelationRepository.createCharacterRelation(characterRelation);

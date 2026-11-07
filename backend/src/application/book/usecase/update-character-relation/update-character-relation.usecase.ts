@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { CharacterId, CharacterRelationId, CharacterRelationName, CharacterRelationUniquenessDomainService, CharacterValidityDomainService, UserId, type CharacterField, type CharacterIdError, type CharacterRelationNameError, type IUpdateCharacterRelationRepository } from "../../../../domain";
+import { CharacterId, CharacterRelationId, CharacterRelationName, CharacterRelationUniquenessDomainService, CharacterValidityDomainService, UserId, type CharacterField, type CharacterIdError, type CharacterRelationNameError, type CharacterRelationUniquenessError, type IUpdateCharacterRelationRepository } from "../../../../domain";
 import { UpdateCharacterRelationResultDto } from "../../dto";
 
 /**
@@ -15,7 +15,7 @@ export type UpdateCharacterRelationError =
   | { type: "NOT_FOUND" }
   | { type: "CHARACTER_RELATION_SELF" }
   | { type: "INVALID_CHARACTER"; fields: CharacterField[] }
-  | { type: "DUPLICATE_RELATION" };
+  | CharacterRelationUniquenessError;
 
 type UpdateCharacterRelationBody = {
   characterId: string;
@@ -45,7 +45,7 @@ export class UpdateCharacterRelationUsecase {
    * @param body 更新後の登場人物関係の内容
    * @returns 成功時は更新した登場人物関係の DTO。
    * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・登場人物関係が存在しない（他ユーザーの書籍の登場人物関係・登場人物関係、変更前の人物または相手、作品、書籍が論理削除済みを含む）・
-   * 変更後の人物と相手が同じ・変更後の人物または相手がその作品の削除されていない登場人物ではない・変更後の2人の間（向きを問わない）に同じ関係名の別の関係が存在する場合はエラー（いずれも保存しない）
+   * 変更後の人物と相手が同じ・変更後の人物または相手がその作品の削除されていない登場人物ではない・変更後の2人の間（向きを問わない）に同じ関係名の別の関係が存在する（削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_RELATION）場合はエラー（いずれも保存しない）
    * @throws characterRelationId が空の場合（DB は問い合わせない）
    */
   async execute({ userId, characterRelationId, body }: PropsType): Promise<Result<UpdateCharacterRelationResultDto, UpdateCharacterRelationError>> {
@@ -86,8 +86,9 @@ export class UpdateCharacterRelationUsecase {
     }
 
     // 同じ2人の間（向きを問わない）の関係名の重複
-    if (await this.characterRelationUniquenessDomainService.isDuplicated(userId, characterRelation)) {
-      return err({ type: "DUPLICATE_RELATION" });
+    const uniqueness = await this.characterRelationUniquenessDomainService.validate(userId, characterRelation);
+    if (uniqueness.isErr()) {
+      return err(uniqueness.error);
     }
 
     await this.updateCharacterRelationRepository.updateCharacterRelation(characterRelation);

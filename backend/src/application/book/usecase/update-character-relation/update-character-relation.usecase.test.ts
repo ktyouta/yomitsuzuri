@@ -20,7 +20,7 @@ const BODY = {
 type Options = {
   relationExists?: boolean;
   validCharacterIds?: string[];
-  duplicatedIds?: { id: string }[];
+  duplicatedIds?: { id: string, deleteFlg: boolean }[];
 };
 
 function createCharacterRelation() {
@@ -151,12 +151,21 @@ describe("UpdateCharacterRelationUsecase", () => {
     expect(updateCharacterRelationRepository.updateCharacterRelation).not.toHaveBeenCalled();
   });
 
-  it("同じ2人の間に同じ関係名の関係がある場合、DUPLICATE_RELATION を返し、保存しないこと", async () => {
-    const { usecase, updateCharacterRelationRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVR1" }] });
+  it("同じ2人の間に削除されていない同じ関係名の関係がある場合、DUPLICATE_RELATION を返し、保存しないこと", async () => {
+    const { usecase, updateCharacterRelationRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVR1", deleteFlg: false }] });
 
     const result = await usecase.execute({ userId: USER_ID, characterRelationId: CHARACTER_RELATION_ID, body: BODY });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_RELATION" });
+    expect(updateCharacterRelationRepository.updateCharacterRelation).not.toHaveBeenCalled();
+  });
+
+  it("同じ2人の間に同じ関係名の関係が削除済みのものだけある場合、DUPLICATE_DELETED_RELATION を返し、保存しないこと", async () => {
+    const { usecase, updateCharacterRelationRepository } = createUsecase({ duplicatedIds: [{ id: "01BX5ZZKBKACTAV9WEVGEMMVR1", deleteFlg: true }] });
+
+    const result = await usecase.execute({ userId: USER_ID, characterRelationId: CHARACTER_RELATION_ID, body: BODY });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_DELETED_RELATION" });
     expect(updateCharacterRelationRepository.updateCharacterRelation).not.toHaveBeenCalled();
   });
 

@@ -11,25 +11,25 @@ export class CharacterRelationUniquenessRepository implements ICharacterRelation
   constructor(private readonly db: Database) { }
 
   /**
-   * 重複する登場人物関係の取得（同一ユーザーの同一作品内・未削除のもの）
+   * 重複する登場人物関係の取得（同一ユーザーの同一作品内・削除済みを含む）
    * 同じ2人の間（人物と相手が逆向きのものを含む）で、関係名が同じものを返す。
    * 判定対象の関係自身は除外する（更新時の自己重複を防ぐ）。
    * @param userId 書籍を所有するユーザーID
    * @param characterRelation 判定対象の登場人物関係
-   * @returns 重複する登場人物関係の ID 一覧
+   * @returns 重複する登場人物関係の ID と削除フラグの一覧
    */
-  async findCharacterRelation(userId: UserId, characterRelation: CharacterRelationEntity): Promise<{ id: string }[]> {
+  async findCharacterRelation(userId: UserId, characterRelation: CharacterRelationEntity): Promise<{ id: string, deleteFlg: boolean }[]> {
     const snapshot = characterRelation.toSnapshot();
     const result = await this.db
       .select({
         id: characterRelationTransaction.id,
+        deleteFlg: characterRelationTransaction.deleteFlg,
       })
       .from(characterRelationTransaction)
       // 他ユーザーの作品の登場人物関係を返さないため、書籍側の所有者で絞り込む
       .innerJoin(workTransaction, eq(characterRelationTransaction.workId, workTransaction.id))
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
       .where(and(
-        eq(characterRelationTransaction.deleteFlg, false),
         eq(characterRelationTransaction.workId, snapshot.workId),
         ne(characterRelationTransaction.id, snapshot.id),
         // 向きを問わず同じ2人の関係を対象にする
