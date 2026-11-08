@@ -14,5 +14,6 @@ export * from "./update-character-relation";
 export * from "./update-event";
 export * from "./update-event-order";
 export * from "./update-word";
+export * from "./update-work";
 export * from "./word-id-param";
 export * from "./work-id-param";

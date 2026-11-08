@@ -18,3 +18,4 @@ export * from "./update-character-result";
 export * from "./update-event-order-result";
 export * from "./update-event-result";
 export * from "./update-word-result";
+export * from "./update-work-result";

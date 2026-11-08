@@ -402,10 +402,10 @@ export class BookAggregate {
      * - ok の場合: 自身の作品のうち、更新対象の作品の作品名・メモ・アイコン・更新日時だけを引数の内容に置き換える（書籍の更新日時は変更しない）
      * - err の場合: 自身は変更しない
      * @param param 更新対象の作品 ID、更新後の作品情報・更新日時、画面の表示時点の作品の更新日時
-     * @returns 成功時は ok、作品が見つからない・排他の失敗・作品名が重複する場合はその内容を持つ Result
+     * @returns 成功時は更新後の作品、作品が見つからない・排他の失敗・作品名が重複する場合はその内容を持つ Result
      * @throws 事前条件を満たさない場合
      */
-    updateWork(param: UpdateSingleWorkParamType): Result<void, BookWorkUpdateError> {
+    updateWork(param: UpdateSingleWorkParamType): Result<WorkEntity, BookWorkUpdateError> {
         if (this._deleteFlg) {
             throw new Error(`既に削除済みの書籍です。`);
         }
@@ -429,7 +429,7 @@ export class BookAggregate {
             return err(updated.error);
         }
 
-        // 削除済みの作品も対象にする（復元したときに重複させないため）
+        // 作品名重複チェック（削除済みの作品も対象にする。復元したときに重複させないため）
         const duplicates = this._works.filter((work) => {
             return work.id.value !== target.id.value && work.title.value === param.title.value;
         });
@@ -445,6 +445,6 @@ export class BookAggregate {
             return work.id.value === target.id.value ? updated.value : work;
         });
 
-        return ok(undefined);
+        return ok(updated.value);
     }
 }

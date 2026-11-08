@@ -424,13 +424,13 @@ describe("BookAggregate", () => {
       };
     }
 
-    it("自身の対象の作品の作品名・メモ・アイコン・更新日時だけを置き換え、表示順・削除フラグ・他の作品・書籍情報（更新日時を含む）は変更しないこと", () => {
+    it("更新後の作品を返し、自身の対象の作品の作品名・メモ・アイコン・更新日時だけを置き換え、表示順・削除フラグ・他の作品・書籍情報（更新日時を含む）は変更しないこと", () => {
       const book = createBookWithDeletedWork();
       const before = book.toSnapshot();
 
       const result = book.updateWork(updateWorkParam(WORK_ID_2, "作品2改"));
 
-      expect(result.isOk()).toBe(true);
+      expect(result._unsafeUnwrap().toSnapshot()).toEqual({ id: WORK_ID_2, title: "作品2改", sort: 2, memo: "作品メモ", iconId: 4, deleteFlg: false, updatedAt: NEW_UPDATED_AT });
       expect(book.toSnapshot()).toEqual({
         ...before,
         works: [

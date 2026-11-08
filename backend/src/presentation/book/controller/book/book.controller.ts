@@ -23,11 +23,13 @@ import { updateCharacterRelation } from "../update-character-relation";
 import { updateEvent } from "../update-event";
 import { updateEventOrder } from "../update-event-order";
 import { updateWord } from "../update-word";
+import { updateWork } from "../update-work";
 
 const book = new Hono<AppEnv>()
     .route("/", getListBook)
     .route("/", getBook)
     .route("/", getWork)
+    .route("/", updateWork)
     .route("/", getListCharacter)
     .route("/", getCharacter)
     .route("/", getListCharacterRelation)
