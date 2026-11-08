@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { CreateEventUsecase } from "..";
-import { EventContent, EventEntity, EventId, EventOccurredTiming, EventSortOrder, EventTimelineAggregate, WorkId, type ICreateEventRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { EventContent, EventEntity, EventId, EventOccurredTiming, EventSortOrder, EventTimelineAggregate, UserId, WorkId, type ICreateEventRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";

@@ -1,4 +1,4 @@
-import type { ICreateUserRepository, UserAggregate } from "../../../../domain/user";
+import type { ICreateUserRepository, UserAggregate } from "../../../../domain";
 import type { Database } from "../../../db";
 import { userLoginMaster, userMaster } from "../../../db";
 

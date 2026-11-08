@@ -1,6 +1,5 @@
 import { and, eq, ne } from "drizzle-orm";
-import type { IUserNameUniquenessRepository, UserName } from "../../../../domain/user";
-import type { UserId } from "../../../../domain/shared";
+import type { IUserNameUniquenessRepository, UserId, UserName } from "../../../../domain";
 import type { Database } from "../../../db";
 import { userMaster } from "../../../db";
 

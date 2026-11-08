@@ -1,4 +1,4 @@
-import type { BookAggregate } from "../../../../domain/book";
+import type { BookAggregate } from "../../../../domain";
 
 export type UpdateBookResultType = {
   id: string;

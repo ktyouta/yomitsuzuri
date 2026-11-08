@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { UpdateUserUsecase } from "..";
-import { LoginCredentialId, LoginId, UserAggregate, UserBirthday, UserNameUniquenessDomainService, UserPassword, UserSalt } from "../../../../domain/user";
-import { UserId, UserName } from "../../../../domain";
-import type { IUpdateUserRepository, IUserNameUniquenessRepository } from "../../../../domain/user";
+import { LoginCredentialId, LoginId, UserAggregate, UserBirthday, UserId, UserName, UserNameUniquenessDomainService, UserPassword, UserSalt, type IUpdateUserRepository, type IUserNameUniquenessRepository } from "../../../../domain";
 import type { EnvConfig } from "../../../../config";
 
 const testConfig: EnvConfig = {

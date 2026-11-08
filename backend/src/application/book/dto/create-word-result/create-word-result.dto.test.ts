@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CreateWordResultDto } from "..";
-import { WordEntity, WordId, WordMemo, WordPage, WordText, WorkId } from "../../../../domain/book";
+import { WordEntity, WordId, WordMemo, WordPage, WordText, WorkId } from "../../../../domain";
 
 function createWord(memo: string | null, page: number | null) {
   return WordEntity.reconstruct({

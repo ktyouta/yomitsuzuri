@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { DeleteWordUsecase } from "..";
-import { WordEntity, WordId, WordMemo, WordPage, WordText, WorkId, type IDeleteWordRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { UserId, WordEntity, WordId, WordMemo, WordPage, WordText, WorkId, type IDeleteWordRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORD_ID = "01BX5ZZKBKACTAV9WEVGEMMVT0";

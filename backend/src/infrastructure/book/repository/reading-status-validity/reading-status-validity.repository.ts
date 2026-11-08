@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { ReadingStatusId, IReadingStatusValidityRepository } from "../../../../domain/book";
+import type { IReadingStatusValidityRepository, ReadingStatusId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { readingStatusMaster } from "../../../db";
 

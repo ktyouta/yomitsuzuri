@@ -1,7 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { CharacterAgeError, CharacterCharacteristicError, CharacterMemoError, CharacterNameError, CharacterNameUniquenessDomainService, CharacterNameUniquenessError, CharacterOccupationError, GenderIdError, GenderValidityDomainService, ICreateCharacterRepository } from "../../../../domain/book";
-import { CharacterAge, CharacterCharacteristic, CharacterEntity, CharacterMemo, CharacterName, CharacterOccupation, GenderId, WorkId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { CharacterAge, CharacterCharacteristic, CharacterEntity, CharacterMemo, CharacterName, CharacterOccupation, GenderId, WorkId, type CharacterAgeError, type CharacterCharacteristicError, type CharacterMemoError, type CharacterNameError, type CharacterNameUniquenessDomainService, type CharacterNameUniquenessError, type CharacterOccupationError, type GenderIdError, type GenderValidityDomainService, type ICreateCharacterRepository, type UserId } from "../../../../domain";
 import { CreateCharacterResultDto } from "../../dto";
 
 /**

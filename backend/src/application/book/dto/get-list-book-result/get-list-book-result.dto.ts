@@ -1,4 +1,4 @@
-import type { BookListItem } from "../../../../domain/book";
+import type { BookListItem } from "../../../../domain";
 
 export type GetListBookResultType = {
   list: {

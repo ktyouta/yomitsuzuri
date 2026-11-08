@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { EventDetail, EventId, IGetEventRepository } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import type { EventDetail, EventId, IGetEventRepository, UserId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, eventTransaction, workTransaction } from "../../../db";
 

@@ -1,4 +1,4 @@
-import type { BookItem, WorkItem } from "../../../../domain/book";
+import type { BookItem, WorkItem } from "../../../../domain";
 
 export type GetBookResultType = {
   id: string;

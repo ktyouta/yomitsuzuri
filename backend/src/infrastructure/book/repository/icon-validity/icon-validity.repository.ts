@@ -1,5 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { IconId, IIconValidityRepository } from "../../../../domain/book";
+import type { IconId, IIconValidityRepository } from "../../../../domain";
 import type { Database } from "../../../db";
 import { iconMaster } from "../../../db";
 

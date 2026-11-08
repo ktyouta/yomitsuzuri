@@ -1,6 +1,5 @@
 import { and, asc, eq, sql } from "drizzle-orm";
-import type { IGetListWordRepository, WordListItem, WorkId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import type { IGetListWordRepository, UserId, WordListItem, WorkId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, wordTransaction, workTransaction } from "../../../db";
 

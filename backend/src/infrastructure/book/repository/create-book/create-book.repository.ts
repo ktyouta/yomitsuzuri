@@ -1,4 +1,4 @@
-import type { BookAggregate, ICreateBookRepository } from "../../../../domain/book";
+import type { BookAggregate, ICreateBookRepository } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, workTransaction } from "../../../db";
 

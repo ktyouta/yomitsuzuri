@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { CharacterId, CharacterRelationEntity, CharacterRelationId, CharacterRelationName, WorkId, type IDeleteCharacterRelationRepository } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { CharacterId, CharacterRelationEntity, CharacterRelationId, CharacterRelationName, WorkId, type IDeleteCharacterRelationRepository, type UserId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, characterRelationTransaction, workTransaction } from "../../../db";
 

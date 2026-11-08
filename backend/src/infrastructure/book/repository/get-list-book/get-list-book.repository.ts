@@ -1,6 +1,5 @@
 import { and, count, desc, eq, sql } from "drizzle-orm";
-import type { BookListItem, BookListPagination, IGetListBookRepository } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import type { BookListItem, BookListPagination, IGetListBookRepository, UserId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, iconMaster, readingStatusMaster, workTransaction } from "../../../db";
 

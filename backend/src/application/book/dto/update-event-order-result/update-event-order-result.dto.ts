@@ -1,4 +1,4 @@
-import type { EventTimelineAggregate } from "../../../../domain/book";
+import type { EventTimelineAggregate } from "../../../../domain";
 
 type UpdateEventOrderResultType = {
   list: {

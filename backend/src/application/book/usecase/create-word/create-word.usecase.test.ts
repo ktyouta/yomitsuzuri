@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { CreateWordUsecase } from "..";
-import { WordTextUniquenessDomainService, type ICreateWordRepository, type IWordTextUniquenessRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { UserId, WordTextUniquenessDomainService, type ICreateWordRepository, type IWordTextUniquenessRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";

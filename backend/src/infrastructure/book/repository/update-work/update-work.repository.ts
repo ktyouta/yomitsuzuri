@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IUpdateWorkRepository } from "../../../../domain";
-import { UserId } from "../../../../domain/shared";
+import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, UserId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IUpdateWorkRepository } from "../../../../domain";
 import { bookTransaction, workTransaction, type Database } from "../../../db";
 
 /**
@@ -74,10 +73,10 @@ export class UpdateWorkRepository implements IUpdateWorkRepository {
           memo: WorkMemo.of(e.memo),
           iconId: IconId.of(e.iconId),
           deleteFlg: e.deleteFlg,
-          updatedAt: e.updatedAt,
+          updatedAt: Timestamp.of(e.updatedAt),
         })
       ),
-      updatedAt: book.updatedAt,
+      updatedAt: Timestamp.of(book.updatedAt),
     });
   }
 
@@ -89,7 +88,7 @@ export class UpdateWorkRepository implements IUpdateWorkRepository {
    * @param expectedUpdatedAt 取得時点の作品の更新日時
    * @returns 保存した場合は true、他の操作で更新されていたため保存しなかった場合は false
    */
-  async updateWork(work: WorkEntity, expectedUpdatedAt: string): Promise<boolean> {
+  async updateWork(work: WorkEntity, expectedUpdatedAt: Timestamp): Promise<boolean> {
     const snapshot = work.toSnapshot();
 
     const result = await this.db
@@ -103,7 +102,7 @@ export class UpdateWorkRepository implements IUpdateWorkRepository {
       .where(and(
         eq(workTransaction.id, snapshot.id),
         eq(workTransaction.deleteFlg, false),
-        eq(workTransaction.updatedAt, expectedUpdatedAt),
+        eq(workTransaction.updatedAt, expectedUpdatedAt.value),
       ))
       .returning({ id: workTransaction.id });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { UpdateWorkResultDto } from "..";
-import { IconId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../../../domain/book";
+import { IconId, Timestamp, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../../../domain";
 
 describe("UpdateWorkResultDto", () => {
   it("作品から、更新日時を含むすべての項目でDTOを生成できること", () => {
@@ -11,7 +11,7 @@ describe("UpdateWorkResultDto", () => {
       memo: WorkMemo.of("作品メモ"),
       iconId: IconId.of(4),
       deleteFlg: false,
-      updatedAt: "2026-01-02T00:00:00.000Z",
+      updatedAt: Timestamp.of("2026-01-02T00:00:00.000Z"),
     });
 
     const dto = new UpdateWorkResultDto(work);

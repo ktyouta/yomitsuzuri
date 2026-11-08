@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GetBookResultDto } from "..";
-import type { BookItem, WorkItem } from "../../../../domain/book";
+import type { BookItem, WorkItem } from "../../../../domain";
 
 describe("GetBookResultDto", () => {
   it("書籍情報・作品一覧（削除済みの作品を含む）からDTOを生成できること", () => {

@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { UpdateBookUsecase } from "./update-book.usecase";
-import { BookAggregate, BookId, BookMemo, BookTitle, BookTitleUniquenessDomainService, CurrentPage, IconId, IconValidityDomainService, PublishedDate, ReadingStatusId, ReadingStatusValidityDomainService, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IBookTitleUniquenessRepository, type IIconValidityRepository, type IReadingStatusValidityRepository, type IUpdateBookRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { BookAggregate, BookId, BookMemo, BookTitle, BookTitleUniquenessDomainService, CurrentPage, IconId, IconValidityDomainService, PublishedDate, ReadingStatusId, ReadingStatusValidityDomainService, Timestamp, UserId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IBookTitleUniquenessRepository, type IIconValidityRepository, type IReadingStatusValidityRepository, type IUpdateBookRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const BOOK_ID = BookId.of("01ARZ3NDEKTSV4RRFFQ69G5FAW");
@@ -45,11 +44,11 @@ function createBook(): BookAggregate {
     iconId: IconId.of(1),
     deleteFlg: false,
     works: [
-      WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false, updatedAt: WORK_UPDATED_AT }),
-      WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false, updatedAt: WORK_UPDATED_AT }),
-      WorkEntity.reconstruct({ id: WorkId.of(DELETED_WORK_ID), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(null), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: true, updatedAt: WORK_UPDATED_AT }),
+      WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false, updatedAt: Timestamp.of(WORK_UPDATED_AT) }),
+      WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false, updatedAt: Timestamp.of(WORK_UPDATED_AT) }),
+      WorkEntity.reconstruct({ id: WorkId.of(DELETED_WORK_ID), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(null), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: true, updatedAt: Timestamp.of(WORK_UPDATED_AT) }),
     ],
-    updatedAt: BOOK_UPDATED_AT,
+    updatedAt: Timestamp.of(BOOK_UPDATED_AT),
   });
 }
 
@@ -105,7 +104,7 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).toHaveBeenCalledTimes(1);
     const [savedBook, expectedUpdatedAt] = updateBookRepository.updateBook.mock.calls[0] ?? [];
     // 保存時の排他の条件には、画面の表示時点の更新日時を使う
-    expect(expectedUpdatedAt).toBe(BOOK_UPDATED_AT);
+    expect(expectedUpdatedAt?.value).toBe(BOOK_UPDATED_AT);
     expect(savedBook?.toSnapshot()).toEqual({
       id: BOOK_ID.value,
       userId: USER_ID.value,
@@ -337,6 +336,19 @@ describe("UpdateBookUsecase", () => {
       type: "INVALID_INPUT",
       errors: [{ field: "works.0.sort", error: { type: "WORK_SORT_INVALID", min: 1 } }],
     });
+    expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
+  });
+
+  it("画面の表示時点の更新日時の形式が不正な場合、INVALID_INPUT を返し、DB を問い合わせず保存しないこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase();
+
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: { ...BODY, updatedAt: "2026-01-01" } });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [{ field: "updatedAt", error: { type: "TIMESTAMP_INVALID" } }],
+    });
+    expect(updateBookRepository.findBook).not.toHaveBeenCalled();
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 });

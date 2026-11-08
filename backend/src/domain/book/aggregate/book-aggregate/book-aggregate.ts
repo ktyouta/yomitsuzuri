@@ -1,5 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import type { UserId } from "../../../shared";
+import type { Timestamp, UserId } from "../../../shared";
 import { WorkEntity, type WorkSnapshotType } from "../../entity/work-entity/work-entity";
 import { BookId, ReadingStatusId, WorkMemo, WorkSort, WorkTitle, type BookMemo, type BookTitle, type CurrentPage, type IconId, type PublishedDate, type WorkId } from "../../value-object";
 
@@ -11,7 +11,7 @@ type CreateBookParamType = {
     memo: BookMemo;
     iconId: IconId;
     /** 作成日時（書籍と、自動で作成する作品の更新日時にする） */
-    updatedAt: string;
+    updatedAt: Timestamp;
 };
 
 type BookAggregateReconstructParamType = {
@@ -25,7 +25,7 @@ type BookAggregateReconstructParamType = {
     iconId: IconId;
     deleteFlg: boolean;
     works: WorkEntity[];
-    updatedAt: string;
+    updatedAt: Timestamp;
 };
 
 type UpdateWorkSortParamType = {
@@ -42,9 +42,9 @@ type UpdateBookParamType = {
     iconId: IconId;
     works: UpdateWorkSortParamType[];
     /** 画面の表示時点の書籍の更新日時（排他チェックに使う） */
-    expectedUpdatedAt: string;
+    expectedUpdatedAt: Timestamp;
     /** 更新後の書籍の更新日時 */
-    updatedAt: string;
+    updatedAt: Timestamp;
 };
 
 type UpdateSingleWorkParamType = {
@@ -53,9 +53,9 @@ type UpdateSingleWorkParamType = {
     memo: WorkMemo;
     iconId: IconId;
     /** 画面の表示時点の作品の更新日時（排他チェックに使う） */
-    expectedUpdatedAt: string;
+    expectedUpdatedAt: Timestamp;
     /** 更新後の作品の更新日時 */
-    updatedAt: string;
+    updatedAt: Timestamp;
 };
 
 /**
@@ -112,7 +112,7 @@ export class BookAggregate {
         private _iconId: IconId,
         private _deleteFlg: boolean,
         private _works: WorkEntity[],
-        private _updatedAt: string,
+        private _updatedAt: Timestamp,
     ) { }
 
     get id() {
@@ -185,7 +185,7 @@ export class BookAggregate {
         }
 
         // 書籍の排他チェック
-        if (this._updatedAt !== params.expectedUpdatedAt) {
+        if (!this._updatedAt.equals(params.expectedUpdatedAt)) {
             return err({ type: "CONFLICT_BOOK" });
         }
 
@@ -359,7 +359,7 @@ export class BookAggregate {
             iconId: this._iconId.value,
             deleteFlg: this._deleteFlg,
             works: this._works.map((work) => work.toSnapshot()),
-            updatedAt: this._updatedAt,
+            updatedAt: this._updatedAt.value,
         };
     }
 

@@ -1,4 +1,4 @@
-import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterIdError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CharacterRelationNameError, CurrentPageError, EventContentError, EventIdError, EventOccurredTimingError, EventSortOrderError, EventTimelineUpdateError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, WordMemoError, WordPageError, WordTextError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
+import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterIdError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CharacterRelationNameError, CurrentPageError, EventContentError, EventIdError, EventOccurredTimingError, EventSortOrderError, EventTimelineUpdateError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, TimestampError, WordMemoError, WordPageError, WordTextError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
 
 /**
  * 書籍コンテキストの入力値の違反（値オブジェクトの制約違反、集約の作品の指定の誤り・不変条件の違反）
@@ -7,6 +7,7 @@ type BookInputError =
   | BookTitleError
   | PublishedDateError
   | ReadingStatusIdError
+  | TimestampError
   | CurrentPageError
   | BookMemoError
   | IconIdError
@@ -49,6 +50,8 @@ export function toInputErrorMessage(error: BookInputError): string {
       return "出版日は実在する日付を入力してください";
     case "READING_STATUS_ID_INVALID":
       return "読書状況が不正です";
+    case "TIMESTAMP_INVALID":
+      return "更新日時の形式が不正です。最新の情報を読み込み直してください。";
     case "CURRENT_PAGE_INVALID":
       return `現在のページ数は${error.min}以上の整数で入力してください`;
     case "BOOK_MEMO_TOO_LONG":

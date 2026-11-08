@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { LoginUsecase } from "..";
-import { LoginCredentialId, LoginId, Pepper, UserAggregate, UserBirthday, UserPassword, UserSalt } from "../../../../domain/user";
-import type { IUserLoginRepository } from "../../../../domain/user";
-import { UserId, UserName } from "../../../../domain";
+import { LoginCredentialId, LoginId, Pepper, UserAggregate, UserBirthday, UserId, UserName, UserPassword, UserSalt, type IUserLoginRepository } from "../../../../domain";
 import type { EnvConfig } from "../../../../config";
 
 const testConfig: EnvConfig = {

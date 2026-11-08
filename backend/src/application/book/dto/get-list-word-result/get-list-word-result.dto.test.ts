@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetListWordResultDto } from "..";
-import type { WordListItem } from "../../../../domain/book";
+import type { WordListItem } from "../../../../domain";
 
 describe("GetListWordResultDto", () => {
   it("気になるワード一覧からDTOを生成できること", () => {

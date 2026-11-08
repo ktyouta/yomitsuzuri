@@ -1,8 +1,6 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { RefreshUsecase } from "..";
-import { Cookie, RefreshToken } from "../../../../domain/user";
-import { UserId } from "../../../../domain/shared";
-import type { IGetUserProfileRepository, UserProfile } from "../../../../domain/user";
+import { Cookie, RefreshToken, UserId, type IGetUserProfileRepository, type UserProfile } from "../../../../domain";
 import type { EnvConfig } from "../../../../config";
 
 const testConfig: EnvConfig = {

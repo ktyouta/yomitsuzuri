@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GetWorkResultDto } from "..";
-import type { WorkType } from "../../../../domain/book";
+import type { WorkType } from "../../../../domain";
 
 describe("GetWorkResultDto", () => {
   it("作品情報からDTOを生成できること", () => {

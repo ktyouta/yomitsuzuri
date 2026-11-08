@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { BookAggregate } from "..";
 import { WorkEntity } from "../../entity";
 import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../value-object";
-import { UserId } from "../../../shared";
+import { Timestamp, UserId } from "../../../shared";
 
 const USER_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
 const BOOK_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAW";
@@ -29,7 +29,7 @@ function work(id: string, title: string, sort: number | null, deleteFlg = false)
     memo: WorkMemo.of(null),
     iconId: IconId.of(1),
     deleteFlg,
-    updatedAt: WORK_UPDATED_AT,
+    updatedAt: Timestamp.of(WORK_UPDATED_AT),
   });
 }
 
@@ -54,7 +54,7 @@ function createBook(deleteFlg = false): BookAggregate {
       work(WORK_ID_1, "作品1", 1),
       work(WORK_ID_2, "作品2", 2),
     ],
-    updatedAt: BOOK_UPDATED_AT,
+    updatedAt: Timestamp.of(BOOK_UPDATED_AT),
   });
 }
 
@@ -75,7 +75,7 @@ function createBookWithDeletedWork(): BookAggregate {
       work(WORK_ID_2, "作品2", 2),
       work(WORK_ID_3, "作品3", null, true),
     ],
-    updatedAt: BOOK_UPDATED_AT,
+    updatedAt: Timestamp.of(BOOK_UPDATED_AT),
   });
 }
 
@@ -88,7 +88,7 @@ describe("BookAggregate", () => {
       currentPage: CurrentPage.of(120),
       memo: BookMemo.of("メモ"),
       iconId: IconId.of(2),
-      updatedAt: NEW_UPDATED_AT,
+      updatedAt: Timestamp.of(NEW_UPDATED_AT),
     });
 
     const snapshot = book.toSnapshot();
@@ -126,7 +126,7 @@ describe("BookAggregate", () => {
       currentPage: CurrentPage.of(null),
       memo: BookMemo.of(null),
       iconId: IconId.of(1),
-      updatedAt: NEW_UPDATED_AT,
+      updatedAt: Timestamp.of(NEW_UPDATED_AT),
     });
 
     const snapshot = book.toSnapshot();
@@ -144,7 +144,7 @@ describe("BookAggregate", () => {
       currentPage: CurrentPage.of(null),
       memo: BookMemo.of(null),
       iconId: IconId.of(1),
-      updatedAt: NEW_UPDATED_AT,
+      updatedAt: Timestamp.of(NEW_UPDATED_AT),
     });
 
     const snapshot = book.toSnapshot();
@@ -164,10 +164,10 @@ describe("BookAggregate", () => {
       iconId: IconId.of(2),
       deleteFlg: true,
       works: [
-        WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of("作品メモ"), iconId: IconId.of(4), deleteFlg: false, updatedAt: WORK_UPDATED_AT }),
-        WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(5), deleteFlg: true, updatedAt: WORK_UPDATED_AT }),
+        WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of("作品メモ"), iconId: IconId.of(4), deleteFlg: false, updatedAt: Timestamp.of(WORK_UPDATED_AT) }),
+        WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(5), deleteFlg: true, updatedAt: Timestamp.of(WORK_UPDATED_AT) }),
       ],
-      updatedAt: BOOK_UPDATED_AT,
+      updatedAt: Timestamp.of(BOOK_UPDATED_AT),
     });
 
     const snapshot = book.toSnapshot();
@@ -239,8 +239,8 @@ describe("BookAggregate", () => {
         memo: BookMemo.of("メモ"),
         iconId: IconId.of(3),
         works,
-        expectedUpdatedAt,
-        updatedAt: NEW_UPDATED_AT,
+        expectedUpdatedAt: Timestamp.of(expectedUpdatedAt),
+        updatedAt: Timestamp.of(NEW_UPDATED_AT),
       };
     }
 
@@ -419,8 +419,8 @@ describe("BookAggregate", () => {
         title: WorkTitle.of(title),
         memo: WorkMemo.of("作品メモ"),
         iconId: IconId.of(4),
-        expectedUpdatedAt,
-        updatedAt: NEW_UPDATED_AT,
+        expectedUpdatedAt: Timestamp.of(expectedUpdatedAt),
+        updatedAt: Timestamp.of(NEW_UPDATED_AT),
       };
     }
 

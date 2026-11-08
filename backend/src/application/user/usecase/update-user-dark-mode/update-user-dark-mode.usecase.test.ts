@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { UpdateUserDarkModeUsecase } from "..";
-import { UserId } from "../../../../domain/shared";
-import { LoginCredentialId, LoginId, UserAggregate, UserBirthday, UserName, UserPassword, UserSalt, type IUpdateUserDarkModeRepository } from "../../../../domain/user";
+import { LoginCredentialId, LoginId, UserAggregate, UserBirthday, UserId, UserName, UserPassword, UserSalt, type IUpdateUserDarkModeRepository } from "../../../../domain";
 
 const USER_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
 

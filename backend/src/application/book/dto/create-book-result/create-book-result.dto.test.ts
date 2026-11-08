@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CreateBookResultDto } from "..";
-import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, Timestamp, UserId } from "../../../../domain";
 
 describe("CreateBookResultDto", () => {
   it("書籍集約から、ユーザーID・削除フラグを除いた書籍の項目（更新日時を含む）と作品一覧を写像すること", () => {
@@ -12,7 +11,7 @@ describe("CreateBookResultDto", () => {
       currentPage: CurrentPage.of(120),
       memo: BookMemo.of("メモ"),
       iconId: IconId.of(2),
-      updatedAt: "2026-01-02T00:00:00.000Z",
+      updatedAt: Timestamp.of("2026-01-02T00:00:00.000Z"),
     });
     const snapshot = book.toSnapshot();
 

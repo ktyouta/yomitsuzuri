@@ -1,4 +1,4 @@
-import type { AccessToken, UserProfile } from "../../../../domain/user";
+import type { AccessToken, UserProfile } from "../../../../domain";
 
 export type VerifyResultType = {
   accessToken: string;

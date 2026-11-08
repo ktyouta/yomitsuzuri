@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { CreateUserUsecase } from "..";
-import { UserNameUniquenessDomainService, type ICreateUserRepository, type IUserNameUniquenessRepository } from "../../../../domain/user";
+import { UserNameUniquenessDomainService, type ICreateUserRepository, type IUserNameUniquenessRepository } from "../../../../domain";
 import type { EnvConfig } from "../../../../config";
 
 const testConfig: EnvConfig = {

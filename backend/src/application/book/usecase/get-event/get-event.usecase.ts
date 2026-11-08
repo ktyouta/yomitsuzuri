@@ -1,7 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import type { IGetEventRepository } from "../../../../domain/book";
-import { EventId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { EventId, type IGetEventRepository, type UserId } from "../../../../domain";
 import { GetEventResultDto } from "../../dto";
 
 export type GetEventError = { type: "NOT_FOUND" };

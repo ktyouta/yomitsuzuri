@@ -1,7 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import type { BookListPaginationError, IGetListBookRepository } from "../../../../domain/book";
-import { BookListPagination } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { BookListPagination, type BookListPaginationError, type IGetListBookRepository, type UserId } from "../../../../domain";
 import { GetListBookResultDto } from "../../dto";
 
 /**

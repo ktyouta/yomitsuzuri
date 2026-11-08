@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { WorkEntity } from "..";
 import { IconId, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../value-object";
+import { Timestamp } from "../../../shared";
 
 const WORK_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAW";
 const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
@@ -15,7 +16,7 @@ describe("WorkEntity", () => {
         sort: WorkSort.of(1),
         memo: WorkMemo.of("メモ"),
         iconId: IconId.of(4),
-        updatedAt: UPDATED_AT,
+        updatedAt: Timestamp.of(UPDATED_AT),
       });
 
       expect(work.toSnapshot()).toEqual({
@@ -39,7 +40,7 @@ describe("WorkEntity", () => {
         memo: WorkMemo.of(null),
         iconId: IconId.of(5),
         deleteFlg: true,
-        updatedAt: UPDATED_AT,
+        updatedAt: Timestamp.of(UPDATED_AT),
       });
 
       expect(work.toSnapshot()).toEqual({
@@ -63,7 +64,7 @@ describe("WorkEntity", () => {
         memo: WorkMemo.of("メモ"),
         iconId: IconId.of(5),
         deleteFlg: false,
-        updatedAt: UPDATED_AT,
+        updatedAt: Timestamp.of(UPDATED_AT),
       });
     }
 
@@ -74,8 +75,8 @@ describe("WorkEntity", () => {
         title: WorkTitle.of("聖女の救済"),
         memo: WorkMemo.of(null),
         iconId: IconId.of(6),
-        expectedUpdatedAt: UPDATED_AT,
-        updatedAt: NEW_UPDATED_AT,
+        expectedUpdatedAt: Timestamp.of(UPDATED_AT),
+        updatedAt: Timestamp.of(NEW_UPDATED_AT),
       });
 
       expect(result._unsafeUnwrap().toSnapshot()).toEqual({
@@ -97,8 +98,8 @@ describe("WorkEntity", () => {
         title: WorkTitle.of("聖女の救済"),
         memo: WorkMemo.of(null),
         iconId: IconId.of(6),
-        expectedUpdatedAt: "2025-12-31T00:00:00.000Z",
-        updatedAt: NEW_UPDATED_AT,
+        expectedUpdatedAt: Timestamp.of("2025-12-31T00:00:00.000Z"),
+        updatedAt: Timestamp.of(NEW_UPDATED_AT),
       });
 
       expect(result._unsafeUnwrapErr()).toEqual({ type: "CONFLICT_WORK" });

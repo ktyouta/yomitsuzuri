@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CreateCharacterRelationResultDto } from "..";
-import { CharacterId, CharacterRelationEntity, CharacterRelationId, CharacterRelationName, WorkId } from "../../../../domain/book";
+import { CharacterId, CharacterRelationEntity, CharacterRelationId, CharacterRelationName, WorkId } from "../../../../domain";
 
 describe("CreateCharacterRelationResultDto", () => {
   it("登場人物関係からDTOを生成できること（削除フラグは含めない）", () => {

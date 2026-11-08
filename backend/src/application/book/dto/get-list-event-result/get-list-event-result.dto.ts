@@ -1,4 +1,4 @@
-import type { EventListItem } from "../../../../domain/book";
+import type { EventListItem } from "../../../../domain";
 
 export type GetListEventResultType = {
   list: {

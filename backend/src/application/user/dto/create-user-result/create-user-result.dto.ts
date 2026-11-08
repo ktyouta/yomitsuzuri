@@ -1,4 +1,4 @@
-import type { AccessToken, RefreshToken, UserAggregate } from "../../../../domain/user";
+import type { AccessToken, RefreshToken, UserAggregate } from "../../../../domain";
 
 export type CreateUserResultType = {
   accessToken: string;

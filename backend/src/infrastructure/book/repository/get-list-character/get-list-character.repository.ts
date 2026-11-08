@@ -1,6 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
-import type { CharacterListItem, IGetListCharacterRepository, WorkId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import type { CharacterListItem, IGetListCharacterRepository, UserId, WorkId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, characterTransaction, workTransaction } from "../../../db";
 

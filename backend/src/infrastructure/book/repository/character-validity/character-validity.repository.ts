@@ -1,6 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { CharacterRelationEntity, ICharacterValidityRepository } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import type { CharacterRelationEntity, ICharacterValidityRepository, UserId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, characterTransaction, workTransaction } from "../../../db";
 

@@ -1,4 +1,4 @@
-import type { RefreshToken, UserAggregate } from "../../../../domain/user";
+import type { RefreshToken, UserAggregate } from "../../../../domain";
 
 export type UpdateUserResultType = {
   refreshToken: string;

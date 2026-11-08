@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { GetListCharacterRelationUsecase } from "..";
-import type { CharacterRelationListItem, IGetListCharacterRelationRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { UserId, type CharacterRelationListItem, type IGetListCharacterRelationRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";

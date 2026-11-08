@@ -1,7 +1,6 @@
 import { and, asc, eq, or } from "drizzle-orm";
 import { alias } from "drizzle-orm/sqlite-core";
-import type { CharacterDetail, CharacterDetailRelationItem, CharacterId, IGetCharacterRepository } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import type { CharacterDetail, CharacterDetailRelationItem, CharacterId, IGetCharacterRepository, UserId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, characterRelationTransaction, characterTransaction, genderMaster, workTransaction } from "../../../db";
 

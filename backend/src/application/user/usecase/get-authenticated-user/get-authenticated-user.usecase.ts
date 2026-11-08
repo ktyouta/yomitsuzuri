@@ -1,5 +1,4 @@
-import type { IGetUserProfileRepository } from "../../../../domain/user";
-import type { UserId } from "../../../../domain/shared";
+import type { IGetUserProfileRepository, UserId } from "../../../../domain";
 import { GetAuthenticatedUserResultDto } from "../../dto";
 
 type PropsType = {

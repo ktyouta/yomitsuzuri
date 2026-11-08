@@ -1,4 +1,4 @@
-import type { WordListItem } from "../../../../domain/book";
+import type { WordListItem } from "../../../../domain";
 
 export type GetListWordResultType = {
   list: {

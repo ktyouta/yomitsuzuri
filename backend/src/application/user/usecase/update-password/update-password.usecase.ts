@@ -1,8 +1,6 @@
 import { err, ok, Result } from "neverthrow";
 import type { EnvConfig } from "../../../../config";
-import { NewPassword, Pepper, RawPassword, type NewPasswordError, type RawPasswordError } from "../../../../domain/user";
-import type { IUpdatePasswordRepository } from "../../../../domain/user";
-import type { UserId } from "../../../../domain/shared";
+import { NewPassword, Pepper, RawPassword, type IUpdatePasswordRepository, type NewPasswordError, type RawPasswordError, type UserId } from "../../../../domain";
 
 /**
  * パスワード更新の入力値の制約違反（field は入力値の項目名）

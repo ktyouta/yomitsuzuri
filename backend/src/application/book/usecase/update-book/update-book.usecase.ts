@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkSort, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type BookTitleUniquenessError, type BookUpdateError, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type UserId, type WorkSortError } from "../../../../domain";
+import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, WorkId, WorkSort, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type BookTitleUniquenessError, type BookUpdateError, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type TimestampError, type UserId, type WorkSortError } from "../../../../domain";
 import { UpdateBookResultDto } from "../../dto";
 
 /**
@@ -12,6 +12,7 @@ export type UpdateBookInputError =
     | { field: "currentPage"; error: CurrentPageError }
     | { field: "memo"; error: BookMemoError }
     | { field: "iconId"; error: IconIdError }
+    | { field: "updatedAt"; error: TimestampError }
     | { field: `works.${number}.sort`; error: WorkSortError };
 
 export type UpdateBookError =
@@ -90,13 +91,14 @@ export class UpdateBookUsecase {
                 CurrentPage.create(body.currentPage).mapErr((error): UpdateBookInputError => ({ field: "currentPage", error })),
                 BookMemo.create(body.memo).mapErr((error): UpdateBookInputError => ({ field: "memo", error })),
                 IconId.create(body.iconId).mapErr((error): UpdateBookInputError => ({ field: "iconId", error })),
+                Timestamp.fromInput(body.updatedAt).mapErr((error): UpdateBookInputError => ({ field: "updatedAt", error })),
             ]),
             Result.combineWithAllErrors(body.works.map(createWorkParam)),
         ]);
         if (input.isErr()) {
             return err({ type: "INVALID_INPUT", errors: input.error.flat() });
         }
-        const [[title, publishedDate, readingStatusId, currentPage, memo, iconId], works] = input.value;
+        const [[title, publishedDate, readingStatusId, currentPage, memo, iconId, expectedUpdatedAt], works] = input.value;
 
         // 更新対象の書籍を取得
         const book = await this.updateBookRepository.findBook(userId, id);
@@ -130,15 +132,15 @@ export class UpdateBookUsecase {
             memo,
             iconId,
             works,
-            expectedUpdatedAt: body.updatedAt,
-            updatedAt: new Date().toISOString(),
+            expectedUpdatedAt,
+            updatedAt: Timestamp.create(),
         });
         if (updateResult.isErr()) {
             return err(updateResult.error);
         }
 
         // 更新（取得後に他の操作で更新されていた場合は保存されない）
-        const saved = await this.updateBookRepository.updateBook(book, body.updatedAt);
+        const saved = await this.updateBookRepository.updateBook(book, expectedUpdatedAt);
         if (!saved) {
             return err({ type: "CONFLICT_BOOK" });
         }

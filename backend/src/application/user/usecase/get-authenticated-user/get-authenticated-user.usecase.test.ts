@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { GetAuthenticatedUserUsecase } from "..";
-import { UserId } from "../../../../domain/shared";
-import type { IGetUserProfileRepository, UserProfile } from "../../../../domain/user";
+import { UserId, type IGetUserProfileRepository, type UserProfile } from "../../../../domain";
 
 const PROFILE: UserProfile = {
   id: "01ARZ3NDEKTSV4RRFFQ69G5FAV",

@@ -1,7 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { ICreateWordRepository, WordMemoError, WordPageError, WordTextError, WordTextUniquenessDomainService, WordTextUniquenessError } from "../../../../domain/book";
-import { WordEntity, WordMemo, WordPage, WordText, WorkId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { WordEntity, WordMemo, WordPage, WordText, WorkId, type ICreateWordRepository, type UserId, type WordMemoError, type WordPageError, type WordTextError, type WordTextUniquenessDomainService, type WordTextUniquenessError } from "../../../../domain";
 import { CreateWordResultDto } from "../../dto";
 
 /**

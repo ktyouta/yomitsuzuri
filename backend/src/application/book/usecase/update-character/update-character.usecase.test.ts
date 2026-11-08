@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { UpdateCharacterUsecase } from "..";
-import { CharacterAge, CharacterCharacteristic, CharacterEntity, CharacterId, CharacterMemo, CharacterName, CharacterNameUniquenessDomainService, CharacterOccupation, GenderId, GenderValidityDomainService, WorkId, type ICharacterNameUniquenessRepository, type IGenderValidityRepository, type IUpdateCharacterRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { CharacterAge, CharacterCharacteristic, CharacterEntity, CharacterId, CharacterMemo, CharacterName, CharacterNameUniquenessDomainService, CharacterOccupation, GenderId, GenderValidityDomainService, UserId, WorkId, type ICharacterNameUniquenessRepository, type IGenderValidityRepository, type IUpdateCharacterRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";

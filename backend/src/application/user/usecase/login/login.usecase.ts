@@ -1,7 +1,6 @@
 import { err, ok, Result } from "neverthrow";
 import type { EnvConfig } from "../../../../config";
-import { AccessToken, LoginId, Pepper, RawPassword, RefreshToken, type LoginIdError, type RawPasswordError } from "../../../../domain/user";
-import type { IUserLoginRepository } from "../../../../domain/user";
+import { AccessToken, LoginId, Pepper, RawPassword, RefreshToken, type IUserLoginRepository, type LoginIdError, type RawPasswordError } from "../../../../domain";
 import { LoginResultDto } from "../../dto";
 
 /**

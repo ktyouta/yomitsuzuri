@@ -1,4 +1,4 @@
-import type { CharacterListItem } from "../../../../domain/book";
+import type { CharacterListItem } from "../../../../domain";
 
 export type GetListCharacterResultType = {
   list: {

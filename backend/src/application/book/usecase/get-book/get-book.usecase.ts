@@ -1,7 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import type { IGetBookRepository } from "../../../../domain/book";
-import { BookId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { BookId, type IGetBookRepository, type UserId } from "../../../../domain";
 import { GetBookResultDto } from "../../dto";
 
 export type GetBookError = { type: "NOT_FOUND" };

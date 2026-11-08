@@ -1,4 +1,4 @@
-import type { UserId } from "../../../shared";
+import type { Timestamp, UserId } from "../../../shared";
 import type { BookAggregate } from "../../aggregate";
 import type { WorkEntity } from "../../entity";
 import type { WorkId } from "../../value-object";
@@ -23,5 +23,5 @@ export interface IUpdateWorkRepository {
    * @param expectedUpdatedAt 取得時点の作品の更新日時
    * @returns 保存した場合は true、他の操作で更新されていたため保存しなかった場合は false
    */
-  updateWork(work: WorkEntity, expectedUpdatedAt: string): Promise<boolean>;
+  updateWork(work: WorkEntity, expectedUpdatedAt: Timestamp): Promise<boolean>;
 }

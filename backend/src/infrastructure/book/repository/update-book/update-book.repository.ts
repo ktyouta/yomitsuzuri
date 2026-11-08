@@ -1,6 +1,5 @@
 import { and, eq, exists } from "drizzle-orm";
-import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IUpdateBookRepository } from "../../../../domain";
-import { UserId } from "../../../../domain/shared";
+import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, UserId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IUpdateBookRepository } from "../../../../domain";
 import { bookTransaction, workTransaction, type Database } from "../../../db";
 
 /**
@@ -71,10 +70,10 @@ export class UpdateBookRepository implements IUpdateBookRepository {
           memo: WorkMemo.of(e.memo),
           iconId: IconId.of(e.iconId),
           deleteFlg: e.deleteFlg,
-          updatedAt: e.updatedAt,
+          updatedAt: Timestamp.of(e.updatedAt),
         })
       ),
-      updatedAt: book.updatedAt,
+      updatedAt: Timestamp.of(book.updatedAt),
     });
   }
 
@@ -86,7 +85,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
    * @param expectedUpdatedAt 取得時点の書籍の更新日時
    * @returns 保存した場合は true、他の操作で更新されていたため保存しなかった場合は false
    */
-  async updateBook(bookAggregate: BookAggregate, expectedUpdatedAt: string): Promise<boolean> {
+  async updateBook(bookAggregate: BookAggregate, expectedUpdatedAt: Timestamp): Promise<boolean> {
     const bookSnapshot = bookAggregate.toSnapshot();
 
     // batch は文の影響行数が 0 件でも後続の文を取り消さないため、作品の更新は「書籍がこの更新で更新日時を書き換えた」ことを条件にする
@@ -114,7 +113,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
           eq(bookTransaction.deleteFlg, false),
           eq(bookTransaction.userId, bookSnapshot.userId),
           eq(bookTransaction.id, bookSnapshot.id),
-          eq(bookTransaction.updatedAt, expectedUpdatedAt),
+          eq(bookTransaction.updatedAt, expectedUpdatedAt.value),
         ))
         .returning({ id: bookTransaction.id }),
       // 既に削除済みの作品は集約が変更しないため、更新の対象から外す

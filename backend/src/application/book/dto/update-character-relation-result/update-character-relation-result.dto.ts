@@ -1,4 +1,4 @@
-import type { CharacterRelationEntity } from "../../../../domain/book";
+import type { CharacterRelationEntity } from "../../../../domain";
 
 type UpdateCharacterRelationResultType = {
   id: string;

@@ -1,6 +1,5 @@
 import type { EnvConfig } from "../../../../config";
-import { AccessToken, RefreshToken } from "../../../../domain/user";
-import type { IGetUserProfileRepository } from "../../../../domain/user";
+import { AccessToken, RefreshToken, type IGetUserProfileRepository } from "../../../../domain";
 import { VerifyResultDto } from "../../dto";
 
 export type VerifyResult =

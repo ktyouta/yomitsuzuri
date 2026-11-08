@@ -1,4 +1,4 @@
-import type { UserProfile } from "../../../../domain/user";
+import type { UserProfile } from "../../../../domain";
 
 export type GetAuthenticatedUserResultType = {
   id: string;

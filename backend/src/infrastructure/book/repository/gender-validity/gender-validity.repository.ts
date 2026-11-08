@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { GenderId, IGenderValidityRepository } from "../../../../domain/book";
+import type { GenderId, IGenderValidityRepository } from "../../../../domain";
 import type { Database } from "../../../db";
 import { genderMaster } from "../../../db";
 

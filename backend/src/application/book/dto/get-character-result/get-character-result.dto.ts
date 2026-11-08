@@ -1,4 +1,4 @@
-import type { CharacterDetail, CharacterDetailRelationItem } from "../../../../domain/book";
+import type { CharacterDetail, CharacterDetailRelationItem } from "../../../../domain";
 
 export type GetCharacterResultType = {
   id: string;

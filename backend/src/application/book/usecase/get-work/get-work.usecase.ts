@@ -1,7 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import type { IGetWorkRepository } from "../../../../domain/book";
-import { WorkId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { WorkId, type IGetWorkRepository, type UserId } from "../../../../domain";
 import { GetWorkResultDto } from "../../dto";
 
 export type GetWorkError = { type: "NOT_FOUND" };

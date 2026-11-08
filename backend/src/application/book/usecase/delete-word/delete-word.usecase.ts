@@ -1,7 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { IDeleteWordRepository } from "../../../../domain/book";
-import { WordId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { WordId, type IDeleteWordRepository, type UserId } from "../../../../domain";
 
 export type DeleteWordError =
   | { type: "NOT_FOUND" };

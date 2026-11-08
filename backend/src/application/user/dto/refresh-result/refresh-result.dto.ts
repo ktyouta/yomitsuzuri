@@ -1,4 +1,4 @@
-import type { AccessToken, RefreshToken } from "../../../../domain/user";
+import type { AccessToken, RefreshToken } from "../../../../domain";
 
 export type RefreshResultType = {
   accessToken: string;

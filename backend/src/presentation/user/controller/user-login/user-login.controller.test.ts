@@ -3,7 +3,7 @@ import { env, SELF } from "cloudflare:test";
 import { ulid } from "ulid";
 import { describe, expect, it } from "vitest";
 import { createEnvConfig } from "../../../../config";
-import { Pepper, UserPassword, UserSalt } from "../../../../domain/user";
+import { Pepper, UserPassword, UserSalt } from "../../../../domain";
 import { userLoginMaster, userMaster } from "../../../../infrastructure/db";
 import * as schema from "../../../../infrastructure/db/schema";
 

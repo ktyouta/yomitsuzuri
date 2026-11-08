@@ -1,12 +1,13 @@
 import { err, ok, type Result } from "neverthrow";
 import { WorkId, type IconId, type WorkMemo, type WorkSort, type WorkTitle } from "../../value-object";
+import type { Timestamp } from "../../../shared";
 
 type CreateWorkParamType = {
     title: WorkTitle;
     sort: WorkSort;
     memo: WorkMemo;
     iconId: IconId;
-    updatedAt: string;
+    updatedAt: Timestamp;
 };
 
 type UpdateWorkParamType = {
@@ -14,9 +15,9 @@ type UpdateWorkParamType = {
     memo: WorkMemo;
     iconId: IconId;
     /** 画面の表示時点の更新日時（排他チェックに使う） */
-    expectedUpdatedAt: string;
+    expectedUpdatedAt: Timestamp;
     /** 更新後の更新日時 */
-    updatedAt: string;
+    updatedAt: Timestamp;
 };
 
 type WorkReconstructParamType = {
@@ -26,7 +27,7 @@ type WorkReconstructParamType = {
     memo: WorkMemo;
     iconId: IconId;
     deleteFlg: boolean;
-    updatedAt: string;
+    updatedAt: Timestamp;
 };
 
 export type WorkSnapshotType = {
@@ -52,7 +53,7 @@ export class WorkEntity {
         private readonly _memo: WorkMemo,
         private readonly _iconId: IconId,
         private readonly _deleteFlg: boolean,
-        private readonly _updatedAt: string,
+        private readonly _updatedAt: Timestamp,
     ) { }
 
     get id() {
@@ -130,7 +131,7 @@ export class WorkEntity {
      * @returns 成功時は更新後の作品、排他の失敗時はその内容を持つ Result
      */
     update(params: UpdateWorkParamType): Result<WorkEntity, WorkUpdateError> {
-        if (this._updatedAt !== params.expectedUpdatedAt) {
+        if (!this._updatedAt.equals(params.expectedUpdatedAt)) {
             return err({ type: "CONFLICT_WORK" });
         }
 
@@ -157,7 +158,7 @@ export class WorkEntity {
             memo: this._memo.value,
             iconId: this._iconId.value,
             deleteFlg: this._deleteFlg,
-            updatedAt: this._updatedAt,
+            updatedAt: this._updatedAt.value,
         };
     }
 }

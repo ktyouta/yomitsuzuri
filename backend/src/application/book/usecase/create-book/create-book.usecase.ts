@@ -1,7 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { BookMemoError, BookTitleError, BookTitleUniquenessDomainService, BookTitleUniquenessError, CurrentPageError, IconIdError, IconValidityDomainService, ICreateBookRepository, PublishedDateError } from "../../../../domain/book";
-import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, Timestamp, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type BookTitleUniquenessError, type CurrentPageError, type IconIdError, type IconValidityDomainService, type ICreateBookRepository, type PublishedDateError, type UserId } from "../../../../domain";
 import { CreateBookResultDto } from "../../dto";
 
 /**
@@ -70,7 +68,7 @@ export class CreateBookUsecase {
     }
 
     // 書籍集約（書籍タイトルと同名の作品を1件含む）
-    const book = BookAggregate.create({ userId, title, publishedDate, currentPage, memo, iconId, updatedAt: new Date().toISOString() });
+    const book = BookAggregate.create({ userId, title, publishedDate, currentPage, memo, iconId, updatedAt: Timestamp.create() });
 
     // タイトル重複
     const uniqueness = await this.uniquenessService.validate(userId, book.id, title);

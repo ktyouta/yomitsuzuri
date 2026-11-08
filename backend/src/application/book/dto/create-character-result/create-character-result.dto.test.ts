@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { CreateCharacterResultDto } from "..";
-import { CharacterAge, CharacterCharacteristic, CharacterEntity, CharacterId, CharacterMemo, CharacterName, CharacterOccupation, GenderId, WorkId } from "../../../../domain/book";
+import { CharacterAge, CharacterCharacteristic, CharacterEntity, CharacterId, CharacterMemo, CharacterName, CharacterOccupation, GenderId, WorkId } from "../../../../domain";
 
 describe("CreateCharacterResultDto", () => {
   it("登場人物からDTOを生成できること", () => {

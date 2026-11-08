@@ -1,6 +1,5 @@
 import { and, eq, ne } from "drizzle-orm";
-import type { BookId, BookTitle, IBookTitleUniquenessRepository } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import type { BookId, BookTitle, IBookTitleUniquenessRepository, UserId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction } from "../../../db";
 

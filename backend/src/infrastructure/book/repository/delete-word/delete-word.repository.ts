@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { WordEntity, WordId, WordMemo, WordPage, WordText, WorkId, type IDeleteWordRepository } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { WordEntity, WordId, WordMemo, WordPage, WordText, WorkId, type IDeleteWordRepository, type UserId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, wordTransaction, workTransaction } from "../../../db";
 

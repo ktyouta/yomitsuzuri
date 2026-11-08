@@ -1,7 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { IDeleteCharacterRelationRepository } from "../../../../domain/book";
-import { CharacterRelationId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { CharacterRelationId, type IDeleteCharacterRelationRepository, type UserId } from "../../../../domain";
 
 export type DeleteCharacterRelationError =
   | { type: "NOT_FOUND" };

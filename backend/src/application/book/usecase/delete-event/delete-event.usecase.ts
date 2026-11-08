@@ -1,7 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import type { IDeleteEventRepository } from "../../../../domain/book";
-import { EventId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { EventId, type IDeleteEventRepository, type UserId } from "../../../../domain";
 
 export type DeleteEventError =
   | { type: "NOT_FOUND" };

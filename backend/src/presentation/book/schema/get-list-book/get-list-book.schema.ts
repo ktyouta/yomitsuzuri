@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BookListPagination } from "../../../../domain/book";
+import { BookListPagination } from "../../../../domain";
 
 /**
  * 書籍一覧取得クエリスキーマ

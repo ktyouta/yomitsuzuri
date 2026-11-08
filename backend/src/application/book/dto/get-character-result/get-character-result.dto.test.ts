@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetCharacterResultDto } from "..";
-import type { CharacterDetail, CharacterDetailRelationItem } from "../../../../domain/book";
+import type { CharacterDetail, CharacterDetailRelationItem } from "../../../../domain";
 
 const CHARACTER: CharacterDetail = {
   id: "01BX5ZZKBKACTAV9WEVGEMMVT0",

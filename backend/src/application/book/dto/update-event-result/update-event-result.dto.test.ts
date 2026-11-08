@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { UpdateEventResultDto } from "..";
-import { EventContent, EventEntity, EventId, EventOccurredTiming, EventSortOrder, WorkId } from "../../../../domain/book";
+import { EventContent, EventEntity, EventId, EventOccurredTiming, EventSortOrder, WorkId } from "../../../../domain";
 
 function createEvent(occurredTiming: string | null) {
   return EventEntity.reconstruct({

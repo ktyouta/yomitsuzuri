@@ -1,7 +1,5 @@
 import { err, ok, type Result } from "neverthrow";
-import type { IGetCharacterRepository } from "../../../../domain/book";
-import { CharacterId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import { CharacterId, type IGetCharacterRepository, type UserId } from "../../../../domain";
 import { GetCharacterResultDto } from "../../dto";
 
 export type GetCharacterError = { type: "NOT_FOUND" };

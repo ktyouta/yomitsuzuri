@@ -1,7 +1,6 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { CreateBookUsecase } from "..";
-import { BookTitleUniquenessDomainService, IconValidityDomainService, type IBookTitleUniquenessRepository, type ICreateBookRepository, type IIconValidityRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { BookTitleUniquenessDomainService, IconValidityDomainService, UserId, type IBookTitleUniquenessRepository, type ICreateBookRepository, type IIconValidityRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;

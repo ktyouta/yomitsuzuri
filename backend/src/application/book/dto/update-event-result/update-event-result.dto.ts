@@ -1,4 +1,4 @@
-import type { EventEntity } from "../../../../domain/book";
+import type { EventEntity } from "../../../../domain";
 
 type UpdateEventResultType = {
   id: string;

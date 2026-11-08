@@ -1,6 +1,5 @@
 import { and, eq, ne } from "drizzle-orm";
-import type { IWordTextUniquenessRepository, WordId, WordText, WorkId } from "../../../../domain/book";
-import type { UserId } from "../../../../domain/shared";
+import type { IWordTextUniquenessRepository, UserId, WordId, WordText, WorkId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, wordTransaction, workTransaction } from "../../../db";
 

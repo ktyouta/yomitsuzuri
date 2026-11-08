@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { DeleteCharacterRelationUsecase } from "..";
-import { CharacterId, CharacterRelationEntity, CharacterRelationId, CharacterRelationName, WorkId, type IDeleteCharacterRelationRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { CharacterId, CharacterRelationEntity, CharacterRelationId, CharacterRelationName, UserId, WorkId, type IDeleteCharacterRelationRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const CHARACTER_RELATION_ID = "01BX5ZZKBKACTAV9WEVGEMMVR0";

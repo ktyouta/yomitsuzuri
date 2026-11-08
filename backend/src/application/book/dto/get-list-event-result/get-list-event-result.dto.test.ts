@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetListEventResultDto } from "..";
-import type { EventListItem } from "../../../../domain/book";
+import type { EventListItem } from "../../../../domain";
 
 describe("GetListEventResultDto", () => {
   it("出来事一覧からDTOを生成できること", () => {

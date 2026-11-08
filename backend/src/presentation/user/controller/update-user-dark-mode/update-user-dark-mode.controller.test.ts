@@ -4,8 +4,7 @@ import { env, SELF } from "cloudflare:test";
 import { ulid } from "ulid";
 import { describe, expect, it } from "vitest";
 import { createEnvConfig } from "../../../../config";
-import { AccessToken } from "../../../../domain/user";
-import { UserId } from "../../../../domain/shared";
+import { AccessToken, UserId } from "../../../../domain";
 import { userLoginMaster, userMaster } from "../../../../infrastructure/db";
 import * as schema from "../../../../infrastructure/db/schema";
 

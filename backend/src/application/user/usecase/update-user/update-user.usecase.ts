@@ -1,8 +1,6 @@
 import { err, ok, Result } from "neverthrow";
 import type { EnvConfig } from "../../../../config";
-import { RefreshToken, UserBirthday, UserName, type UserBirthdayError, type UserNameError } from "../../../../domain/user";
-import type { UserId } from "../../../../domain/shared";
-import type { IUpdateUserRepository, UserNameUniquenessDomainService } from "../../../../domain/user";
+import { RefreshToken, UserBirthday, UserName, type IUpdateUserRepository, type UserBirthdayError, type UserId, type UserNameError, type UserNameUniquenessDomainService } from "../../../../domain";
 import { UpdateUserResultDto } from "../../dto";
 
 /**

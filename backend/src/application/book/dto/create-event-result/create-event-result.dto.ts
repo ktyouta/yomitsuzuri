@@ -1,4 +1,4 @@
-import type { EventEntity } from "../../../../domain/book";
+import type { EventEntity } from "../../../../domain";
 
 export type CreateEventResultType = {
   id: string;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { UpdateEventOrderResultDto } from "..";
-import { EventContent, EventEntity, EventId, EventOccurredTiming, EventSortOrder, EventTimelineAggregate, WorkId } from "../../../../domain/book";
+import { EventContent, EventEntity, EventId, EventOccurredTiming, EventSortOrder, EventTimelineAggregate, WorkId } from "../../../../domain";
 
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";
 

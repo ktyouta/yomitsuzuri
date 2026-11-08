@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetEventResultDto } from "..";
-import type { EventDetail } from "../../../../domain/book";
+import type { EventDetail } from "../../../../domain";
 
 describe("GetEventResultDto", () => {
   it("出来事からDTOを生成できること", () => {

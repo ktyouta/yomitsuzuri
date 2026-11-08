@@ -1,4 +1,4 @@
-import type { CharacterEntity } from "../../../../domain/book";
+import type { CharacterEntity } from "../../../../domain";
 
 export type UpdateCharacterResultType = {
   id: string;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetListCharacterRelationResultDto } from "..";
-import type { CharacterRelationListItem } from "../../../../domain/book";
+import type { CharacterRelationListItem } from "../../../../domain";
 
 describe("GetListCharacterRelationResultDto", () => {
   it("登場人物関係一覧からDTOを生成できること", () => {

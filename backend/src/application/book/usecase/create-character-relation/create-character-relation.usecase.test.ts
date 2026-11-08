@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { CreateCharacterRelationUsecase } from "..";
-import { CharacterRelationUniquenessDomainService, CharacterValidityDomainService, type ICharacterRelationUniquenessRepository, type ICharacterValidityRepository, type ICreateCharacterRelationRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { CharacterRelationUniquenessDomainService, CharacterValidityDomainService, UserId, type ICharacterRelationUniquenessRepository, type ICharacterValidityRepository, type ICreateCharacterRelationRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";

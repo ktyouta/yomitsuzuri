@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { GetListBookResultDto } from "..";
-import type { BookListItem } from "../../../../domain/book";
+import type { BookListItem } from "../../../../domain";
 
 describe("GetListBookResultDto", () => {
   it("一覧・全件数・総ページ数からDTOを生成できること", () => {

@@ -1,5 +1,4 @@
-import type { UserId } from "../../../../domain/shared";
-import type { IUpdateUserDarkModeRepository } from "../../../../domain/user";
+import type { IUpdateUserDarkModeRepository, UserId } from "../../../../domain";
 import { UpdateUserDarkModeResultDto } from "../../dto";
 
 type PropsType = {

@@ -1,4 +1,4 @@
-import type { UserId } from "../../../shared";
+import type { Timestamp, UserId } from "../../../shared";
 import type { BookAggregate } from "../../aggregate";
 import type { BookId } from "../../value-object";
 
@@ -22,5 +22,5 @@ export interface IUpdateBookRepository {
    * @param expectedUpdatedAt 取得時点の書籍の更新日時
    * @returns 保存した場合は true、他の操作で更新されていたため保存しなかった場合は false
    */
-  updateBook(book: BookAggregate, expectedUpdatedAt: string): Promise<boolean>;
+  updateBook(book: BookAggregate, expectedUpdatedAt: Timestamp): Promise<boolean>;
 }

@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { IGetWorkRepository, WorkId, WorkType } from "../../../../domain";
-import type { UserId } from "../../../../domain/shared";
+import type { IGetWorkRepository, UserId, WorkId, WorkType } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, iconMaster, workTransaction } from "../../../db";
 

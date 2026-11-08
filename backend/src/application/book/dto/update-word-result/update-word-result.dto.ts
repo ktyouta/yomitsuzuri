@@ -1,4 +1,4 @@
-import type { WordEntity } from "../../../../domain/book";
+import type { WordEntity } from "../../../../domain";
 
 export type UpdateWordResultType = {
   id: string;

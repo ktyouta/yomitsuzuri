@@ -1,5 +1,4 @@
-import type { UserId } from "../../../../domain/shared";
-import type { IDeleteUserRepository } from "../../../../domain/user";
+import type { IDeleteUserRepository, UserId } from "../../../../domain";
 
 type PropsType = {
   userId: UserId;

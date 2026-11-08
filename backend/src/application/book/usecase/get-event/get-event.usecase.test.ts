@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { GetEventUsecase } from "..";
-import type { EventDetail, IGetEventRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { UserId, type EventDetail, type IGetEventRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const EVENT_ID = "01BX5ZZKBKACTAV9WEVGEMMVT0";

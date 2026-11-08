@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { GetListBookUsecase } from "..";
-import type { BookListItem, IGetListBookRepository } from "../../../../domain/book";
-import { UserId } from "../../../../domain/shared";
+import { UserId, type BookListItem, type IGetListBookRepository } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 

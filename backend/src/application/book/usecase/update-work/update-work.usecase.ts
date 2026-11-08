@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { IconId, WorkId, WorkMemo, WorkTitle, type BookWorkUpdateError, type IconIdError, type IconValidityDomainService, type IUpdateWorkRepository, type UserId, type WorkMemoError, type WorkTitleError } from "../../../../domain";
+import { IconId, Timestamp, WorkId, WorkMemo, WorkTitle, type BookWorkUpdateError, type IconIdError, type IconValidityDomainService, type IUpdateWorkRepository, type TimestampError, type UserId, type WorkMemoError, type WorkTitleError } from "../../../../domain";
 import { UpdateWorkResultDto } from "../../dto";
 
 /**
@@ -8,7 +8,8 @@ import { UpdateWorkResultDto } from "../../dto";
 export type UpdateWorkInputError =
     | { field: "title"; error: WorkTitleError }
     | { field: "memo"; error: WorkMemoError }
-    | { field: "iconId"; error: IconIdError };
+    | { field: "iconId"; error: IconIdError }
+    | { field: "updatedAt"; error: TimestampError };
 
 export type UpdateWorkError =
     | { type: "INVALID_INPUT"; errors: UpdateWorkInputError[] }
@@ -53,11 +54,12 @@ export class UpdateWorkUsecase {
             WorkTitle.create(body.title).mapErr((error): UpdateWorkInputError => ({ field: "title", error })),
             WorkMemo.create(body.memo).mapErr((error): UpdateWorkInputError => ({ field: "memo", error })),
             IconId.create(body.iconId).mapErr((error): UpdateWorkInputError => ({ field: "iconId", error })),
+            Timestamp.fromInput(body.updatedAt).mapErr((error): UpdateWorkInputError => ({ field: "updatedAt", error })),
         ]);
         if (input.isErr()) {
             return err({ type: "INVALID_INPUT", errors: input.error });
         }
-        const [title, memo, iconId] = input.value;
+        const [title, memo, iconId, expectedUpdatedAt] = input.value;
 
         // 更新対象の作品を収録した書籍を取得
         const book = await this.updateWorkRepository.findBook(userId, id);
@@ -76,8 +78,8 @@ export class UpdateWorkUsecase {
             title,
             memo,
             iconId,
-            expectedUpdatedAt: body.updatedAt,
-            updatedAt: new Date().toISOString(),
+            expectedUpdatedAt,
+            updatedAt: Timestamp.create(),
         });
         if (updateResult.isErr()) {
             return err(updateResult.error);
@@ -85,7 +87,7 @@ export class UpdateWorkUsecase {
         const work = updateResult.value;
 
         // 更新（取得後に他の操作で更新されていた場合は保存されない）
-        const saved = await this.updateWorkRepository.updateWork(work, body.updatedAt);
+        const saved = await this.updateWorkRepository.updateWork(work, expectedUpdatedAt);
         if (!saved) {
             return err({ type: "CONFLICT_WORK" });
         }
