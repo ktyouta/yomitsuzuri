@@ -9,7 +9,7 @@ import { toInputErrorMessage } from "../../error-message";
 import { BookIdParamSchema, UpdateBookSchema } from "../../schema";
 
 /**
- * 書籍更新（書籍に収録された作品もまとめて更新する。既に削除済みの作品は、含まれていても変更しない）
+ * 書籍更新（書籍情報を更新し、書籍に収録された削除されていない作品の表示順を並び替える）
  */
 const updateBook = new Hono<AppEnv>().put(
   API_ENDPOINT.BOOKS_ID,
@@ -48,6 +48,8 @@ const updateBook = new Hono<AppEnv>().put(
             return c.json({ message: "指定されたアイコンは存在しません。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           case "INVALID_READING_STATUS":
             return c.json({ message: "入力エラー", data: [{ field: "readingStatus", message: "指定された読書状況は存在しません。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+          case "CONFLICT_BOOK":
+            return c.json({ message: "書籍が他の画面で更新されています。最新の情報を読み込み直してください。" }, HTTP_STATUS.CONFLICT);
           case "WORKS_MISMATCH":
             return c.json({ message: "作品が他の画面で変更されています。最新の情報を読み込み直してください。" }, HTTP_STATUS.CONFLICT);
           case "INVALID_WORKS":

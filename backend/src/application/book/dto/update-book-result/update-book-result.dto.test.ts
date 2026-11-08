@@ -4,7 +4,7 @@ import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, Publis
 import { UserId } from "../../../../domain/shared";
 
 describe("UpdateBookResultDto", () => {
-  it("書籍集約から、書籍の userId・削除フラグを除いた項目と、削除済みを含む作品（削除フラグ付き）でDTOを生成できること", () => {
+  it("書籍集約から、書籍の userId・削除フラグを除いた項目（更新日時を含む）と、削除済みを含む作品（削除フラグ付き）でDTOを生成できること", () => {
     const book = BookAggregate.reconstruct({
       id: BookId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ"),
       userId: UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
@@ -16,10 +16,11 @@ describe("UpdateBookResultDto", () => {
       iconId: IconId.of(3),
       deleteFlg: false,
       works: [
-        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS0"), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(4), deleteFlg: false }),
-        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS1"), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of("作品メモ"), iconId: IconId.of(5), deleteFlg: false }),
-        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS2"), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(3), memo: WorkMemo.of(null), iconId: IconId.of(6), deleteFlg: true }),
+        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS0"), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(4), deleteFlg: false, updatedAt: "2025-12-01T00:00:00.000Z" }),
+        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS1"), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of("作品メモ"), iconId: IconId.of(5), deleteFlg: false, updatedAt: "2025-12-01T00:00:00.000Z" }),
+        WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS2"), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(3), memo: WorkMemo.of(null), iconId: IconId.of(6), deleteFlg: true, updatedAt: "2025-12-01T00:00:00.000Z" }),
       ],
+      updatedAt: "2026-01-02T00:00:00.000Z",
     });
 
     const dto = new UpdateBookResultDto(book);
@@ -32,6 +33,7 @@ describe("UpdateBookResultDto", () => {
       currentPage: 120,
       memo: "書籍メモ",
       iconId: 3,
+      updatedAt: "2026-01-02T00:00:00.000Z",
       works: [
         { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "作品1", sort: 1, memo: null, iconId: 4, deleteFlg: false },
         { id: "01BX5ZZKBKACTAV9WEVGEMMVS1", title: "作品2", sort: 2, memo: "作品メモ", iconId: 5, deleteFlg: false },

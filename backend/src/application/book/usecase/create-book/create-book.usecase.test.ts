@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { CreateBookUsecase } from "..";
 import { BookTitleUniquenessDomainService, IconValidityDomainService, type IBookTitleUniquenessRepository, type ICreateBookRepository, type IIconValidityRepository } from "../../../../domain/book";
 import { UserId } from "../../../../domain/shared";
@@ -40,7 +40,14 @@ function createUsecase({ iconExists = true, duplicatedIds = [] }: Options = {}) 
 }
 
 describe("CreateBookUsecase", () => {
-  it("書籍と、書籍タイトル・アイコンを引き継いだ作品1件を保存し、その内容を返すこと", async () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("書籍と、書籍タイトル・アイコンを引き継いだ作品1件を、現在日時を更新日時として保存し、その内容を返すこと", async () => {
+    const NOW = "2026-01-02T00:00:00.000Z";
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(NOW));
     const { usecase, createBookRepository } = createUsecase();
 
     const result = await usecase.execute({ userId: USER_ID, body: BODY });
@@ -65,14 +72,17 @@ describe("CreateBookUsecase", () => {
           memo: null,
           iconId: 2,
           deleteFlg: false,
+          updatedAt: NOW,
         },
       ],
+      updatedAt: NOW,
     });
 
     expect(result.isOk()).toBe(true);
     const dto = result._unsafeUnwrap();
     expect(dto.value.id).toBe(savedBook?.id.value);
     expect(dto.value.title).toBe("容疑者Xの献身");
+    expect(dto.value.updatedAt).toBe(NOW);
     expect(dto.value.works).toHaveLength(1);
     expect(dto.value.works[0]?.title).toBe("容疑者Xの献身");
   });

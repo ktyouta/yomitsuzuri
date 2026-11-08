@@ -8,6 +8,7 @@ export type UpdateBookResultType = {
   currentPage: number | null;
   memo: string | null;
   iconId: number;
+  updatedAt: string;
   works: {
     id: string;
     title: string;
@@ -40,6 +41,7 @@ export class UpdateBookResultDto {
       currentPage: snapshot.currentPage,
       memo: snapshot.memo,
       iconId: snapshot.iconId,
+      updatedAt: snapshot.updatedAt,
       // 書籍詳細取得と同じく、論理削除した作品も削除フラグ付きで返す（画面で削除済みとして表示するため）
       works: snapshot.works.map((e) => ({
         id: e.id,

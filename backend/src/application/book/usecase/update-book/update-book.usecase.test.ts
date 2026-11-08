@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { UpdateBookUsecase } from "./update-book.usecase";
 import { BookAggregate, BookId, BookMemo, BookTitle, BookTitleUniquenessDomainService, CurrentPage, IconId, IconValidityDomainService, PublishedDate, ReadingStatusId, ReadingStatusValidityDomainService, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IBookTitleUniquenessRepository, type IIconValidityRepository, type IReadingStatusValidityRepository, type IUpdateBookRepository } from "../../../../domain/book";
 import { UserId } from "../../../../domain/shared";
@@ -7,7 +7,14 @@ const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const BOOK_ID = BookId.of("01ARZ3NDEKTSV4RRFFQ69G5FAW");
 const WORK_ID_1 = "01ARZ3NDEKTSV4RRFFQ69G5FAX";
 const WORK_ID_2 = "01ARZ3NDEKTSV4RRFFQ69G5FAY";
-const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
+const DELETED_WORK_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
+
+/** 書籍の取得時点の更新日時 */
+const BOOK_UPDATED_AT = "2026-01-01T00:00:00.000Z";
+/** 作品の取得時点の更新日時 */
+const WORK_UPDATED_AT = "2025-12-01T00:00:00.000Z";
+/** 実行時の現在日時（更新後の書籍の更新日時になる） */
+const NOW = "2026-01-02T00:00:00.000Z";
 
 const BODY = {
   title: "容疑者Xの献身",
@@ -17,13 +24,11 @@ const BODY = {
   memo: "メモ",
   iconId: 2,
   works: [
-    { id: WORK_ID_1, title: "作品1改", sort: 2, memo: "作品メモ", iconId: 4 },
-    { id: WORK_ID_2, title: "作品2", sort: 1, memo: "", iconId: 1 },
-    { id: null, title: "作品3", sort: 3, memo: "", iconId: 5 },
+    { id: WORK_ID_1, sort: 2 },
+    { id: WORK_ID_2, sort: 1 },
   ],
+  updatedAt: BOOK_UPDATED_AT,
 };
-
-const DELETED_WORK_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
 
 /**
  * 更新前の書籍集約（削除されていない作品2件と、削除済みの作品1件を持つ）
@@ -40,10 +45,11 @@ function createBook(): BookAggregate {
     iconId: IconId.of(1),
     deleteFlg: false,
     works: [
-      WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false }),
-      WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false }),
-      WorkEntity.reconstruct({ id: WorkId.of(DELETED_WORK_ID), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(null), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: true }),
+      WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_1), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false, updatedAt: WORK_UPDATED_AT }),
+      WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false, updatedAt: WORK_UPDATED_AT }),
+      WorkEntity.reconstruct({ id: WorkId.of(DELETED_WORK_ID), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(null), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: true, updatedAt: WORK_UPDATED_AT }),
     ],
+    updatedAt: BOOK_UPDATED_AT,
   });
 }
 
@@ -52,12 +58,13 @@ type Options = {
   invalidIconIds?: number[];
   readingStatusExists?: boolean;
   duplicatedIds?: { id: string, deleteFlg: boolean }[];
+  saved?: boolean;
 };
 
-function createUsecase({ book = createBook(), invalidIconIds = [], readingStatusExists = true, duplicatedIds = [] }: Options = {}) {
+function createUsecase({ book = createBook(), invalidIconIds = [], readingStatusExists = true, duplicatedIds = [], saved = true }: Options = {}) {
   const updateBookRepository = {
     findBook: vi.fn<IUpdateBookRepository["findBook"]>().mockResolvedValue(book),
-    updateBook: vi.fn<IUpdateBookRepository["updateBook"]>().mockResolvedValue(),
+    updateBook: vi.fn<IUpdateBookRepository["updateBook"]>().mockResolvedValue(saved),
   } satisfies IUpdateBookRepository;
   const uniquenessRepository = {
     findBook: vi.fn<IBookTitleUniquenessRepository["findBook"]>().mockResolvedValue(duplicatedIds),
@@ -81,13 +88,24 @@ function createUsecase({ book = createBook(), invalidIconIds = [], readingStatus
 }
 
 describe("UpdateBookUsecase", () => {
-  it("書籍と作品を更新内容で保存し、削除済みを含む作品（削除フラグ付き）の内容を返すこと", async () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(NOW));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("書籍情報と作品の表示順を、現在日時を更新日時として保存し、削除済みを含む作品（削除フラグ付き）と更新後の更新日時を返すこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
     const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(updateBookRepository.updateBook).toHaveBeenCalledTimes(1);
-    const savedBook = updateBookRepository.updateBook.mock.calls[0]?.[0];
+    const [savedBook, expectedUpdatedAt] = updateBookRepository.updateBook.mock.calls[0] ?? [];
+    // 保存時の排他の条件には、画面の表示時点の更新日時を使う
+    expect(expectedUpdatedAt).toBe(BOOK_UPDATED_AT);
     expect(savedBook?.toSnapshot()).toEqual({
       id: BOOK_ID.value,
       userId: USER_ID.value,
@@ -99,24 +117,25 @@ describe("UpdateBookUsecase", () => {
       iconId: 2,
       deleteFlg: false,
       works: [
-        { id: WORK_ID_1, title: "作品1改", sort: 2, memo: "作品メモ", iconId: 4, deleteFlg: false },
-        { id: WORK_ID_2, title: "作品2", sort: 1, memo: null, iconId: 1, deleteFlg: false },
-        { id: expect.stringMatching(ULID_PATTERN), title: "作品3", sort: 3, memo: null, iconId: 5, deleteFlg: false },
+        // 作品は表示順だけを変更し、更新日時は変更しない
+        { id: WORK_ID_1, title: "作品1", sort: 2, memo: null, iconId: 1, deleteFlg: false, updatedAt: WORK_UPDATED_AT },
+        { id: WORK_ID_2, title: "作品2", sort: 1, memo: null, iconId: 1, deleteFlg: false, updatedAt: WORK_UPDATED_AT },
         // 削除済みの作品は送らなくても、変更せずに保持する
-        { id: DELETED_WORK_ID, title: "削除済み作品", sort: null, memo: null, iconId: 1, deleteFlg: true },
+        { id: DELETED_WORK_ID, title: "削除済み作品", sort: null, memo: null, iconId: 1, deleteFlg: true, updatedAt: WORK_UPDATED_AT },
       ],
+      updatedAt: NOW,
     });
 
     const dto = result._unsafeUnwrap();
     expect(dto.value.id).toBe(BOOK_ID.value);
     expect(dto.value.title).toBe("容疑者Xの献身");
+    expect(dto.value.updatedAt).toBe(NOW);
     expect(dto.value.works.map((e) => ({ title: e.title, deleteFlg: e.deleteFlg }))).toEqual(expect.arrayContaining([
-      { title: "作品1改", deleteFlg: false },
+      { title: "作品1", deleteFlg: false },
       { title: "作品2", deleteFlg: false },
-      { title: "作品3", deleteFlg: false },
       { title: "削除済み作品", deleteFlg: true },
     ]));
-    expect(dto.value.works).toHaveLength(4);
+    expect(dto.value.works).toHaveLength(3);
   });
 
   it("指定したユーザー・書籍IDで更新対象を取得すること", async () => {
@@ -136,17 +155,17 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
-  it("書籍と作品のアイコンの有効性を1回の問い合わせでまとめて確認すること（重複は除く）", async () => {
+  it("書籍のアイコンの有効性を確認すること", async () => {
     const { usecase, iconValidityRepository } = createUsecase();
 
     await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
     expect(iconValidityRepository.findValidIds).toHaveBeenCalledTimes(1);
-    expect(iconValidityRepository.findValidIds.mock.calls[0]?.[0].map((e) => e.value)).toEqual([2, 4, 1, 5]);
+    expect(iconValidityRepository.findValidIds.mock.calls[0]?.[0].map((e) => e.value)).toEqual([2]);
   });
 
-  it("書籍・作品のいずれかのアイコンが無効な場合、INVALID_ICON を返し、保存しないこと", async () => {
-    const { usecase, updateBookRepository } = createUsecase({ invalidIconIds: [2, 5] });
+  it("書籍のアイコンが無効な場合、INVALID_ICON を返し、保存しないこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase({ invalidIconIds: [2] });
 
     const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
 
@@ -192,24 +211,36 @@ describe("UpdateBookUsecase", () => {
     expect(bookTitle?.value).toBe("容疑者Xの献身");
   });
 
-  it("作品が不変条件に違反する場合、INVALID_WORKS で違反一覧を返し、保存しないこと", async () => {
+  it("画面の表示時点の更新日時が取得時点と一致しない場合、CONFLICT_BOOK を返し、保存しないこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase();
+
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: { ...BODY, updatedAt: "2025-11-01T00:00:00.000Z" } });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "CONFLICT_BOOK" });
+    expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
+  });
+
+  it("取得後に他の操作で更新されていたため保存されなかった場合、CONFLICT_BOOK を返すこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase({ saved: false });
+
+    const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID.value, body: BODY });
+
+    expect(result._unsafeUnwrapErr()).toEqual({ type: "CONFLICT_BOOK" });
+    expect(updateBookRepository.updateBook).toHaveBeenCalledTimes(1);
+  });
+
+  it("作品の表示順が重複する場合、INVALID_WORKS で違反一覧を返し、保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
     const result = await usecase.execute({
       userId: USER_ID,
       bookId: BOOK_ID.value,
-      body: {
-        ...BODY,
-        works: [
-          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 },
-          { id: WORK_ID_2, title: "作品1", sort: 2, memo: "", iconId: 1 },
-        ],
-      },
+      body: { ...BODY, works: [{ id: WORK_ID_1, sort: 1 }, { id: WORK_ID_2, sort: 1 }] },
     });
 
     expect(result._unsafeUnwrapErr()).toEqual({
       type: "INVALID_WORKS",
-      errors: [{ type: "DUPLICATE_WORK_TITLE", title: "作品1" }],
+      errors: [{ type: "DUPLICATE_WORK_SORT", sort: 1 }],
     });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
@@ -220,7 +251,7 @@ describe("UpdateBookUsecase", () => {
     const result = await usecase.execute({
       userId: USER_ID,
       bookId: BOOK_ID.value,
-      body: { ...BODY, works: [{ id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 }] },
+      body: { ...BODY, works: [{ id: WORK_ID_1, sort: 1 }] },
     });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
@@ -233,13 +264,7 @@ describe("UpdateBookUsecase", () => {
     const result = await usecase.execute({
       userId: USER_ID,
       bookId: BOOK_ID.value,
-      body: {
-        ...BODY,
-        works: [
-          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 },
-          { id: "invalid", title: "作品2", sort: 2, memo: "", iconId: 1 },
-        ],
-      },
+      body: { ...BODY, works: [{ id: WORK_ID_1, sort: 1 }, { id: "invalid", sort: 2 }] },
     });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
@@ -252,13 +277,7 @@ describe("UpdateBookUsecase", () => {
     const result = await usecase.execute({
       userId: USER_ID,
       bookId: BOOK_ID.value,
-      body: {
-        ...BODY,
-        works: [
-          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 },
-          { id: WORK_ID_1, title: "作品2", sort: 2, memo: "", iconId: 1 },
-        ],
-      },
+      body: { ...BODY, works: [{ id: WORK_ID_1, sort: 1 }, { id: WORK_ID_1, sort: 2 }] },
     });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "INVALID_WORKS", errors: [{ type: "DUPLICATE_WORK_ID", id: WORK_ID_1 }] });
@@ -279,9 +298,10 @@ describe("UpdateBookUsecase", () => {
         memo: "あ".repeat(2001),
         iconId: 0,
         works: [
-          { id: WORK_ID_1, title: "作品1", sort: 1, memo: "", iconId: 1 },
-          { id: "invalid", title: "", sort: 0, memo: "あ".repeat(2001), iconId: 0 },
+          { id: WORK_ID_1, sort: 1 },
+          { id: WORK_ID_2, sort: 0 },
         ],
+        updatedAt: BOOK_UPDATED_AT,
       },
     });
 
@@ -294,10 +314,7 @@ describe("UpdateBookUsecase", () => {
         { field: "currentPage", error: { type: "CURRENT_PAGE_INVALID", min: 0 } },
         { field: "memo", error: { type: "BOOK_MEMO_TOO_LONG", max: 2000 } },
         { field: "iconId", error: { type: "ICON_ID_INVALID" } },
-        { field: "works.1.title", error: { type: "WORK_TITLE_EMPTY" } },
         { field: "works.1.sort", error: { type: "WORK_SORT_INVALID", min: 1 } },
-        { field: "works.1.memo", error: { type: "WORK_MEMO_TOO_LONG", max: 2000 } },
-        { field: "works.1.iconId", error: { type: "ICON_ID_INVALID" } },
       ],
     });
     expect(updateBookRepository.findBook).not.toHaveBeenCalled();
@@ -307,18 +324,18 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
-  it("作品の項目だけが制約を満たさない場合も、INVALID_INPUT を返すこと", async () => {
+  it("作品の表示順だけが制約を満たさない場合も、INVALID_INPUT を返すこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
     const result = await usecase.execute({
       userId: USER_ID,
       bookId: BOOK_ID.value,
-      body: { ...BODY, works: [{ id: null, title: "あ".repeat(101), sort: 1, iconId: 1 }] },
+      body: { ...BODY, works: [{ id: WORK_ID_1, sort: 1.5 }, { id: WORK_ID_2, sort: 2 }] },
     });
 
     expect(result._unsafeUnwrapErr()).toEqual({
       type: "INVALID_INPUT",
-      errors: [{ field: "works.0.title", error: { type: "WORK_TITLE_TOO_LONG", max: 100 } }],
+      errors: [{ field: "works.0.sort", error: { type: "WORK_SORT_INVALID", min: 1 } }],
     });
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });

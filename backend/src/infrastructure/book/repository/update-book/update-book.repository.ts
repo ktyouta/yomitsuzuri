@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, exists } from "drizzle-orm";
 import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle, type IUpdateBookRepository } from "../../../../domain";
 import { UserId } from "../../../../domain/shared";
 import { bookTransaction, workTransaction, type Database } from "../../../db";
@@ -29,6 +29,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
         iconId: bookTransaction.iconId,
         memo: bookTransaction.memo,
         deleteFlg: bookTransaction.deleteFlg,
+        updatedAt: bookTransaction.updatedAt,
       })
       .from(bookTransaction)
       .where(and(eq(bookTransaction.deleteFlg, false), eq(bookTransaction.userId, userId.value), eq(bookTransaction.id, bookId.value)));
@@ -47,6 +48,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
         memo: workTransaction.memo,
         iconId: workTransaction.iconId,
         deleteFlg: workTransaction.deleteFlg,
+        updatedAt: workTransaction.updatedAt,
       })
       .from(workTransaction)
       .where(eq(workTransaction.bookId, book.id));
@@ -69,22 +71,34 @@ export class UpdateBookRepository implements IUpdateBookRepository {
           memo: WorkMemo.of(e.memo),
           iconId: IconId.of(e.iconId),
           deleteFlg: e.deleteFlg,
+          updatedAt: e.updatedAt,
         })
       ),
+      updatedAt: book.updatedAt,
     });
   }
 
   /**
    * 書籍更新
-   * 書籍本体を上書き更新し、作品は ID をキーに upsert する（既存は更新、新規は挿入）。既に削除済みの作品は更新しない。
+   * 書籍情報・更新日時を上書きし、削除されていない作品は表示順だけを更新する（作品の更新日時は変更しない）。
+   * 書籍の更新日時が expectedUpdatedAt と一致しない場合は、書籍・作品のどちらも更新しない。
    * @param bookAggregate 更新後の状態を表す書籍集約
+   * @param expectedUpdatedAt 取得時点の書籍の更新日時
+   * @returns 保存した場合は true、他の操作で更新されていたため保存しなかった場合は false
    */
-  async updateBook(bookAggregate: BookAggregate): Promise<void> {
-    const now = new Date().toISOString();
+  async updateBook(bookAggregate: BookAggregate, expectedUpdatedAt: string): Promise<boolean> {
     const bookSnapshot = bookAggregate.toSnapshot();
 
+    // batch は文の影響行数が 0 件でも後続の文を取り消さないため、作品の更新は「書籍がこの更新で更新日時を書き換えた」ことを条件にする
+    const bookUpdated = exists(
+      this.db
+        .select({ id: bookTransaction.id })
+        .from(bookTransaction)
+        .where(and(eq(bookTransaction.id, bookSnapshot.id), eq(bookTransaction.updatedAt, bookSnapshot.updatedAt)))
+    );
+
     // 書籍だけが更新されて作品が不整合になることを防ぐため、batch で1トランザクションにする
-    await this.db.batch([
+    const [bookResult] = await this.db.batch([
       this.db
         .update(bookTransaction)
         .set({
@@ -94,48 +108,29 @@ export class UpdateBookRepository implements IUpdateBookRepository {
           currentPage: bookSnapshot.currentPage,
           iconId: bookSnapshot.iconId,
           memo: bookSnapshot.memo,
-          updatedAt: now,
+          updatedAt: bookSnapshot.updatedAt,
         })
-        .where(and(eq(bookTransaction.deleteFlg, false), eq(bookTransaction.userId, bookSnapshot.userId), eq(bookTransaction.id, bookSnapshot.id))),
-      // 一意制約は1文ごとに判定されるため、作品名の入れ替えなどで途中の状態が重複しないよう、いったん一意な値（作品 ID）に置き換える。
-      // 同時に追加された作品の作品名を壊さないよう、更新対象の作品だけに限定する
-      this.db
-        .update(workTransaction)
-        .set({ title: sql`${workTransaction.id}` })
         .where(and(
-          eq(workTransaction.bookId, bookSnapshot.id),
-          eq(workTransaction.deleteFlg, false),
-          inArray(workTransaction.id, bookSnapshot.works.map((e) => e.id))
-        )),
-      ...bookSnapshot.works.map((e) =>
+          eq(bookTransaction.deleteFlg, false),
+          eq(bookTransaction.userId, bookSnapshot.userId),
+          eq(bookTransaction.id, bookSnapshot.id),
+          eq(bookTransaction.updatedAt, expectedUpdatedAt),
+        ))
+        .returning({ id: bookTransaction.id }),
+      // 既に削除済みの作品は集約が変更しないため、更新の対象から外す
+      ...bookSnapshot.works.filter((e) => !e.deleteFlg).map((e) =>
         this.db
-          .insert(workTransaction)
-          .values({
-            id: e.id,
-            bookId: bookSnapshot.id,
-            title: e.title,
-            sortOrder: e.sort,
-            memo: e.memo,
-            iconId: e.iconId,
-            deleteFlg: e.deleteFlg,
-            createdAt: now,
-            updatedAt: now,
-          })
-          .onConflictDoUpdate({
-            target: workTransaction.id,
-            set: {
-              title: e.title,
-              sortOrder: e.sort,
-              memo: e.memo,
-              iconId: e.iconId,
-              deleteFlg: e.deleteFlg,
-              updatedAt: now,
-            },
-            // 他の書籍の作品を上書きしないための保険。
-            // 既に削除済みの作品は集約が変更しないため、更新日時を無用に変えないよう更新の対象から外す
-            setWhere: and(eq(workTransaction.bookId, bookSnapshot.id), eq(workTransaction.deleteFlg, false)),
-          })
+          .update(workTransaction)
+          .set({ sortOrder: e.sort })
+          .where(and(
+            eq(workTransaction.id, e.id),
+            eq(workTransaction.bookId, bookSnapshot.id),
+            eq(workTransaction.deleteFlg, false),
+            bookUpdated,
+          ))
       ),
     ]);
+
+    return bookResult.length > 0;
   }
 }

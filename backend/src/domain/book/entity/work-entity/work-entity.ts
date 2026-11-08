@@ -1,3 +1,4 @@
+import { err, ok, type Result } from "neverthrow";
 import { WorkId, type IconId, type WorkMemo, type WorkSort, type WorkTitle } from "../../value-object";
 
 type CreateWorkParamType = {
@@ -5,6 +6,17 @@ type CreateWorkParamType = {
     sort: WorkSort;
     memo: WorkMemo;
     iconId: IconId;
+    updatedAt: string;
+};
+
+type UpdateWorkParamType = {
+    title: WorkTitle;
+    memo: WorkMemo;
+    iconId: IconId;
+    /** 画面の表示時点の更新日時（排他チェックに使う） */
+    expectedUpdatedAt: string;
+    /** 更新後の更新日時 */
+    updatedAt: string;
 };
 
 type WorkReconstructParamType = {
@@ -14,6 +26,7 @@ type WorkReconstructParamType = {
     memo: WorkMemo;
     iconId: IconId;
     deleteFlg: boolean;
+    updatedAt: string;
 };
 
 export type WorkSnapshotType = {
@@ -23,7 +36,10 @@ export type WorkSnapshotType = {
     memo: string | null;
     iconId: number;
     deleteFlg: boolean;
+    updatedAt: string;
 };
+
+export type WorkUpdateError = { type: "CONFLICT_WORK" };
 
 /**
  * 作品（書籍に収録された物語）
@@ -36,6 +52,7 @@ export class WorkEntity {
         private readonly _memo: WorkMemo,
         private readonly _iconId: IconId,
         private readonly _deleteFlg: boolean,
+        private readonly _updatedAt: string,
     ) { }
 
     get id() {
@@ -62,6 +79,10 @@ export class WorkEntity {
         return this._deleteFlg;
     }
 
+    get updatedAt() {
+        return this._updatedAt;
+    }
+
     /**
      * 作品作成
      * @param params 作成する作品の情報
@@ -74,7 +95,8 @@ export class WorkEntity {
             params.sort,
             params.memo,
             params.iconId,
-            false
+            false,
+            params.updatedAt,
         );
     }
 
@@ -91,25 +113,36 @@ export class WorkEntity {
             params.memo,
             params.iconId,
             params.deleteFlg,
+            params.updatedAt,
         );
     }
 
     /**
      * 作品名・メモ・アイコンを置き換えた作品を作成する
-     * @param title 更新後の作品名
-     * @param memo 更新後のメモ
-     * @param iconId 更新後のアイコン
-     * @returns 作品名・メモ・アイコン以外は自身と同じ値を持つ作品（自身は変更しない）
+     *
+     * err の条件:
+     * - CONFLICT_WORK: 画面の表示時点の更新日時（params.expectedUpdatedAt）が、自身の更新日時と一致しないこと
+     *
+     * 事後条件:
+     * - ok の場合: 作品名・メモ・アイコン・更新日時を引数の内容に置き換え、それ以外は自身と同じ値を持つ作品を返す
+     * - いずれの場合も自身は変更しない
+     * @param params 更新後の作品名・メモ・アイコン・更新日時と、画面の表示時点の更新日時
+     * @returns 成功時は更新後の作品、排他の失敗時はその内容を持つ Result
      */
-    update(title: WorkTitle, memo: WorkMemo, iconId: IconId): WorkEntity {
-        return new WorkEntity(
+    update(params: UpdateWorkParamType): Result<WorkEntity, WorkUpdateError> {
+        if (this._updatedAt !== params.expectedUpdatedAt) {
+            return err({ type: "CONFLICT_WORK" });
+        }
+
+        return ok(new WorkEntity(
             this._id,
-            title,
+            params.title,
             this._sort,
-            memo,
-            iconId,
+            params.memo,
+            params.iconId,
             this._deleteFlg,
-        );
+            params.updatedAt,
+        ));
     }
 
     /**
@@ -124,6 +157,7 @@ export class WorkEntity {
             memo: this._memo.value,
             iconId: this._iconId.value,
             deleteFlg: this._deleteFlg,
+            updatedAt: this._updatedAt,
         };
     }
 }

@@ -4,7 +4,7 @@ import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate 
 import { UserId } from "../../../../domain/shared";
 
 describe("CreateBookResultDto", () => {
-  it("書籍集約から、ユーザーID・削除フラグを除いた書籍の項目と作品一覧を写像すること", () => {
+  it("書籍集約から、ユーザーID・削除フラグを除いた書籍の項目（更新日時を含む）と作品一覧を写像すること", () => {
     const book = BookAggregate.create({
       userId: UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
       title: BookTitle.of("容疑者Xの献身"),
@@ -12,6 +12,7 @@ describe("CreateBookResultDto", () => {
       currentPage: CurrentPage.of(120),
       memo: BookMemo.of("メモ"),
       iconId: IconId.of(2),
+      updatedAt: "2026-01-02T00:00:00.000Z",
     });
     const snapshot = book.toSnapshot();
 
@@ -25,6 +26,7 @@ describe("CreateBookResultDto", () => {
       currentPage: 120,
       memo: "メモ",
       iconId: 2,
+      updatedAt: "2026-01-02T00:00:00.000Z",
       works: [
         {
           id: snapshot.works[0]?.id,

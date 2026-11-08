@@ -11,11 +11,10 @@ export class CreateBookRepository implements ICreateBookRepository {
 
   /**
    * 書籍作成
-   * 書籍と、書籍に収録された作品をまとめて保存する。
+   * 書籍と、書籍に収録された作品をまとめて保存する（作成日時・更新日時は集約の更新日時にする）。
    * @param book 作成する書籍集約
    */
   async createBook(book: BookAggregate): Promise<void> {
-    const now = new Date().toISOString();
     const snapshot = book.toSnapshot();
 
     // 書籍だけが保存されて作品が0件になることを防ぐため、batch で1トランザクションにする
@@ -30,8 +29,8 @@ export class CreateBookRepository implements ICreateBookRepository {
         memo: snapshot.memo,
         iconId: snapshot.iconId,
         deleteFlg: snapshot.deleteFlg,
-        createdAt: now,
-        updatedAt: now,
+        createdAt: snapshot.updatedAt,
+        updatedAt: snapshot.updatedAt,
       }),
       ...snapshot.works.map((e) =>
         this.db.insert(workTransaction).values({
@@ -42,8 +41,8 @@ export class CreateBookRepository implements ICreateBookRepository {
           memo: e.memo,
           iconId: e.iconId,
           deleteFlg: e.deleteFlg,
-          createdAt: now,
-          updatedAt: now,
+          createdAt: e.updatedAt,
+          updatedAt: e.updatedAt,
         })
       ),
     ]);
