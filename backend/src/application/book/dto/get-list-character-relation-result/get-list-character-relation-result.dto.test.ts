@@ -3,7 +3,7 @@ import { GetListCharacterRelationResultDto } from "..";
 import type { CharacterRelationListItem } from "../../../../domain";
 
 describe("GetListCharacterRelationResultDto", () => {
-  it("登場人物関係一覧からDTOを生成できること", () => {
+  it("論理削除済みの関係を含む登場人物関係一覧からDTOを生成できること", () => {
     const list: CharacterRelationListItem[] = [
       {
         id: "01BX5ZZKBKACTAV9WEVGEMMVT0",
@@ -12,6 +12,7 @@ describe("GetListCharacterRelationResultDto", () => {
         targetCharacterId: "01BX5ZZKBKACTAV9WEVGEMMVC1",
         targetCharacterName: "佐藤",
         relationName: "兄",
+        deleteFlg: false,
       },
       {
         id: "01BX5ZZKBKACTAV9WEVGEMMVT1",
@@ -20,6 +21,7 @@ describe("GetListCharacterRelationResultDto", () => {
         targetCharacterId: "01BX5ZZKBKACTAV9WEVGEMMVC0",
         targetCharacterName: "山田",
         relationName: "上司",
+        deleteFlg: true,
       },
     ];
 
@@ -34,6 +36,7 @@ describe("GetListCharacterRelationResultDto", () => {
           targetCharacterId: "01BX5ZZKBKACTAV9WEVGEMMVC1",
           targetCharacterName: "佐藤",
           relationName: "兄",
+          deleteFlg: false,
         },
         {
           id: "01BX5ZZKBKACTAV9WEVGEMMVT1",
@@ -42,6 +45,7 @@ describe("GetListCharacterRelationResultDto", () => {
           targetCharacterId: "01BX5ZZKBKACTAV9WEVGEMMVC0",
           targetCharacterName: "山田",
           relationName: "上司",
+          deleteFlg: true,
         },
       ],
     });

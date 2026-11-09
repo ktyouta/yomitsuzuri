@@ -35,6 +35,7 @@ export class GetListCharacterRelationRepository implements IGetListCharacterRela
         targetCharacterId: characterRelationTransaction.targetCharacterId,
         targetCharacterName: targetCharacterTransaction.name,
         relationName: characterRelationTransaction.relationName,
+        deleteFlg: characterRelationTransaction.deleteFlg,
       })
       .from(characterRelationTransaction)
       .innerJoin(characterTransaction, eq(characterRelationTransaction.characterId, characterTransaction.id))
@@ -43,7 +44,6 @@ export class GetListCharacterRelationRepository implements IGetListCharacterRela
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
       .where(and(
         this.buildWorkCondition(userId, workId),
-        eq(characterRelationTransaction.deleteFlg, false),
         eq(characterTransaction.deleteFlg, false),
         eq(targetCharacterTransaction.deleteFlg, false)
       ))

@@ -18,7 +18,7 @@ export class GetListCharacterRelationUsecase {
   /**
    * @param userId 書籍を所有するユーザーID
    * @param workId 作品ID
-   * @returns 成功時は作品の登場人物関係一覧の DTO（0件の場合は空の一覧）、作品が存在しない・他ユーザーの書籍の作品・作品または書籍が論理削除済みの場合は NOT_FOUND
+   * @returns 成功時は作品の登場人物関係一覧の DTO（論理削除済みの関係を含み、人物または相手が論理削除されている関係は含まない。0件の場合は空の一覧）、作品が存在しない・他ユーザーの書籍の作品・作品または書籍が論理削除済みの場合は NOT_FOUND
    * @throws workId が空の場合（作品・関係は問い合わせない）
    */
   async execute({ userId, workId }: PropsType): Promise<Result<GetListCharacterRelationResultDto, GetListCharacterRelationError>> {

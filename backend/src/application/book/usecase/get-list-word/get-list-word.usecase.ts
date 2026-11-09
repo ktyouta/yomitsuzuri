@@ -18,7 +18,7 @@ export class GetListWordUsecase {
   /**
    * @param userId 書籍を所有するユーザーID
    * @param workId 作品ID
-   * @returns 成功時は作品の気になるワード一覧の DTO（0件の場合は空の一覧）、作品が存在しない・他ユーザーの書籍の作品・作品または書籍が論理削除済みの場合は NOT_FOUND
+   * @returns 成功時は作品の気になるワード一覧の DTO（論理削除済みを含む。0件の場合は空の一覧）、作品が存在しない・他ユーザーの書籍の作品・作品または書籍が論理削除済みの場合は NOT_FOUND
    * @throws workId が空の場合（作品・気になるワードは問い合わせない）
    */
   async execute({ userId, workId }: PropsType): Promise<Result<GetListWordResultDto, GetListWordError>> {

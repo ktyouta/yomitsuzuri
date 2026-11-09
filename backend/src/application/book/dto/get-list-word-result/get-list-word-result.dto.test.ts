@@ -3,19 +3,21 @@ import { GetListWordResultDto } from "..";
 import type { WordListItem } from "../../../../domain";
 
 describe("GetListWordResultDto", () => {
-  it("気になるワード一覧からDTOを生成できること", () => {
+  it("論理削除済みを含む気になるワード一覧からDTOを生成できること", () => {
     const list: WordListItem[] = [
       {
         id: "01BX5ZZKBKACTAV9WEVGEMMVT0",
         text: "赤い手帳",
         page: 12,
         updatedAt: "2026-10-01T00:00:00.000Z",
+        deleteFlg: false,
       },
       {
         id: "01BX5ZZKBKACTAV9WEVGEMMVT1",
         text: "青い封筒",
         page: null,
         updatedAt: "2026-10-02T00:00:00.000Z",
+        deleteFlg: true,
       },
     ];
 
@@ -28,12 +30,14 @@ describe("GetListWordResultDto", () => {
           text: "赤い手帳",
           page: 12,
           updatedAt: "2026-10-01T00:00:00.000Z",
+          deleteFlg: false,
         },
         {
           id: "01BX5ZZKBKACTAV9WEVGEMMVT1",
           text: "青い封筒",
           page: null,
           updatedAt: "2026-10-02T00:00:00.000Z",
+          deleteFlg: true,
         },
       ],
     });

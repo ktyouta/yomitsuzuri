@@ -6,6 +6,7 @@ export type GetListWordResultType = {
     text: string;
     page: number | null;
     updatedAt: string;
+    deleteFlg: boolean;
   }[];
 };
 
@@ -16,7 +17,7 @@ export class GetListWordResultDto {
   private readonly _value: GetListWordResultType;
 
   /**
-   * @param list 作品の気になるワード一覧
+   * @param list 作品の気になるワード一覧（論理削除済みを含む）
    */
   constructor(list: WordListItem[]) {
     this._value = {
@@ -25,6 +26,7 @@ export class GetListWordResultDto {
         text: e.text,
         page: e.page,
         updatedAt: e.updatedAt,
+        deleteFlg: e.deleteFlg,
       })),
     };
   }

@@ -13,6 +13,7 @@ const RELATIONS: CharacterRelationListItem[] = [
     targetCharacterId: "01BX5ZZKBKACTAV9WEVGEMMVC1",
     targetCharacterName: "佐藤",
     relationName: "兄",
+    deleteFlg: false,
   },
   {
     id: "01BX5ZZKBKACTAV9WEVGEMMVT1",
@@ -21,6 +22,7 @@ const RELATIONS: CharacterRelationListItem[] = [
     targetCharacterId: "01BX5ZZKBKACTAV9WEVGEMMVC0",
     targetCharacterName: "山田",
     relationName: "上司",
+    deleteFlg: true,
   },
 ];
 
@@ -32,7 +34,7 @@ function createRepository(work: { id: string } | null, relations: CharacterRelat
 }
 
 describe("GetListCharacterRelationUsecase", () => {
-  it("取得した登場人物関係一覧をそのまま返すこと", async () => {
+  it("取得した登場人物関係一覧を、論理削除済みの関係も含めてそのまま返すこと", async () => {
     const usecase = new GetListCharacterRelationUsecase(createRepository({ id: WORK_ID }, RELATIONS));
 
     const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID });

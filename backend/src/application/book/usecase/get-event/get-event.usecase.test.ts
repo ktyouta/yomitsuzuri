@@ -9,6 +9,7 @@ const EVENT: EventDetail = {
   id: EVENT_ID,
   occurredTiming: "3日目の夜",
   content: "屋敷の主人が書斎で倒れているのが見つかる",
+  deleteFlg: false,
 };
 
 function createRepository(event: EventDetail | null) {
@@ -28,6 +29,15 @@ describe("GetEventUsecase", () => {
 
   it("発生タイミングが未入力の出来事も、そのまま返すこと", async () => {
     const event: EventDetail = { ...EVENT, occurredTiming: null };
+    const usecase = new GetEventUsecase(createRepository(event));
+
+    const result = await usecase.execute({ userId: USER_ID, eventId: EVENT_ID });
+
+    expect(result._unsafeUnwrap().value).toEqual(event);
+  });
+
+  it("論理削除済みの出来事も、そのまま返すこと", async () => {
+    const event: EventDetail = { ...EVENT, deleteFlg: true };
     const usecase = new GetEventUsecase(createRepository(event));
 
     const result = await usecase.execute({ userId: USER_ID, eventId: EVENT_ID });

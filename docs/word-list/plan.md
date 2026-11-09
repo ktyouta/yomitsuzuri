@@ -20,7 +20,7 @@
 
 ## 設計
 
-- Repository: `findWork(userId, workId)` で作品の取得可否を確認し、`findWordList(userId, workId)` で論理削除されていないワード一覧を返す。どちらも書籍を INNER JOIN し、所有者・論理削除の条件を共通の `buildWorkCondition` で付ける（実装済み。並び順のみ変更）
+- Repository: `findWork(userId, workId)` で作品の取得可否を確認し、`findWordList(userId, workId)` で論理削除済みを含むワード一覧を `deleteFlg` 付きで返す（2026-11-09 に変更。`docs/delete-restore/plan.md` の U5・U9）。どちらも書籍を INNER JOIN し、所有者・論理削除の条件を付ける
 - 並び順: `page asc nulls last`, `id asc`
 - Usecase: `findWork` が null なら `err({ type: "NOT_FOUND" })`、それ以外は `ok(GetListWordResultDto)`
 - workId は `WorkIdParamSchema` で受け取り、Usecase が `WorkId.of` で包む

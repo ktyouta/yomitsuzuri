@@ -11,6 +11,7 @@ export type CharacterRelationListItem = {
   targetCharacterId: string;
   targetCharacterName: string;
   relationName: string;
+  deleteFlg: boolean;
 };
 
 /**
@@ -29,7 +30,7 @@ export interface IGetListCharacterRelationRepository {
    * 作品の登場人物関係一覧を ID の昇順で取得
    * @param userId 書籍を所有するユーザーID
    * @param workId 関係が属する作品ID
-   * @returns 関係と両方の登場人物が論理削除されていない関係の一覧（作品が取得対象外の場合は空配列）
+   * @returns 論理削除済みの関係を含む一覧。人物または相手が論理削除されている関係は含まない（作品が取得対象外の場合は空配列）
    */
   findCharacterRelationList(userId: UserId, workId: WorkId): Promise<CharacterRelationListItem[]>;
 }

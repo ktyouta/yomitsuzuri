@@ -6,8 +6,8 @@ const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";
 
 const EVENTS: EventListItem[] = [
-  { id: "01BX5ZZKBKACTAV9WEVGEMMVT0", occurredTiming: "3日目の夜", content: "屋敷の主人が書斎で倒れているのが見つかる", sortOrder: 1 },
-  { id: "01BX5ZZKBKACTAV9WEVGEMMVT1", occurredTiming: null, content: "執事が鍵の行方を問われる", sortOrder: 2 },
+  { id: "01BX5ZZKBKACTAV9WEVGEMMVT0", occurredTiming: "3日目の夜", content: "屋敷の主人が書斎で倒れているのが見つかる", sortOrder: 1, deleteFlg: false },
+  { id: "01BX5ZZKBKACTAV9WEVGEMMVT1", occurredTiming: null, content: "執事が鍵の行方を問われる", sortOrder: 2, deleteFlg: true },
 ];
 
 function createRepository(work: { id: string } | null, events: EventListItem[]) {
@@ -18,7 +18,7 @@ function createRepository(work: { id: string } | null, events: EventListItem[]) 
 }
 
 describe("GetListEventUsecase", () => {
-  it("取得した出来事一覧をそのまま返すこと", async () => {
+  it("取得した出来事一覧を、論理削除済みも含めてそのまま返すこと", async () => {
     const usecase = new GetListEventUsecase(createRepository({ id: WORK_ID }, EVENTS));
 
     const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID });

@@ -34,7 +34,7 @@ const updateUser = new Hono<AppEnv>().patch(
                 case "INVALID_INPUT":
                     return c.json({ message: "入力エラー", data: error.errors.map((e) => ({ field: e.field, message: toInputErrorMessage(e.error) })) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
                 case "DUPLICATE_NAME":
-                    return c.json({ message: "既にユーザーが存在しています。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+                    return c.json({ message: "既にユーザーが存在しています。" }, HTTP_STATUS.CONFLICT);
                 case "NOT_FOUND":
                     return c.json({ message: "ユーザーが見つかりません。" }, HTTP_STATUS.NOT_FOUND);
                 default: {

@@ -15,13 +15,13 @@ export class GetEventRepository implements IGetEventRepository {
         id: eventTransaction.id,
         occurredTiming: eventTransaction.occurredTiming,
         content: eventTransaction.content,
+        deleteFlg: eventTransaction.deleteFlg,
       })
       .from(eventTransaction)
       .innerJoin(workTransaction, eq(eventTransaction.workId, workTransaction.id))
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
       .where(and(
         eq(eventTransaction.id, eventId.value),
-        eq(eventTransaction.deleteFlg, false),
         eq(workTransaction.deleteFlg, false),
         eq(bookTransaction.userId, userId.value),
         eq(bookTransaction.deleteFlg, false)

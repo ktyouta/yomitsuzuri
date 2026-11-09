@@ -8,6 +8,7 @@ export type EventDetail = {
   id: string;
   occurredTiming: string | null;
   content: string;
+  deleteFlg: boolean;
 };
 
 /**
@@ -18,7 +19,7 @@ export interface IGetEventRepository {
    * 出来事を1件取得
    * @param userId 書籍を所有するユーザーID
    * @param eventId 出来事ID
-   * @returns 出来事（出来事が存在しない・他ユーザーの書籍の出来事・出来事、作品または書籍が論理削除済みの場合は null）
+   * @returns 論理削除済みを含む出来事（出来事が存在しない・他ユーザーの書籍の出来事・作品または書籍が論理削除済みの場合は null）
    */
   findEvent(userId: UserId, eventId: EventId): Promise<EventDetail | null>;
 }

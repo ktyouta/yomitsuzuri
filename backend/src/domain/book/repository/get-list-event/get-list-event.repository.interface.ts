@@ -9,6 +9,7 @@ export type EventListItem = {
   occurredTiming: string | null;
   content: string;
   sortOrder: number;
+  deleteFlg: boolean;
 };
 
 /**
@@ -27,7 +28,7 @@ export interface IGetListEventRepository {
    * 作品の出来事一覧を時系列順（sortOrder の昇順、同じ sortOrder 内は ID の昇順）で取得
    * @param userId 書籍を所有するユーザーID
    * @param workId 出来事が属する作品ID
-   * @returns 論理削除されていない出来事一覧（作品が取得対象外の場合は空配列）
+   * @returns 論理削除済みを含む出来事一覧（作品が取得対象外の場合は空配列）
    */
   findEventList(userId: UserId, workId: WorkId): Promise<EventListItem[]>;
 }

@@ -8,6 +8,7 @@ export type GetListCharacterRelationResultType = {
     targetCharacterId: string;
     targetCharacterName: string;
     relationName: string;
+    deleteFlg: boolean;
   }[];
 };
 
@@ -18,7 +19,7 @@ export class GetListCharacterRelationResultDto {
   private readonly _value: GetListCharacterRelationResultType;
 
   /**
-   * @param list 作品の登場人物関係一覧
+   * @param list 作品の登場人物関係一覧（論理削除済みの関係を含む）
    */
   constructor(list: CharacterRelationListItem[]) {
     this._value = {
@@ -29,6 +30,7 @@ export class GetListCharacterRelationResultDto {
         targetCharacterId: e.targetCharacterId,
         targetCharacterName: e.targetCharacterName,
         relationName: e.relationName,
+        deleteFlg: e.deleteFlg,
       })),
     };
   }

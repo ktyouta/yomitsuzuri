@@ -29,15 +29,13 @@ export class GetListEventRepository implements IGetListEventRepository {
         occurredTiming: eventTransaction.occurredTiming,
         content: eventTransaction.content,
         sortOrder: eventTransaction.sortOrder,
+        deleteFlg: eventTransaction.deleteFlg,
       })
       .from(eventTransaction)
       // 他ユーザー・論理削除済みの作品・書籍の出来事を返さないため、作品・書籍側の条件で絞り込む
       .innerJoin(workTransaction, eq(eventTransaction.workId, workTransaction.id))
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
-      .where(and(
-        this.buildWorkCondition(userId, workId),
-        eq(eventTransaction.deleteFlg, false)
-      ))
+      .where(this.buildWorkCondition(userId, workId))
       // sortOrder は一意制約がないため、同じ sortOrder 内の順序を固定するよう id を第2キーにする
       .orderBy(asc(eventTransaction.sortOrder), asc(eventTransaction.id));
   }

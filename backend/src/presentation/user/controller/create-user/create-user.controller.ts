@@ -28,7 +28,7 @@ const createUser = new Hono<AppEnv>().post(
                 case "INVALID_INPUT":
                     return c.json({ message: "入力エラー", data: error.errors.map((e) => ({ field: e.field, message: toInputErrorMessage(e.error) })) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
                 case "DUPLICATE_NAME":
-                    return c.json({ message: "既にユーザーが存在しています。" }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+                    return c.json({ message: "既にユーザーが存在しています。" }, HTTP_STATUS.CONFLICT);
                 default: {
                     // 全てのエラー種別を網羅していることを型で保証する
                     error satisfies never;

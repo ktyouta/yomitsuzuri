@@ -29,15 +29,13 @@ export class GetListWordRepository implements IGetListWordRepository {
         text: wordTransaction.text,
         page: wordTransaction.page,
         updatedAt: wordTransaction.updatedAt,
+        deleteFlg: wordTransaction.deleteFlg,
       })
       .from(wordTransaction)
       // 他ユーザー・論理削除済みの作品・書籍の気になるワードを返さないため、作品・書籍側の条件で絞り込む
       .innerJoin(workTransaction, eq(wordTransaction.workId, workTransaction.id))
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
-      .where(and(
-        this.buildWorkCondition(userId, workId),
-        eq(wordTransaction.deleteFlg, false)
-      ))
+      .where(this.buildWorkCondition(userId, workId))
       // SQLite の昇順では null が先頭になるため、ページ未入力を末尾にするよう nulls last を指定する。同じページ内の順序を固定するため id を第2キーにする
       .orderBy(sql`${wordTransaction.page} asc nulls last`, asc(wordTransaction.id));
   }

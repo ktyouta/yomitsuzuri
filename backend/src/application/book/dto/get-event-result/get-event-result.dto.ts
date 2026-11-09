@@ -4,6 +4,7 @@ export type GetEventResultType = {
   id: string;
   occurredTiming: string | null;
   content: string;
+  deleteFlg: boolean;
 };
 
 /**
@@ -20,6 +21,7 @@ export class GetEventResultDto {
       id: event.id,
       occurredTiming: event.occurredTiming,
       content: event.content,
+      deleteFlg: event.deleteFlg,
     };
   }
 

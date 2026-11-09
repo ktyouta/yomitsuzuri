@@ -6,6 +6,7 @@ export type GetListEventResultType = {
     occurredTiming: string | null;
     content: string;
     sortOrder: number;
+    deleteFlg: boolean;
   }[];
 };
 
@@ -16,7 +17,7 @@ export class GetListEventResultDto {
   private readonly _value: GetListEventResultType;
 
   /**
-   * @param list 作品の出来事一覧
+   * @param list 作品の出来事一覧（論理削除済みを含む）
    */
   constructor(list: EventListItem[]) {
     this._value = {
@@ -25,6 +26,7 @@ export class GetListEventResultDto {
         occurredTiming: e.occurredTiming,
         content: e.content,
         sortOrder: e.sortOrder,
+        deleteFlg: e.deleteFlg,
       })),
     };
   }

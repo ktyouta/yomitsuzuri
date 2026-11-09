@@ -6,8 +6,8 @@ const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";
 
 const WORDS: WordListItem[] = [
-  { id: "01BX5ZZKBKACTAV9WEVGEMMVT0", text: "赤い手帳", page: 12, updatedAt: "2026-10-01T00:00:00.000Z" },
-  { id: "01BX5ZZKBKACTAV9WEVGEMMVT1", text: "青い封筒", page: null, updatedAt: "2026-10-02T00:00:00.000Z" },
+  { id: "01BX5ZZKBKACTAV9WEVGEMMVT0", text: "赤い手帳", page: 12, updatedAt: "2026-10-01T00:00:00.000Z", deleteFlg: false },
+  { id: "01BX5ZZKBKACTAV9WEVGEMMVT1", text: "青い封筒", page: null, updatedAt: "2026-10-02T00:00:00.000Z", deleteFlg: true },
 ];
 
 function createRepository(work: { id: string } | null, words: WordListItem[]) {
@@ -18,7 +18,7 @@ function createRepository(work: { id: string } | null, words: WordListItem[]) {
 }
 
 describe("GetListWordUsecase", () => {
-  it("取得した気になるワード一覧をそのまま返すこと", async () => {
+  it("取得した気になるワード一覧を、論理削除済みも含めてそのまま返すこと", async () => {
     const usecase = new GetListWordUsecase(createRepository({ id: WORK_ID }, WORDS));
 
     const result = await usecase.execute({ userId: USER_ID, workId: WORK_ID });
