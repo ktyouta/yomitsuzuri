@@ -62,6 +62,7 @@ export class DeleteEventRepository implements IDeleteEventRepository {
 
     await this.db.update(eventTransaction)
       .set({
+        sortOrder: snapshot.sortOrder,
         deleteFlg: snapshot.deleteFlg,
         updatedAt: now,
       })

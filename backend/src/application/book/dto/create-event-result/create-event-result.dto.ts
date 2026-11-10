@@ -5,7 +5,7 @@ export type CreateEventResultType = {
   workId: string;
   occurredTiming: string | null;
   content: string;
-  sortOrder: number;
+  sortOrder: number | null;
 };
 
 /**

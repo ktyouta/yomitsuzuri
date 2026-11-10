@@ -36,8 +36,9 @@ export class GetListEventRepository implements IGetListEventRepository {
       .innerJoin(workTransaction, eq(eventTransaction.workId, workTransaction.id))
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
       .where(this.buildWorkCondition(userId, workId))
-      // sortOrder は一意制約がないため、同じ sortOrder 内の順序を固定するよう id を第2キーにする
-      .orderBy(asc(eventTransaction.sortOrder), asc(eventTransaction.id));
+      // 削除済みを末尾にするため削除フラグを第1キーにする（docs/delete-restore/plan.md の U12）
+      // 削除済み同士は時系列順が NULL で並ぶことがあり、時系列順には一意制約もないため、順序を固定するよう id を最後のキーにする
+      .orderBy(asc(eventTransaction.deleteFlg), asc(eventTransaction.sortOrder), asc(eventTransaction.id));
   }
 
   /**

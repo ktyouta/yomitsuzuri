@@ -37,11 +37,12 @@ type EventTimelineSnapshotType = {
  *
  * 不変条件:
  * - 保持する出来事はすべて自身の作品に属すること
+ * - 保持する出来事はすべて時系列順を持つこと（時系列順を持たないのは個別に削除した出来事で、並びに含めないため）
  */
 export class EventTimelineAggregate {
 
     /**
-     * @throws 別の作品の出来事が含まれる場合（不変条件違反）
+     * @throws 別の作品の出来事・時系列順を持たない出来事が含まれる場合（不変条件違反）
      */
     private constructor(
         private readonly _workId: WorkId,
@@ -51,6 +52,23 @@ export class EventTimelineAggregate {
         if (otherWorkEvent) {
             throw new Error(`別の作品の出来事が含まれています。workId:${_workId.value} eventId:${otherWorkEvent.id.value}`);
         }
+
+        _events.forEach((event) => this.sortOrderValue(event));
+    }
+
+    /**
+     * 出来事の時系列順の値を取得する
+     * @param event 出来事
+     * @returns 時系列順の値
+     * @throws 時系列順を持たない場合（不変条件違反）
+     */
+    private sortOrderValue(event: EventEntity): number {
+        const value = event.sortOrder.value;
+        if (value === null) {
+            throw new Error(`時系列順を持たない出来事が含まれています。eventId:${event.id.value}`);
+        }
+
+        return value;
     }
 
     /**
@@ -58,6 +76,7 @@ export class EventTimelineAggregate {
      *
      * 事前条件（満たさない場合は throw）:
      * - 出来事がすべて引数の作品に属すること
+     * - 出来事がすべて時系列順を持つこと
      * @param params 作品と、作品に属する出来事
      * @returns 渡した値をそのまま保持する出来事の並び
      * @throws 事前条件を満たさない場合（取得処理の不具合）
@@ -81,6 +100,7 @@ export class EventTimelineAggregate {
      * - 時系列順以外の値と、保持する出来事の順番は変更しない
      * @param params 保持するすべての出来事の ID と、置き換え後の時系列順
      * @returns 成功時は undefined、引数の指定の誤り時はその内容を持つ Result
+     * @throws 時系列順を持たない値（null）を指定した場合（呼び出し側の不具合。自身は変更しない）
      */
     update(params: UpdateEventTimelineSortParamType[]): Result<undefined, EventTimelineUpdateError> {
         const updateEventMap = new Map(params.map((param) => [param.id.value, param]));
@@ -104,7 +124,7 @@ export class EventTimelineAggregate {
                 throw new Error(`照合済みの出来事が見つかりません。(ID: ${event.id.value})`);
             }
 
-            return EventEntity.reconstruct({
+            const updatedEvent = EventEntity.reconstruct({
                 id: event.id,
                 workId: event.workId,
                 content: event.content,
@@ -112,6 +132,10 @@ export class EventTimelineAggregate {
                 sortOrder: targetEvent.sortOrder,
                 deleteFlg: event.deleteFlg,
             });
+            // 時系列順を持たない値で置き換えると不変条件を満たさなくなるため、置き換え後に確認する
+            this.sortOrderValue(updatedEvent);
+
+            return updatedEvent;
         });
 
         return ok(undefined);
@@ -128,7 +152,7 @@ export class EventTimelineAggregate {
      * @returns 追加した出来事
      */
     add(params: AddEventTimelineParamType): EventEntity {
-        const maxSortOrder = this._events.reduce((max, event) => Math.max(max, event.sortOrder.value), EventSortOrder.FIRST - 1);
+        const maxSortOrder = this._events.reduce((max, event) => Math.max(max, this.sortOrderValue(event)), EventSortOrder.FIRST - 1);
         const event = EventEntity.create({
             workId: this._workId,
             occurredTiming: params.occurredTiming,
@@ -146,6 +170,6 @@ export class EventTimelineAggregate {
      * @returns 保持する出来事の値
      */
     toSnapshot(): EventTimelineSnapshotType[] {
-        return this._events.map((event) => event.toSnapshot());
+        return this._events.map((event) => ({ ...event.toSnapshot(), sortOrder: this.sortOrderValue(event) }));
     }
 }

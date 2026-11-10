@@ -9,7 +9,7 @@ const EVENT_ID_1 = "01ARZ3NDEKTSV4RRFFQ69G5FAX";
 const EVENT_ID_2 = "01ARZ3NDEKTSV4RRFFQ69G5FAY";
 const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
-function createEvent(id: string, sortOrder: number, deleteFlg = false, workId = WORK_ID) {
+function createEvent(id: string, sortOrder: number | null, deleteFlg = false, workId = WORK_ID) {
   return EventEntity.reconstruct({
     id: EventId.of(id),
     workId: WorkId.of(workId),
@@ -45,6 +45,13 @@ describe("EventTimelineAggregate", () => {
       expect(() => EventTimelineAggregate.reconstruct({
         workId: WorkId.of(WORK_ID),
         events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, 2, false, OTHER_WORK_ID)],
+      })).toThrow();
+    });
+
+    it("時系列順を持たない出来事が含まれる場合は throw すること", () => {
+      expect(() => EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, null)],
       })).toThrow();
     });
   });
@@ -94,7 +101,7 @@ describe("EventTimelineAggregate", () => {
       });
     }
 
-    function sortParam(id: string, sortOrder: number) {
+    function sortParam(id: string, sortOrder: number | null) {
       return { id: EventId.of(id), sortOrder: EventSortOrder.of(sortOrder) };
     }
 
@@ -131,6 +138,14 @@ describe("EventTimelineAggregate", () => {
       const result = timeline.update([sortParam(EVENT_ID_1, 3), sortParam(EVENT_ID_2, 3)]);
 
       expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_SORT_ORDER" });
+      expect(timeline.toSnapshot()).toEqual(before);
+    });
+
+    it("時系列順を持たない値を指定した場合は throw し、自身は変更しないこと", () => {
+      const timeline = createTimeline();
+      const before = timeline.toSnapshot();
+
+      expect(() => timeline.update([sortParam(EVENT_ID_1, 2), sortParam(EVENT_ID_2, null)])).toThrow();
       expect(timeline.toSnapshot()).toEqual(before);
     });
   });

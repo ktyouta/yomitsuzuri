@@ -5,7 +5,7 @@ export type GetListEventResultType = {
     id: string;
     occurredTiming: string | null;
     content: string;
-    sortOrder: number;
+    sortOrder: number | null;
     deleteFlg: boolean;
   }[];
 };

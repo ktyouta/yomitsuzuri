@@ -33,7 +33,7 @@ function createUsecase({ eventExists = true }: Options = {}) {
 }
 
 describe("DeleteEventUsecase", () => {
-  it("出来事を削除済みにして1回保存し、ok を返すこと", async () => {
+  it("出来事を削除済みにして時系列順を外し、1回保存して ok を返すこと", async () => {
     const { usecase, deleteEventRepository } = createUsecase();
 
     const result = await usecase.execute({ userId: USER_ID, eventId: EVENT_ID });
@@ -46,7 +46,7 @@ describe("DeleteEventUsecase", () => {
       workId: WORK_ID,
       occurredTiming: "3日目の夜",
       content: "屋敷の主人が書斎で倒れているのが見つかる",
-      sortOrder: 3,
+      sortOrder: null,
       deleteFlg: true,
     });
   });

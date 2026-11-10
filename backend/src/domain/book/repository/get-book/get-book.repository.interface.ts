@@ -47,7 +47,7 @@ export interface IGetBookRepository {
   findBook(userId: UserId, bookId: BookId): Promise<BookItem | null>;
 
   /**
-   * 書籍に収録された作品一覧を表示順の昇順で取得
+   * 書籍に収録された作品一覧を取得（削除されていない作品を先に、削除済みを末尾に並べ、それぞれ表示順の昇順・同じ表示順内は ID の昇順。削除済みのうち表示順が NULL のものは表示順を持つものの前に並ぶ）
    * @param userId 書籍を所有するユーザーID
    * @param bookId 書籍ID
    * @returns 論理削除済みを含む作品一覧（書籍が取得対象外の場合は空配列）

@@ -86,7 +86,7 @@ describe("EventEntity", () => {
   });
 
   describe("delete", () => {
-    it("自身を削除済みにし、他の値は変更しないこと", () => {
+    it("自身を削除済みにして時系列順を持たない状態にし、他の値は変更しないこと", () => {
       const event = createEvent();
 
       event.delete();
@@ -96,7 +96,7 @@ describe("EventEntity", () => {
         workId: WORK_ID,
         occurredTiming: "3日目の夜",
         content: "屋敷の主人が書斎で倒れているのが見つかる",
-        sortOrder: 2,
+        sortOrder: null,
         deleteFlg: true,
       });
     });

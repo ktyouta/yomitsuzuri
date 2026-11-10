@@ -26,14 +26,14 @@ type EventSnapshotType = {
     workId: string;
     occurredTiming: string | null;
     content: string;
-    sortOrder: number;
+    sortOrder: number | null;
     deleteFlg: boolean;
 }
 
 /**
  * 出来事（作品の物語中で起きた出来事）
  *
- * 時系列順は値として持つだけで変更しない（並べ替えは作品内の出来事の並びを扱う集約が担う）
+ * 時系列順は削除時に外す以外は変更しない（並べ替えは作品内の出来事の並びを扱う集約が担う）
  */
 export class EventEntity {
 
@@ -41,7 +41,7 @@ export class EventEntity {
         private readonly _workId: WorkId,
         private _occurredTiming: EventOccurredTiming,
         private _content: EventContent,
-        private readonly _sortOrder: EventSortOrder,
+        private _sortOrder: EventSortOrder,
         private _deleteFlg: boolean,
     ) { }
 
@@ -128,7 +128,8 @@ export class EventEntity {
      * - 出来事が削除されていないこと
      *
      * 事後条件:
-     * - 自身を削除済みにする（時系列順を含む他の項目は変更しない）
+     * - 自身を削除済みにし、時系列順を持たない状態（null）にする（docs/delete-restore/plan.md の U13）
+     * - ID・作品・発生タイミング・内容は変更しない
      * @throws 事前条件を満たさない場合
      */
     delete(): void {
@@ -136,6 +137,7 @@ export class EventEntity {
             throw new Error(`既に削除済みの出来事です。`);
         }
         this._deleteFlg = true;
+        this._sortOrder = this._sortOrder.reset();
     }
 
     /**

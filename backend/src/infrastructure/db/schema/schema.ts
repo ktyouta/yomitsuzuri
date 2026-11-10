@@ -245,7 +245,7 @@ export const eventTransaction = sqliteTable(
     workId: text("work_id").notNull().references(() => workTransaction.id, { onDelete: "no action" }), // FK → work_transaction.id
     occurredTiming: text("occurred_timing"), // 物語中の時点（「3日目の夜」「第2章」等）のため text
     content: text("content").notNull(),
-    sortOrder: integer("sort_order").notNull(), // occurred_timing は自由記述で並べ替えに使えないため、時系列順を別に持つ
+    sortOrder: integer("sort_order"), // occurred_timing は自由記述で並べ替えに使えないため、時系列順を別に持つ。個別に削除した出来事は NULL にする（docs/delete-restore/plan.md の U13）
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),

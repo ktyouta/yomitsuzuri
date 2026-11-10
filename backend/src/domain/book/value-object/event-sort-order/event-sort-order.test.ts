@@ -18,8 +18,21 @@ describe("EventSortOrder", () => {
       expect(EventSortOrder.of(3).value).toBe(3);
     });
 
+    it("null の場合は時系列順を持たない状態で生成できること", () => {
+      expect(EventSortOrder.of(null).value).toBeNull();
+    });
+
     it("制約を満たさない値の場合は throw すること", () => {
       expect(() => EventSortOrder.of(0)).toThrow();
+    });
+  });
+
+  describe("reset", () => {
+    it("値が null の時系列順を返し、自身は変更しないこと", () => {
+      const sortOrder = EventSortOrder.of(3);
+
+      expect(sortOrder.reset().value).toBeNull();
+      expect(sortOrder.value).toBe(3);
     });
   });
 });

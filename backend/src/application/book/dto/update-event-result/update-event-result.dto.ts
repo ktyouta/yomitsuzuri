@@ -5,7 +5,7 @@ type UpdateEventResultType = {
   workId: string;
   occurredTiming: string | null;
   content: string;
-  sortOrder: number;
+  sortOrder: number | null;
 };
 
 /**

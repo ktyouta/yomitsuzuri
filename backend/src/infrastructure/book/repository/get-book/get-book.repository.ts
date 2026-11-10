@@ -69,7 +69,9 @@ export class GetBookRepository implements IGetBookRepository {
       )
       // 削除済みの作品も画面で削除済みとして表示するため、作品の削除フラグでは絞り込まない
       .where(this.buildBookCondition(userId, bookId))
-      .orderBy(asc(workTransaction.sortOrder));
+      // 削除済みを末尾にするため削除フラグを第1キーにする（docs/delete-restore/plan.md の U12）
+      // 削除済み同士は表示順が NULL で並ぶことがあり、表示順には一意制約もないため、順序を固定するよう id を最後のキーにする
+      .orderBy(asc(workTransaction.deleteFlg), asc(workTransaction.sortOrder), asc(workTransaction.id));
   }
 
   /**
