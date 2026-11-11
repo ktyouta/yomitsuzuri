@@ -1,6 +1,6 @@
 import { err, ok, type Result } from "neverthrow";
-import { WorkId, type IconId, type WorkMemo, type WorkSort, type WorkTitle } from "../../value-object";
 import type { Timestamp } from "../../../shared";
+import { WorkId, type IconId, type WorkMemo, type WorkSort, type WorkTitle } from "../../value-object";
 
 type CreateWorkParamType = {
     title: WorkTitle;
@@ -49,11 +49,11 @@ export class WorkEntity {
 
     private constructor(private readonly _id: WorkId,
         private readonly _title: WorkTitle,
-        private readonly _sort: WorkSort,
+        private _sort: WorkSort,
         private readonly _memo: WorkMemo,
         private readonly _iconId: IconId,
-        private readonly _deleteFlg: boolean,
-        private readonly _updatedAt: Timestamp,
+        private _deleteFlg: boolean,
+        private _updatedAt: Timestamp,
     ) { }
 
     get id() {
@@ -144,6 +144,28 @@ export class WorkEntity {
             this._deleteFlg,
             params.updatedAt,
         ));
+    }
+
+    /**
+     * 作品削除（自身を削除済みにする）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 作品が削除されていないこと
+     *
+     * 事後条件:
+     * - 自身を削除済みにし、表示順を持たない状態（null）にする（docs/delete-restore/plan.md の U13）
+     * - 更新日時を引数の値に置き換える
+     * - ID・作品名・メモ・アイコンは変更しない
+     * @param updatedAt 削除後の更新日時
+     * @throws 事前条件を満たさない場合
+     */
+    delete(updatedAt: Timestamp): void {
+        if (this._deleteFlg) {
+            throw new Error(`既に削除済みの作品です。`);
+        }
+        this._deleteFlg = true;
+        this._sort = this._sort.reset();
+        this._updatedAt = updatedAt;
     }
 
     /**

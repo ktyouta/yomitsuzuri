@@ -7,6 +7,7 @@ export * from "./delete-character";
 export * from "./delete-character-relation";
 export * from "./delete-event";
 export * from "./delete-word";
+export * from "./delete-work";
 export * from "./get-book";
 export * from "./get-character";
 export * from "./get-event";

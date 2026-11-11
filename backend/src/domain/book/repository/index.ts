@@ -11,6 +11,7 @@ export * from "./delete-character";
 export * from "./delete-character-relation";
 export * from "./delete-event";
 export * from "./delete-word";
+export * from "./delete-work";
 export * from "./gender-validity";
 export * from "./get-book";
 export * from "./get-character";

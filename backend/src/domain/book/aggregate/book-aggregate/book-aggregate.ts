@@ -58,6 +58,12 @@ type UpdateSingleWorkParamType = {
     updatedAt: Timestamp;
 };
 
+type DeleteWorkParamType = {
+    id: WorkId;
+    expectedUpdatedAt: Timestamp;
+    updatedAt: Timestamp;
+};
+
 /**
  * 書籍更新時の作品の指定の誤り・不変条件の違反
  */
@@ -85,6 +91,17 @@ export type BookWorkUpdateError = { type: "WORK_NOT_FOUND" }
     | { type: "CONFLICT_WORK" }
     | { type: "DUPLICATE_WORK_TITLE"; title: string }
     | { type: "DUPLICATE_DELETED_WORK_TITLE"; title: string };
+
+/**
+ * 作品1件の削除の失敗
+ * - WORK_NOT_FOUND: 削除対象の作品が書籍に存在しない、または削除済み
+ * - CONFLICT_WORK: 画面の表示後に、削除対象の作品が他の操作で更新された
+ * - ALL_WORK_DELETED: 削除すると、書籍に削除されていない作品が1件も残らない
+ */
+export type BookWorkDeleteError =
+    | { type: "CONFLICT_WORK" }
+    | { type: "WORK_NOT_FOUND" }
+    | { type: "ALL_WORK_DELETED" };
 
 type BookSnapshotType = {
     id: string;
@@ -446,5 +463,48 @@ export class BookAggregate {
         });
 
         return ok(updated.value);
+    }
+
+    /**
+     * 作品1件の削除（対象の作品を削除済みにし、表示順を持たない状態にする）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 書籍が削除されていないこと
+     *
+     * err の条件（上から順に判定し、該当した時点で返す）:
+     * - WORK_NOT_FOUND: 削除対象の作品が書籍に存在しない、または削除済みであること
+     * - CONFLICT_WORK: 画面の表示時点の作品の更新日時（params.expectedUpdatedAt）が、削除対象の作品の更新日時と一致しないこと
+     *   （最後の1作品の判定より先に判定する。画面の表示後に変わった古い内容をもとに、他のエラーを返さないため）
+     * - ALL_WORK_DELETED: 削除対象の作品の他に、削除されていない作品がないこと（書籍には削除されていない作品が1件以上必要なため）
+     *
+     * 事後条件:
+     * - ok の場合: 自身の作品のうち、削除対象の作品だけを削除済み・表示順なしにし、更新日時を params.updatedAt に置き換える（作品の他の値・他の作品・書籍情報（更新日時を含む）は変更しない）
+     * - err の場合: 自身は変更しない
+     * @param params 削除対象の作品 ID、画面の表示時点の作品の更新日時、削除後の作品の更新日時
+     * @returns 成功時は削除後の作品、作品が見つからない・排他の失敗・最後の1作品の場合はその内容を持つ Result
+     * @throws 事前条件を満たさない場合
+     */
+    deleteWork(params: DeleteWorkParamType): Result<WorkEntity, BookWorkDeleteError> {
+        if (this._deleteFlg) {
+            throw new Error(`既に削除済みの書籍です。`);
+        }
+
+        const workId = params.id;
+        const targetWork = this._works.find((work) => work.id.value === workId.value && !work.deleteFlg);
+        if (!targetWork) {
+            return err({ type: "WORK_NOT_FOUND" });
+        }
+
+        if (!targetWork.updatedAt.equals(params.expectedUpdatedAt)) {
+            return err({ type: "CONFLICT_WORK" });
+        }
+
+        if (this._works.filter((work) => !work.deleteFlg && work.id.value !== workId.value).length === 0) {
+            return err({ type: "ALL_WORK_DELETED" });
+        }
+
+        targetWork.delete(params.updatedAt);
+
+        return ok(targetWork);
     }
 }

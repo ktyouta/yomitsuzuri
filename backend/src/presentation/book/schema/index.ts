@@ -6,6 +6,7 @@ export * from "./create-character";
 export * from "./create-character-relation";
 export * from "./create-event";
 export * from "./create-word";
+export * from "./delete-work";
 export * from "./event-id-param";
 export * from "./get-list-book";
 export * from "./update-book";

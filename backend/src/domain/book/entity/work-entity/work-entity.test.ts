@@ -106,4 +106,40 @@ describe("WorkEntity", () => {
       expect(work.toSnapshot()).toEqual(createWork().toSnapshot());
     });
   });
+
+  describe("delete", () => {
+    function createWork(deleteFlg: boolean, sort: number | null) {
+      return WorkEntity.reconstruct({
+        id: WorkId.of(WORK_ID),
+        title: WorkTitle.of("容疑者Xの献身"),
+        sort: WorkSort.of(sort),
+        memo: WorkMemo.of("メモ"),
+        iconId: IconId.of(5),
+        deleteFlg,
+        updatedAt: Timestamp.of(UPDATED_AT),
+      });
+    }
+
+    it("自身を削除済み・表示順なしにし、更新日時を引数の値に置き換え、ID・作品名・メモ・アイコンは変更しないこと", () => {
+      const work = createWork(false, 2);
+
+      work.delete(Timestamp.of(NEW_UPDATED_AT));
+
+      expect(work.toSnapshot()).toEqual({
+        id: WORK_ID,
+        title: "容疑者Xの献身",
+        sort: null,
+        memo: "メモ",
+        iconId: 5,
+        deleteFlg: true,
+        updatedAt: NEW_UPDATED_AT,
+      });
+    });
+
+    it("既に削除済みの場合は throw すること", () => {
+      const work = createWork(true, null);
+
+      expect(() => work.delete(Timestamp.of(NEW_UPDATED_AT))).toThrow();
+    });
+  });
 });
