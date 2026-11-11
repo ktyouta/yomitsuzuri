@@ -23,6 +23,7 @@ export const API_ENDPOINT = {
   WORKS_ID_EVENT_ORDER: "/api/v1/works/:workId/event-order",
   WORKS_ID_WORDS: "/api/v1/works/:workId/words",
   CHARACTERS_ID: "/api/v1/characters/:characterId",
+  CHARACTERS_ID_RESTORE: "/api/v1/characters/:characterId/restore",
   CHARACTER_RELATIONS_ID: "/api/v1/character-relations/:relationId",
   EVENTS_ID: "/api/v1/events/:eventId",
   WORDS_ID: "/api/v1/words/:wordId",
