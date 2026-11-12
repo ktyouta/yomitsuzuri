@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { UpdateCharacterResultDto } from "..";
+import { RestoreCharacterResultDto } from "..";
 import { CharacterAge, CharacterCharacteristic, CharacterEntity, CharacterId, CharacterMemo, CharacterName, CharacterOccupation, GenderId, WorkId } from "../../../../domain";
 
-describe("UpdateCharacterResultDto", () => {
+describe("RestoreCharacterResultDto", () => {
   it("登場人物からDTOを生成できること", () => {
     const character = CharacterEntity.reconstruct({
       id: CharacterId.of("01BX5ZZKBKACTAV9WEVGEMMVT0"),
@@ -16,7 +16,7 @@ describe("UpdateCharacterResultDto", () => {
       deleteFlg: false,
     });
 
-    const dto = new UpdateCharacterResultDto(character);
+    const dto = new RestoreCharacterResultDto(character);
 
     expect(dto.value).toEqual({
       id: "01BX5ZZKBKACTAV9WEVGEMMVT0",

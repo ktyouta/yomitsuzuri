@@ -139,6 +139,23 @@ export class WordEntity {
     }
 
     /**
+     * 気になるワード復元（自身の削除済みを解除する）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 気になるワードが削除済みであること
+     *
+     * 事後条件:
+     * - 自身の削除済みを解除する（他の項目は変更しない）
+     * @throws 事前条件を満たさない場合
+     */
+    restore(): void {
+        if (!this._deleteFlg) {
+            throw new Error(`削除されていない気になるワードです。`);
+        }
+        this._deleteFlg = false;
+    }
+
+    /**
      * スナップショットを作成
      * @returns 気になるワードの値
      */

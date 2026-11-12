@@ -110,4 +110,29 @@ describe("WordEntity", () => {
       expect(word.toSnapshot()).toEqual(before);
     });
   });
+
+  describe("restore", () => {
+    it("自身の削除済みを解除し、他の値は変更しないこと", () => {
+      const word = createWord(true);
+
+      word.restore();
+
+      expect(word.toSnapshot()).toEqual({
+        id: WORD_ID,
+        workId: WORK_ID,
+        text: "赤い手帳",
+        memo: "メモ",
+        page: 42,
+        deleteFlg: false,
+      });
+    });
+
+    it("削除されていない場合は throw し、自身は変更しないこと", () => {
+      const word = createWord();
+      const before = word.toSnapshot();
+
+      expect(() => word.restore()).toThrow("削除されていない気になるワードです。");
+      expect(word.toSnapshot()).toEqual(before);
+    });
+  });
 });

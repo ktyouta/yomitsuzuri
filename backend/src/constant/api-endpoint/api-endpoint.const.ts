@@ -27,6 +27,7 @@ export const API_ENDPOINT = {
   CHARACTER_RELATIONS_ID: "/api/v1/character-relations/:relationId",
   EVENTS_ID: "/api/v1/events/:eventId",
   WORDS_ID: "/api/v1/words/:wordId",
+  WORDS_ID_RESTORE: "/api/v1/words/:wordId/restore",
   TAGS: "/api/v1/tags",
   TAGS_ID: "/api/v1/tags/:tagId",
 } as const;
