@@ -174,6 +174,23 @@ export class CharacterRelationEntity {
     }
 
     /**
+     * 登場人物関係復元（自身の削除済みを解除する）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 登場人物関係が削除済みであること
+     *
+     * 事後条件:
+     * - 自身の削除済みを解除する（他の項目は変更しない）
+     * @throws 事前条件を満たさない場合
+     */
+    restore(): void {
+        if (!this._deleteFlg) {
+            throw new Error(`削除されていない登場人物関係です。`);
+        }
+        this._deleteFlg = false;
+    }
+
+    /**
      * スナップショットを作成
      * @returns 登場人物関係の値
      */

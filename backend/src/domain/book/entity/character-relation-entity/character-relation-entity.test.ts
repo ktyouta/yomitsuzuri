@@ -150,4 +150,23 @@ describe("CharacterRelationEntity", () => {
       expect(relation.toSnapshot()).toEqual(before);
     });
   });
+
+  describe("restore", () => {
+    it("自身の削除済みを解除し、他の値は変更しないこと", () => {
+      const relation = reconstructRelation(true);
+      const before = relation.toSnapshot();
+
+      relation.restore();
+
+      expect(relation.toSnapshot()).toEqual({ ...before, deleteFlg: false });
+    });
+
+    it("削除されていない場合は throw し、自身は変更しないこと", () => {
+      const relation = reconstructRelation();
+      const before = relation.toSnapshot();
+
+      expect(() => relation.restore()).toThrow("削除されていない登場人物関係です。");
+      expect(relation.toSnapshot()).toEqual(before);
+    });
+  });
 });
