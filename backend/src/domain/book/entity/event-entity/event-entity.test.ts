@@ -109,4 +109,37 @@ describe("EventEntity", () => {
       expect(event.toSnapshot()).toEqual(before);
     });
   });
+
+  describe("restore", () => {
+    it("自身の削除済みを解除して時系列順を引数の値にし、他の値は変更しないこと", () => {
+      const event = createEvent(true);
+
+      event.restore(EventSortOrder.of(5));
+
+      expect(event.toSnapshot()).toEqual({
+        id: EVENT_ID,
+        workId: WORK_ID,
+        occurredTiming: "3日目の夜",
+        content: "屋敷の主人が書斎で倒れているのが見つかる",
+        sortOrder: 5,
+        deleteFlg: false,
+      });
+    });
+
+    it("削除されていない場合は throw し、自身は変更しないこと", () => {
+      const event = createEvent();
+      const before = event.toSnapshot();
+
+      expect(() => event.restore(EventSortOrder.of(5))).toThrow("未削除の出来事です。");
+      expect(event.toSnapshot()).toEqual(before);
+    });
+
+    it("時系列順を持たない値を指定した場合は throw し、自身は変更しないこと", () => {
+      const event = createEvent(true);
+      const before = event.toSnapshot();
+
+      expect(() => event.restore(EventSortOrder.of(null))).toThrow();
+      expect(event.toSnapshot()).toEqual(before);
+    });
+  });
 });

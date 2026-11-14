@@ -26,6 +26,7 @@ export * from "./icon-validity";
 export * from "./reading-status-validity";
 export * from "./restore-character";
 export * from "./restore-character-relation";
+export * from "./restore-event";
 export * from "./restore-word";
 export * from "./update-book";
 export * from "./update-character";

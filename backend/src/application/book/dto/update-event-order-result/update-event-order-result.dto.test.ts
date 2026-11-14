@@ -4,14 +4,14 @@ import { EventContent, EventEntity, EventId, EventOccurredTiming, EventSortOrder
 
 const WORK_ID = "01BX5ZZKBKACTAV9WEVGEMMVS0";
 
-function createEvent(id: string, sortOrder: number, occurredTiming: string | null) {
+function createEvent(id: string, sortOrder: number | null, occurredTiming: string | null, deleteFlg = false) {
   return EventEntity.reconstruct({
     id: EventId.of(id),
     workId: WorkId.of(WORK_ID),
     occurredTiming: EventOccurredTiming.of(occurredTiming),
     content: EventContent.of(`内容${id}`),
     sortOrder: EventSortOrder.of(sortOrder),
-    deleteFlg: false,
+    deleteFlg,
   });
 }
 
@@ -28,6 +28,19 @@ describe("UpdateEventOrderResultDto", () => {
       list: [
         { id: "01BX5ZZKBKACTAV9WEVGEMMVT2", occurredTiming: null, content: "内容01BX5ZZKBKACTAV9WEVGEMMVT2", sortOrder: 1 },
         { id: "01BX5ZZKBKACTAV9WEVGEMMVT1", occurredTiming: "3日目の夜", content: "内容01BX5ZZKBKACTAV9WEVGEMMVT1", sortOrder: 2 },
+      ],
+    });
+  });
+
+  it("削除済みの出来事は一覧に含めないこと", () => {
+    const timeline = EventTimelineAggregate.reconstruct({
+      workId: WorkId.of(WORK_ID),
+      events: [createEvent("01BX5ZZKBKACTAV9WEVGEMMVT1", 1, null), createEvent("01BX5ZZKBKACTAV9WEVGEMMVT2", null, null, true)],
+    });
+
+    expect(new UpdateEventOrderResultDto(timeline).value).toEqual({
+      list: [
+        { id: "01BX5ZZKBKACTAV9WEVGEMMVT1", occurredTiming: null, content: "内容01BX5ZZKBKACTAV9WEVGEMMVT1", sortOrder: 1 },
       ],
     });
   });

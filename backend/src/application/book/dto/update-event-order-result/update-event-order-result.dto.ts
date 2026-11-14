@@ -19,18 +19,29 @@ export class UpdateEventOrderResultDto {
 
   /**
    * @param timeline 時系列順を置き換えた出来事の並び
+   * @throws 削除されていない出来事が時系列順を持たない場合（集約の不変条件違反）
    */
   constructor(timeline: EventTimelineAggregate) {
     this._value = {
-      // 集約は出来事を元の順番のまま保持するため、置き換え後の時系列順で並べる
+      // 並び替えの対象は削除されていない出来事だけのため、削除済みは返さない
       list: timeline.toSnapshot()
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((event) => ({
-          id: event.id,
-          occurredTiming: event.occurredTiming,
-          content: event.content,
-          sortOrder: event.sortOrder,
-        })),
+        .flatMap((event) => {
+          if (event.deleteFlg) {
+            return [];
+          }
+          if (event.sortOrder === null) {
+            throw new Error(`時系列順を持たない出来事が含まれています。eventId:${event.id}`);
+          }
+
+          return [{
+            id: event.id,
+            occurredTiming: event.occurredTiming,
+            content: event.content,
+            sortOrder: event.sortOrder,
+          }];
+        })
+        // 集約は出来事を元の順番のまま保持するため、置き換え後の時系列順で並べる
+        .sort((a, b) => a.sortOrder - b.sortOrder),
     };
   }
 

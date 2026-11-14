@@ -48,11 +48,23 @@ describe("EventTimelineAggregate", () => {
       })).toThrow();
     });
 
-    it("時系列順を持たない出来事が含まれる場合は throw すること", () => {
+    it("時系列順を持たない削除されていない出来事が含まれる場合は throw すること", () => {
       expect(() => EventTimelineAggregate.reconstruct({
         workId: WorkId.of(WORK_ID),
         events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, null)],
       })).toThrow();
+    });
+
+    it("時系列順を持たない削除済みの出来事は保持すること", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, null, true)],
+      });
+
+      expect(timeline.toSnapshot()).toEqual([
+        createEvent(EVENT_ID_1, 1).toSnapshot(),
+        createEvent(EVENT_ID_2, null, true).toSnapshot(),
+      ]);
     });
   });
 
@@ -87,6 +99,28 @@ describe("EventTimelineAggregate", () => {
       expect(after.slice(0, 2)).toEqual(before);
       expect(added.sortOrder.value).toBe(4);
       expect(after[2]).toEqual(added.toSnapshot());
+    });
+
+    it("削除済みの出来事は時系列順の最大値の対象にしないこと", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, 5, true)],
+      });
+
+      const added = timeline.add(addParam());
+
+      expect(added.sortOrder.value).toBe(2);
+    });
+
+    it("削除済みの出来事だけの場合、先頭の時系列順で追加すること", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, null, true)],
+      });
+
+      const added = timeline.add(addParam());
+
+      expect(added.sortOrder.value).toBe(EventSortOrder.FIRST);
     });
   });
 
@@ -146,6 +180,99 @@ describe("EventTimelineAggregate", () => {
       const before = timeline.toSnapshot();
 
       expect(() => timeline.update([sortParam(EVENT_ID_1, 2), sortParam(EVENT_ID_2, null)])).toThrow();
+      expect(timeline.toSnapshot()).toEqual(before);
+    });
+
+    describe("削除済みの出来事を含む場合", () => {
+      /** 出来事1（時系列順1）・出来事2（時系列順2）・削除済みの出来事3（時系列順なし）を持つ出来事の並び */
+      function createTimelineWithDeleted() {
+        return EventTimelineAggregate.reconstruct({
+          workId: WorkId.of(WORK_ID),
+          events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, 2), createEvent(EVENT_ID_3, null, true)],
+        });
+      }
+
+      it("削除されていない出来事だけを指定すれば、その時系列順を置き換え、削除済みの出来事は変更しないこと", () => {
+        const timeline = createTimelineWithDeleted();
+
+        const result = timeline.update([sortParam(EVENT_ID_2, 1), sortParam(EVENT_ID_1, 2)]);
+
+        expect(result.isOk()).toBe(true);
+        expect(timeline.toSnapshot()).toEqual([
+          createEvent(EVENT_ID_1, 2).toSnapshot(),
+          createEvent(EVENT_ID_2, 1).toSnapshot(),
+          createEvent(EVENT_ID_3, null, true).toSnapshot(),
+        ]);
+      });
+
+      it("削除済みの出来事の ID が含まれる場合は EVENT_MISMATCH を返し、自身は変更しないこと", () => {
+        const timeline = createTimelineWithDeleted();
+        const before = timeline.toSnapshot();
+
+        const result = timeline.update([sortParam(EVENT_ID_1, 1), sortParam(EVENT_ID_2, 2), sortParam(EVENT_ID_3, 3)]);
+
+        expect(result._unsafeUnwrapErr()).toEqual({ type: "EVENT_MISMATCH" });
+        expect(timeline.toSnapshot()).toEqual(before);
+      });
+    });
+  });
+
+  describe("restore", () => {
+    const EVENT_ID_3 = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
+    const NOT_EXIST_EVENT_ID = "01ARZ3NDEKTSV4RRFFQ69G5FB0";
+
+    it("削除済みの出来事の削除を解除し、時系列順を削除されていない出来事の最大値+1にして、復元した出来事を返すこと（他の出来事と順番は変更しない）", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, 3), createEvent(EVENT_ID_2, null, true), createEvent(EVENT_ID_3, 1)],
+      });
+
+      const result = timeline.restore(EventId.of(EVENT_ID_2));
+
+      expect(result._unsafeUnwrap().toSnapshot()).toEqual(createEvent(EVENT_ID_2, 4).toSnapshot());
+      expect(timeline.toSnapshot()).toEqual([
+        createEvent(EVENT_ID_1, 3).toSnapshot(),
+        createEvent(EVENT_ID_2, 4).toSnapshot(),
+        createEvent(EVENT_ID_3, 1).toSnapshot(),
+      ]);
+    });
+
+    it("他の削除済みの出来事は時系列順の最大値の対象にせず、変更しないこと", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, null, true), createEvent(EVENT_ID_3, 5, true)],
+      });
+
+      const result = timeline.restore(EventId.of(EVENT_ID_2));
+
+      expect(result._unsafeUnwrap().sortOrder.value).toBe(2);
+      expect(timeline.toSnapshot()[2]).toEqual(createEvent(EVENT_ID_3, 5, true).toSnapshot());
+    });
+
+    it("削除されていない出来事がない場合、先頭の時系列順で復元すること", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, null, true)],
+      });
+
+      const result = timeline.restore(EventId.of(EVENT_ID_1));
+
+      expect(result._unsafeUnwrap().sortOrder.value).toBe(EventSortOrder.FIRST);
+    });
+
+    it.each([
+      ["並びに存在しない", NOT_EXIST_EVENT_ID],
+      ["削除されていない", EVENT_ID_1],
+    ])("%s出来事を指定した場合は EVENT_NOT_FOUND を返し、自身は変更しないこと", (_, eventId) => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, 1), createEvent(EVENT_ID_2, null, true)],
+      });
+      const before = timeline.toSnapshot();
+
+      const result = timeline.restore(EventId.of(eventId));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "EVENT_NOT_FOUND" });
       expect(timeline.toSnapshot()).toEqual(before);
     });
   });

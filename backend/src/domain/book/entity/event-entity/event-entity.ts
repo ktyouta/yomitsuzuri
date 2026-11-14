@@ -33,7 +33,7 @@ type EventSnapshotType = {
 /**
  * 出来事（作品の物語中で起きた出来事）
  *
- * 時系列順は削除時に外す以外は変更しない（並べ替えは作品内の出来事の並びを扱う集約が担う）
+ * 時系列順は削除時に外し、復元時に付ける以外は変更しない（並べ替えと、復元時の時系列順の採番は作品内の出来事の並びを扱う集約が担う）
  */
 export class EventEntity {
 
@@ -138,6 +138,30 @@ export class EventEntity {
         }
         this._deleteFlg = true;
         this._sortOrder = this._sortOrder.reset();
+    }
+
+    /**
+     * 出来事復元（自身の削除済みを解除する）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 出来事が削除済みであること
+     * - 時系列順を持つ値（null でない）を指定すること（削除されていない出来事は時系列順を持つため）
+     *
+     * 事後条件:
+     * - 自身の削除済みを解除し、時系列順を引数の値にする
+     * - ID・作品・発生タイミング・内容は変更しない
+     * @param newSortOrder 復元後の時系列順（採番は出来事の並びが担う）
+     * @throws 事前条件を満たさない場合（自身は変更しない）
+     */
+    restore(newSortOrder: EventSortOrder): void {
+        if (!this._deleteFlg) {
+            throw new Error(`未削除の出来事です。`);
+        }
+        if (newSortOrder.value === null) {
+            throw new Error(`時系列順を持たない値では復元できません。eventId:${this._id.value}`);
+        }
+        this._deleteFlg = false;
+        this._sortOrder = newSortOrder;
     }
 
     /**
