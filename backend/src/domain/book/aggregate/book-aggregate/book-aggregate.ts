@@ -64,6 +64,12 @@ type DeleteWorkParamType = {
     updatedAt: Timestamp;
 };
 
+type RestoreWorkParamType = {
+    id: WorkId;
+    expectedUpdatedAt: Timestamp;
+    updatedAt: Timestamp;
+};
+
 /**
  * 書籍更新時の作品の指定の誤り・不変条件の違反
  */
@@ -102,6 +108,15 @@ export type BookWorkDeleteError =
     | { type: "CONFLICT_WORK" }
     | { type: "WORK_NOT_FOUND" }
     | { type: "ALL_WORK_DELETED" };
+
+/**
+ * 作品1件の復元の失敗
+ * - WORK_NOT_FOUND: 復元対象の作品が書籍に存在しない、または削除されていない
+ * - CONFLICT_WORK: 画面の表示後に、復元対象の作品が他の操作で更新された
+ */
+export type BookWorkRestoreError =
+    | { type: "CONFLICT_WORK" }
+    | { type: "WORK_NOT_FOUND" };
 
 type BookSnapshotType = {
     id: string;
@@ -506,5 +521,58 @@ export class BookAggregate {
         targetWork.delete(params.updatedAt);
 
         return ok(targetWork);
+    }
+
+    /**
+     * 作品1件の復元（対象の作品の削除済みを解除し、表示順の末尾に戻す）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 書籍が削除されていないこと
+     *
+     * err の条件（上から順に判定し、該当した時点で返す）:
+     * - WORK_NOT_FOUND: 復元対象の作品が書籍に存在しない、または削除されていないこと
+     * - CONFLICT_WORK: 画面の表示時点の作品の更新日時（params.expectedUpdatedAt）が、復元対象の作品の更新日時と一致しないこと
+     *
+     * 作品名の重複は判定しない（削除済みを含めて作品名は重複しないため。docs/delete-restore/plan.md の U11・P10）。
+     *
+     * 事後条件:
+     * - ok の場合: 自身の作品のうち、復元対象の作品だけを削除されていない状態にし、表示順を削除されていない作品の最大値+1（なければ先頭）、
+     *   更新日時を params.updatedAt にする（docs/delete-restore/plan.md の U13。作品の他の値・他の作品・書籍情報（更新日時を含む）は変更しない）
+     * - err の場合: 自身は変更しない
+     * @param params 復元対象の作品 ID、画面の表示時点の作品の更新日時、復元後の作品の更新日時
+     * @returns 成功時は復元後の作品、作品が見つからない・排他の失敗時はその内容を持つ Result
+     * @throws 事前条件を満たさない場合
+     */
+    restoreWork(params: RestoreWorkParamType): Result<WorkEntity, BookWorkRestoreError> {
+        if (this._deleteFlg) {
+            throw new Error(`既に削除済みの書籍です。`);
+        }
+
+        const workId = params.id;
+        const targetWork = this._works.find((work) => work.id.value === workId.value && work.deleteFlg);
+        if (!targetWork) {
+            return err({ type: "WORK_NOT_FOUND" });
+        }
+
+        if (!targetWork.updatedAt.equals(params.expectedUpdatedAt)) {
+            return err({ type: "CONFLICT_WORK" });
+        }
+
+        const nextSort = this.nextSortOrder();
+        targetWork.restore({ nextSort, updatedAt: params.updatedAt });
+
+        return ok(targetWork);
+    }
+
+    /**
+     * 末尾に置く作品の表示順を採番する
+     * @returns 削除されていない作品の表示順の最大値+1（なければ先頭）
+     */
+    private nextSortOrder(): WorkSort {
+        const maxSort = this._works
+            .filter((work) => !work.deleteFlg)
+            .reduce((max, work) => Math.max(max, work.sort.value ?? WorkSort.FIRST - 1), WorkSort.FIRST - 1);
+
+        return WorkSort.of(maxSort + 1);
     }
 }

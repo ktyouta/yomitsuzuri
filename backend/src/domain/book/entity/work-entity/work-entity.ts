@@ -20,6 +20,12 @@ type UpdateWorkParamType = {
     updatedAt: Timestamp;
 };
 
+type RestoreWorkParamType = {
+    nextSort: WorkSort;
+    /** 更新後の更新日時 */
+    updatedAt: Timestamp;
+};
+
 type WorkReconstructParamType = {
     id: WorkId;
     title: WorkTitle;
@@ -166,6 +172,34 @@ export class WorkEntity {
         this._deleteFlg = true;
         this._sort = this._sort.reset();
         this._updatedAt = updatedAt;
+    }
+
+    /**
+     * 作品復元（自身の削除済みを解除する）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 作品が削除済みであること
+     * - 表示順を持つ値（null でない）を指定すること（削除されていない作品は表示順を持つため。docs/delete-restore/plan.md の U13）
+     *
+     * 事後条件:
+     * - 自身の削除済みを解除し、表示順・更新日時を引数の値にする
+     * - ID・作品名・メモ・アイコンは変更しない
+     * @param params 復元後の表示順・更新日時
+     * @throws 事前条件を満たさない場合（自身は変更しない）
+     */
+    restore(params: RestoreWorkParamType): void {
+        if (!this._deleteFlg) {
+            throw new Error(`未削除の作品です。`);
+        }
+
+        const nextSort = params.nextSort;
+        if (nextSort.value === null) {
+            throw new Error(`表示順を持たない値では復元できません。workId:${this._id.value}`);
+        }
+
+        this._deleteFlg = false;
+        this._sort = nextSort;
+        this._updatedAt = params.updatedAt;
     }
 
     /**

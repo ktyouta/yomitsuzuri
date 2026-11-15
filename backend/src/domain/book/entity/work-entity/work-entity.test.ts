@@ -142,4 +142,50 @@ describe("WorkEntity", () => {
       expect(() => work.delete(Timestamp.of(NEW_UPDATED_AT))).toThrow();
     });
   });
+
+  describe("restore", () => {
+    function createWork(deleteFlg: boolean, sort: number | null) {
+      return WorkEntity.reconstruct({
+        id: WorkId.of(WORK_ID),
+        title: WorkTitle.of("容疑者Xの献身"),
+        sort: WorkSort.of(sort),
+        memo: WorkMemo.of("メモ"),
+        iconId: IconId.of(5),
+        deleteFlg,
+        updatedAt: Timestamp.of(UPDATED_AT),
+      });
+    }
+
+    it("自身の削除済みを解除し、表示順・更新日時を引数の値に置き換え、ID・作品名・メモ・アイコンは変更しないこと", () => {
+      const work = createWork(true, null);
+
+      work.restore({ nextSort: WorkSort.of(3), updatedAt: Timestamp.of(NEW_UPDATED_AT) });
+
+      expect(work.toSnapshot()).toEqual({
+        id: WORK_ID,
+        title: "容疑者Xの献身",
+        sort: 3,
+        memo: "メモ",
+        iconId: 5,
+        deleteFlg: false,
+        updatedAt: NEW_UPDATED_AT,
+      });
+    });
+
+    it("削除されていない場合は throw し、自身を変更しないこと", () => {
+      const work = createWork(false, 2);
+      const before = work.toSnapshot();
+
+      expect(() => work.restore({ nextSort: WorkSort.of(3), updatedAt: Timestamp.of(NEW_UPDATED_AT) })).toThrow();
+      expect(work.toSnapshot()).toEqual(before);
+    });
+
+    it("表示順を持たない値を指定した場合は throw し、自身を変更しないこと", () => {
+      const work = createWork(true, null);
+      const before = work.toSnapshot();
+
+      expect(() => work.restore({ nextSort: WorkSort.of(null), updatedAt: Timestamp.of(NEW_UPDATED_AT) })).toThrow();
+      expect(work.toSnapshot()).toEqual(before);
+    });
+  });
 });
