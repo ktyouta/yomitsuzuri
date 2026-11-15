@@ -16,6 +16,7 @@ export * from "./restore-character-relation-result";
 export * from "./restore-character-result";
 export * from "./restore-event-result";
 export * from "./restore-word-result";
+export * from "./restore-work-result";
 export * from "./update-book-result";
 export * from "./update-character-relation-result";
 export * from "./update-character-result";

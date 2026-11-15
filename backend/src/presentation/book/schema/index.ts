@@ -9,6 +9,7 @@ export * from "./create-word";
 export * from "./delete-work";
 export * from "./event-id-param";
 export * from "./get-list-book";
+export * from "./restore-work";
 export * from "./update-book";
 export * from "./update-character";
 export * from "./update-character-relation";

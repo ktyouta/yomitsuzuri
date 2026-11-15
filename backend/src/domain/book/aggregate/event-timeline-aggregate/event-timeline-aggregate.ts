@@ -198,6 +198,61 @@ export class EventTimelineAggregate {
     }
 
     /**
+     * 作品の復元に連鎖して、削除済みの出来事をすべて復元する（docs/delete-restore/plan.md の U10）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 保持する出来事がすべて削除済みであること（作品が削除済みのとき、配下はすべて削除済みのため。U14）
+     *
+     * 事後条件（docs/delete-restore/plan.md の U13）:
+     * - すべての出来事の削除済みを解除する
+     * - 時系列順を持つ出来事（作品ごと削除したもの）は、時系列順を変更しない
+     * - 時系列順を持たない出来事（個別に削除していたもの）は、ID 順（作成順）に、時系列順の最大値+1（なければ先頭）から順に採番する
+     * - ID・作品・発生タイミング・内容と、保持する出来事の順番は変更しない
+     * @returns 復元したすべての出来事
+     * @throws 事前条件を満たさない場合（自身は変更しない）
+     */
+    restoreAll(): EventEntity[] {
+        const notDeletedEvent = this._events.find((event) => !event.deleteFlg);
+        if (notDeletedEvent) {
+            throw new Error(`削除されていない出来事が含まれています。eventId:${notDeletedEvent.id.value}`);
+        }
+
+        // 全件が削除済みのため、削除済みを含めた最大値の次から採番する
+        const maxSortOrder = this._events.reduce((max, event) => Math.max(max, event.sortOrder.value ?? EventSortOrder.FIRST - 1), EventSortOrder.FIRST - 1);
+        let nextSortOrder = EventSortOrder.of(maxSortOrder + 1);
+
+        // 時系列順を持つ出来事（作品ごと削除したもの）は、そのままの時系列順で戻す
+        this._events
+            .filter((event) => event.sortOrder.value !== null)
+            .forEach((event) => event.restore(event.sortOrder));
+
+        // 時系列順を持たない出来事（個別に削除していたもの）は、ID 順（作成順）で末尾に付ける
+        this._events
+            .filter((event) => event.sortOrder.value === null)
+            .sort((a, b) => EventTimelineAggregate.compareId(a, b))
+            .forEach((event) => {
+                event.restore(nextSortOrder);
+                nextSortOrder = EventSortOrder.of((nextSortOrder.value ?? EventSortOrder.FIRST) + 1);
+            });
+
+        return [...this._events];
+    }
+
+    /**
+     * 出来事を ID の昇順（ULID のため作成順）に並べるための比較
+     * @param a 比較する出来事
+     * @param b 比較する出来事
+     * @returns a が先なら負、b が先なら正、同じ ID なら 0
+     */
+    private static compareId(a: EventEntity, b: EventEntity): number {
+        if (a.id.value === b.id.value) {
+            return 0;
+        }
+
+        return a.id.value < b.id.value ? -1 : 1;
+    }
+
+    /**
      * 末尾に置く出来事の時系列順を採番する
      * @returns 削除されていない出来事の時系列順の最大値+1（なければ先頭）
      */

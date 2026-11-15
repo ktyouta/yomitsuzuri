@@ -16,6 +16,7 @@ export const API_ENDPOINT = {
   BOOKS_ID_TAGS_ID: "/api/v1/books/:bookId/tags/:tagId",
   BOOKS_ID_WORKS: "/api/v1/books/:bookId/works",
   WORKS_ID: "/api/v1/works/:workId",
+  WORKS_ID_RESTORE: "/api/v1/works/:workId/restore",
   WORKS_ID_POSITION: "/api/v1/works/:workId/position",
   WORKS_ID_CHARACTERS: "/api/v1/works/:workId/characters",
   WORKS_ID_CHARACTER_RELATIONS: "/api/v1/works/:workId/character-relations",

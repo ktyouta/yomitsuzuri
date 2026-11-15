@@ -276,4 +276,67 @@ describe("EventTimelineAggregate", () => {
       expect(timeline.toSnapshot()).toEqual(before);
     });
   });
+
+  describe("restoreAll", () => {
+    // ID の昇順: EVENT_ID_1 < EVENT_ID_2 < EVENT_ID_3 < EVENT_ID_4
+    const EVENT_ID_3 = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
+    const EVENT_ID_4 = "01ARZ3NDEKTSV4RRFFQ69G5FB0";
+
+    it("すべての出来事の削除済みを解除し、時系列順を持つものはそのまま、持たないものは ID 順に最大値+1から採番して、復元した出来事を返すこと（保持する順番は変更しない）", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [
+          createEvent(EVENT_ID_4, null, true),
+          createEvent(EVENT_ID_1, 2, true),
+          createEvent(EVENT_ID_2, null, true),
+          createEvent(EVENT_ID_3, 5, true),
+        ],
+      });
+      const expected = [
+        createEvent(EVENT_ID_4, 7).toSnapshot(),
+        createEvent(EVENT_ID_1, 2).toSnapshot(),
+        createEvent(EVENT_ID_2, 6).toSnapshot(),
+        createEvent(EVENT_ID_3, 5).toSnapshot(),
+      ];
+
+      const result = timeline.restoreAll();
+
+      expect(result.map((event) => event.toSnapshot())).toEqual(expected);
+      expect(timeline.toSnapshot()).toEqual(expected);
+    });
+
+    it("時系列順を持つ出来事がない場合、ID 順に先頭から採番すること", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_2, null, true), createEvent(EVENT_ID_1, null, true)],
+      });
+
+      timeline.restoreAll();
+
+      expect(timeline.toSnapshot()).toEqual([
+        createEvent(EVENT_ID_2, EventSortOrder.FIRST + 1).toSnapshot(),
+        createEvent(EVENT_ID_1, EventSortOrder.FIRST).toSnapshot(),
+      ]);
+    });
+
+    it("出来事がない場合、空配列を返すこと", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [],
+      });
+
+      expect(timeline.restoreAll()).toEqual([]);
+    });
+
+    it("削除されていない出来事が含まれる場合は throw し、自身を変更しないこと", () => {
+      const timeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(WORK_ID),
+        events: [createEvent(EVENT_ID_1, null, true), createEvent(EVENT_ID_2, 1)],
+      });
+      const before = timeline.toSnapshot();
+
+      expect(() => timeline.restoreAll()).toThrow();
+      expect(timeline.toSnapshot()).toEqual(before);
+    });
+  });
 });
