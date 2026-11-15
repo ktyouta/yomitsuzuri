@@ -14,6 +14,7 @@ export * from "./get-list-word-result";
 export * from "./get-work-result";
 export * from "./restore-character-relation-result";
 export * from "./restore-character-result";
+export * from "./restore-event-result";
 export * from "./restore-word-result";
 export * from "./update-book-result";
 export * from "./update-character-relation-result";

@@ -27,6 +27,7 @@ export const API_ENDPOINT = {
   CHARACTER_RELATIONS_ID: "/api/v1/character-relations/:relationId",
   CHARACTER_RELATIONS_ID_RESTORE: "/api/v1/character-relations/:relationId/restore",
   EVENTS_ID: "/api/v1/events/:eventId",
+  EVENTS_ID_RESTORE: "/api/v1/events/:eventId/restore",
   WORDS_ID: "/api/v1/words/:wordId",
   WORDS_ID_RESTORE: "/api/v1/words/:wordId/restore",
   TAGS: "/api/v1/tags",
