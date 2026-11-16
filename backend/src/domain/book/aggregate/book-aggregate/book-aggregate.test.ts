@@ -195,7 +195,7 @@ describe("BookAggregate", () => {
       const book = createBook();
       const before = book.toSnapshot();
 
-      book.delete();
+      book.delete(Timestamp.of(BOOK_UPDATED_AT));
 
       expect(book.toSnapshot()).toEqual({ ...before, deleteFlg: true });
     });
@@ -203,7 +203,7 @@ describe("BookAggregate", () => {
     it("既に削除済みの場合は throw すること", () => {
       const book = createBook(true);
 
-      expect(() => book.delete()).toThrow();
+      expect(() => book.delete(Timestamp.of(BOOK_UPDATED_AT))).toThrow();
     });
   });
 

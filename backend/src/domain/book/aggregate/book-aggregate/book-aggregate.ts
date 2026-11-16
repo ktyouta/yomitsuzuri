@@ -86,6 +86,9 @@ export type BookUpdateError = { type: "CONFLICT_BOOK" }
     | { type: "WORKS_MISMATCH" }
     | { type: "INVALID_WORKS"; errors: BookValidationError[] };
 
+export type BookDeleteError =
+    | { type: "CONFLICT_BOOK" };
+
 /**
  * 作品1件の更新の失敗
  * - WORK_NOT_FOUND: 更新対象の作品が書籍に存在しない、または削除済み
@@ -399,11 +402,16 @@ export class BookAggregate {
      * 書籍削除（自身を削除済みにする）
      * @throws 既に削除済みの書籍の場合
      */
-    delete(): void {
+    delete(expectedUpdatedAt: Timestamp): Result<undefined, BookDeleteError> {
         if (this._deleteFlg) {
             throw new Error(`既に削除済みの書籍です。`);
         }
+        if (this._updatedAt.equals(expectedUpdatedAt)) {
+            return err({ type: "CONFLICT_BOOK" });
+        }
+
         this._deleteFlg = true;
+        return ok(undefined);
     }
 
     /**
