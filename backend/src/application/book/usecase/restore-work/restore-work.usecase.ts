@@ -34,6 +34,7 @@ export class RestoreWorkUsecase {
      * 作品復元（論理削除を解除する）
      * 作品の削除済みを解除し、表示順を削除されていない作品の最大値+1（末尾）、更新日時を現在日時にする（書籍・他の作品は変更しない。docs/delete-restore/plan.md の U13）。
      * 作品の配下（登場人物・人物関係・気になるワード・出来事）の削除済みも、あわせて復元する（docs/delete-restore/plan.md の U10）。
+     * 出来事の時系列順は、作品ごと削除したものは変えず、個別に削除していたものは末尾に作成順で付ける（U13。EventTimelineAggregate.restoreAll）。
      * @param userId 書籍を所有するユーザーID
      * @param workId 復元対象の作品ID
      * @param body 画面の表示時点の作品の更新日時
@@ -70,10 +71,16 @@ export class RestoreWorkUsecase {
         if (restoreResult.isErr()) {
             return err(restoreResult.error);
         }
+
         const work = restoreResult.value;
 
+        // 作品の配下の出来事を復元
+        const eventTimeline = await this.restoreWorkRepository.findEventTimeline(userId, work.id);
+
+        eventTimeline.restoreAll();
+
         // 保存（取得後に他の操作で更新されていた場合は保存されない）
-        const saved = await this.restoreWorkRepository.restoreWork(work, expectedUpdatedAt);
+        const saved = await this.restoreWorkRepository.restoreWork(work, eventTimeline, expectedUpdatedAt);
         if (!saved) {
             return err({ type: "CONFLICT_WORK" });
         }
