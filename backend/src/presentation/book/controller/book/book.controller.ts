@@ -5,6 +5,7 @@ import { createCharacter } from "../create-character";
 import { createCharacterRelation } from "../create-character-relation";
 import { createEvent } from "../create-event";
 import { createWord } from "../create-word";
+import { deleteBook } from "../delete-book";
 import { deleteCharacter } from "../delete-character";
 import { deleteCharacterRelation } from "../delete-character-relation";
 import { deleteEvent } from "../delete-event";
@@ -63,6 +64,7 @@ const book = new Hono<AppEnv>()
     .route("/", deleteCharacter)
     .route("/", restoreCharacter)
     .route("/", createBook)
-    .route("/", updateBook);
+    .route("/", updateBook)
+    .route("/", deleteBook);
 
 export { book };

@@ -47,6 +47,11 @@ type UpdateBookParamType = {
     updatedAt: Timestamp;
 };
 
+type DeleteBookParamType = {
+    updatedAt: Timestamp;
+    expectedUpdatedAt: Timestamp;
+};
+
 type UpdateSingleWorkParamType = {
     id: WorkId;
     title: WorkTitle;
@@ -400,17 +405,29 @@ export class BookAggregate {
 
     /**
      * 書籍削除（自身を削除済みにする）
-     * @throws 既に削除済みの書籍の場合
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 書籍が削除されていないこと
+     *
+     * 画面の表示時点の書籍の更新日時（params.expectedUpdatedAt）が、自身の更新日時と一致しない場合は CONFLICT_BOOK を err で返す。
+     *
+     * 事後条件:
+     * - ok の場合: 自身を削除済みにし、更新日時を params.updatedAt にする（作品は変更しない）
+     * - err の場合: 自身は変更しない
+     * @param params 削除後の更新日時、画面の表示時点の書籍の更新日時
+     * @returns 成功時は ok、排他の失敗時は CONFLICT_BOOK
+     * @throws 事前条件を満たさない場合
      */
-    delete(expectedUpdatedAt: Timestamp): Result<undefined, BookDeleteError> {
+    delete(params: DeleteBookParamType): Result<undefined, BookDeleteError> {
         if (this._deleteFlg) {
             throw new Error(`既に削除済みの書籍です。`);
         }
-        if (this._updatedAt.equals(expectedUpdatedAt)) {
+        if (!this._updatedAt.equals(params.expectedUpdatedAt)) {
             return err({ type: "CONFLICT_BOOK" });
         }
 
         this._deleteFlg = true;
+        this._updatedAt = params.updatedAt;
         return ok(undefined);
     }
 

@@ -2,7 +2,7 @@ import { err, ok, Result } from "neverthrow";
 import { BookId, Timestamp, type BookDeleteError, type IDeleteBookRepository, type TimestampError, type UserId } from "../../../../domain";
 
 /**
- * 作品削除の入力値の制約違反（field は入力値の項目名）
+ * 書籍削除の入力値の制約違反（field は入力値の項目名）
  */
 export type DeleteBookInputError =
     { field: "updatedAt"; error: TimestampError };
@@ -18,33 +18,31 @@ type DeleteBookBody = {
 
 type PropsType = {
     userId: UserId;
-    workId: string;
+    bookId: string;
     body: DeleteBookBody;
 }
 
 /**
- * 作品削除ユースケース
+ * 書籍削除ユースケース
  */
 export class DeleteBookUsecase {
 
     constructor(private readonly deleteBookRepository: IDeleteBookRepository) { }
 
     /**
-     * 作品削除（論理削除する）
-     * 作品を削除済みにし、表示順を持たない状態にして、更新日時を現在日時にする（書籍・他の作品は変更しない）。
-     * 作品の配下（登場人物・人物関係・気になるワード・出来事）も、あわせて論理削除する（docs/delete-restore/plan.md の U10）。
+     * 書籍削除（論理削除する）
+     * 書籍を削除済みにし、更新日時を現在日時にする。
      * @param userId 書籍を所有するユーザーID
-     * @param workId 削除対象の作品ID
-     * @param body 画面の表示時点の作品の更新日時
+     * @param bookId 削除対象の書籍ID
+     * @param body 画面の表示時点の書籍の更新日時
      * @returns 成功時は ok。
      * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）場合は INVALID_INPUT、
-     * 作品が存在しない（他ユーザーの書籍の作品・論理削除済みの書籍の作品を含む）場合は NOT_FOUND、作品が削除済みの場合は WORK_NOT_FOUND、
-     * 画面の表示後に作品が更新された（保存時に更新されていた場合を含む）場合は CONFLICT_WORK、
-     * 書籍に削除されていない作品が他に残らない場合は ALL_WORK_DELETED（いずれも保存しない）
-     * @throws workId が空の場合（DB は問い合わせない）
+     * 書籍が存在しない（他ユーザーの書籍・論理削除済みの書籍を含む）場合は NOT_FOUND、
+     * 画面の表示後に書籍が更新された（保存時に更新されていた場合を含む）場合は CONFLICT_BOOK（いずれも保存しない）
+     * @throws bookId が空の場合（DB は問い合わせない）
      */
-    async execute({ userId, workId, body }: PropsType): Promise<Result<undefined, DeleteBookError>> {
-        const id = BookId.of(workId);
+    async execute({ userId, bookId, body }: PropsType): Promise<Result<undefined, DeleteBookError>> {
+        const id = BookId.of(bookId);
 
         // 入力値の制約チェック
         const input = Result.combineWithAllErrors([
@@ -55,20 +53,23 @@ export class DeleteBookUsecase {
         }
         const [expectedUpdatedAt] = input.value;
 
-        // 削除対象の作品を収録した書籍を取得
+        // 削除対象の書籍を取得
         const book = await this.deleteBookRepository.findBook(userId, id);
         if (!book) {
             return err({ type: "NOT_FOUND" });
         }
 
-        // 作品削除
-        const deleteResult = book.delete(expectedUpdatedAt);
+        // 書籍削除
+        const deleteResult = book.delete({ updatedAt: Timestamp.create(), expectedUpdatedAt });
         if (deleteResult.isErr()) {
             return err(deleteResult.error);
         }
 
         // 保存（取得後に他の操作で更新されていた場合は保存されない）
-        await this.deleteBookRepository.deleteBook(book, expectedUpdatedAt);
+        const saved = await this.deleteBookRepository.deleteBook(book, expectedUpdatedAt);
+        if (!saved) {
+            return err({ type: "CONFLICT_BOOK" });
+        }
 
         return ok(undefined);
     };

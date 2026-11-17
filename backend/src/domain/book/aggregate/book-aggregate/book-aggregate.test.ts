@@ -191,19 +191,30 @@ describe("BookAggregate", () => {
   });
 
   describe("delete", () => {
-    it("自身を削除済みにすること", () => {
+    it("自身を削除済みにし、更新日時を置き換えること（作品は変更しない）", () => {
       const book = createBook();
       const before = book.toSnapshot();
 
-      book.delete(Timestamp.of(BOOK_UPDATED_AT));
+      const result = book.delete({ updatedAt: Timestamp.of(NEW_UPDATED_AT), expectedUpdatedAt: Timestamp.of(BOOK_UPDATED_AT) });
 
-      expect(book.toSnapshot()).toEqual({ ...before, deleteFlg: true });
+      expect(result.isOk()).toBe(true);
+      expect(book.toSnapshot()).toEqual({ ...before, deleteFlg: true, updatedAt: NEW_UPDATED_AT });
+    });
+
+    it("画面の表示時点の更新日時が一致しない場合は CONFLICT_BOOK を返し、自身を変更しないこと", () => {
+      const book = createBook();
+      const before = book.toSnapshot();
+
+      const result = book.delete({ updatedAt: Timestamp.of(NEW_UPDATED_AT), expectedUpdatedAt: Timestamp.of(STALE_UPDATED_AT) });
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "CONFLICT_BOOK" });
+      expect(book.toSnapshot()).toEqual(before);
     });
 
     it("既に削除済みの場合は throw すること", () => {
       const book = createBook(true);
 
-      expect(() => book.delete(Timestamp.of(BOOK_UPDATED_AT))).toThrow();
+      expect(() => book.delete({ updatedAt: Timestamp.of(NEW_UPDATED_AT), expectedUpdatedAt: Timestamp.of(BOOK_UPDATED_AT) })).toThrow();
     });
   });
 
