@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, WorkId, WorkSort, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type BookTitleUniquenessError, type BookUpdateError, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type TimestampError, type UserId, type WorkSortError } from "../../../../domain";
+import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, WorkId, WorkSort, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type BookTitleUniquenessError, type BookUpdateError, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type TimestampError, type UserId, type WorkIdError, type WorkSortError } from "../../../../domain";
 import { UpdateBookResultDto } from "../../dto";
 
 /**
@@ -13,6 +13,7 @@ export type UpdateBookInputError =
     | { field: "memo"; error: BookMemoError }
     | { field: "iconId"; error: IconIdError }
     | { field: "updatedAt"; error: TimestampError }
+    | { field: `works.${number}.id`; error: WorkIdError }
     | { field: `works.${number}.sort`; error: WorkSortError };
 
 export type UpdateBookError =
@@ -49,16 +50,14 @@ type PropsType = {
  * 作品1件分の入力値から、作品の並び替えの内容を生成する
  * @param work 作品の入力値
  * @param index 作品の添字（制約違反の項目名に使う）
- * @returns 成功時は作品の並び替えの内容、制約違反時はその内容
+ * @returns 成功時は作品の並び替えの内容、制約違反時はその作品の違反すべて
  */
 function createWorkParam(work: UpdateWorkBody, index: number) {
-    const sort = WorkSort.create(work.sort).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.sort`, error }));
-    if (sort.isErr()) {
-        return err(sort.error);
-    }
-
-    // 形式は判定せず、存在しない ID は集約の作品の照合で検出する
-    return ok({ id: WorkId.of(work.id), sort: sort.value });
+    // 作品 ID の形式は判定せず、存在しない ID は集約の作品の照合で検出する
+    return Result.combineWithAllErrors([
+        WorkId.fromInput(work.id).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.id`, error })),
+        WorkSort.create(work.sort).mapErr((error): UpdateBookInputError => ({ field: `works.${index}.sort`, error })),
+    ]).map(([id, sort]) => ({ id, sort }));
 }
 
 export class UpdateBookUsecase {
@@ -93,7 +92,7 @@ export class UpdateBookUsecase {
                 IconId.create(body.iconId).mapErr((error): UpdateBookInputError => ({ field: "iconId", error })),
                 Timestamp.fromInput(body.updatedAt).mapErr((error): UpdateBookInputError => ({ field: "updatedAt", error })),
             ]),
-            Result.combineWithAllErrors(body.works.map(createWorkParam)),
+            Result.combineWithAllErrors(body.works.map(createWorkParam)).mapErr((errors) => errors.flat()),
         ]);
         if (input.isErr()) {
             return err({ type: "INVALID_INPUT", errors: input.error.flat() });

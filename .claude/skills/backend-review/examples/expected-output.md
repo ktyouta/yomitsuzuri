@@ -125,7 +125,31 @@
 
 ---
 
-## ケース7: 問題なし
+## ケース7: 違反あり（既存ファイルをコピーした名残がある）
+
+### 状況
+- `TagName` の値オブジェクトを、既存の `CategoryName` をコピーして作成した
+- `tag-name/` に `category-name.test.ts` が置かれ、中身も `CategoryName` のテストのまま
+- `TagId` の JSDoc が「カテゴリID」のまま
+
+### 出力
+
+```
+## Backend Review 結果
+
+### 違反あり
+- **ファイル**: backend/src/domain/task/value-object/tag-name/category-name.test.ts
+- **違反内容**: コピー元（CategoryName）のテストのままで、TagName の契約を検証するテストがない
+- **修正方針**: tag-name.test.ts に名前を変え、TagName の契約（空・上限超過の err、of の throw）を検証する内容に書き直す
+
+- **ファイル**: backend/src/domain/task/value-object/tag-id/tag-id.ts:4
+- **違反内容**: クラス・@param・create/of の JSDoc が「カテゴリID」のまま（コピー元の名残）
+- **修正方針**: 「タグID」に書き換え、エラー文の表記もそろえる
+```
+
+---
+
+## ケース8: 問題なし
 
 ### 出力
 

@@ -14,6 +14,16 @@ describe("WorkId", () => {
     });
   });
 
+  describe("fromInput", () => {
+    it.each(["01ARZ3NDEKTSV4RRFFQ69G5FAV", "invalid"])("空でなければ（%s）、そのまま保持すること（形式は判定しない）", (workId) => {
+      expect(WorkId.fromInput(workId)._unsafeUnwrap().value).toBe(workId);
+    });
+
+    it("空文字の場合、WORK_ID_EMPTY を返すこと", () => {
+      expect(WorkId.fromInput("")._unsafeUnwrapErr()).toEqual({ type: "WORK_ID_EMPTY" });
+    });
+  });
+
   describe("create", () => {
     it("ULID 形式の ID を生成すること", () => {
       expect(WorkId.create().value).toMatch(ULID_PATTERN);

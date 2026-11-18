@@ -209,6 +209,7 @@ class WorkTitle {
 | `WorkMemo.create` | 事後条件 | 前後の空白を除去し、空なら null として ok、上限文字数超過なら `WORK_MEMO_TOO_LONG`（`max`）、それ以外は ok |
 | `WorkSort.create` | 事後条件 | `FIRST` 以上の整数なら ok、それ以外は `WORK_SORT_INVALID`（`min`） |
 | `WorkId.of` | 事後条件 | 空でなければその値を保持し、空なら throw（U10 で ULID 形式の判定と `create` を削除） |
+| `WorkId.fromInput` | 事後条件 | 空でなければその値を保持して ok、空なら `WORK_ID_EMPTY`（形式は判定しない）。書籍更新の `works[].id` に使う（2026-11-18 追加。作品の追加を書籍更新から外した後、空の作品 ID が `of` に届いて 500 になっていたため） |
 | 上記 VO の `of` | 事後条件 | `create` が ok ならその値を返し、err なら throw（呼び出し側の不具合） |
 | `WorkTitle.initial` | 事前条件 | 書籍タイトルの上限文字数 ≤ 作品タイトルの上限文字数（テストで保証）。満たさない場合は `of` が throw |
 | `BookAggregate.update` | 事前条件（throw） | 書籍が削除されていないこと |

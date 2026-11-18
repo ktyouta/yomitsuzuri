@@ -339,6 +339,23 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
+  it("作品 ID が空の場合、INVALID_INPUT を返し、DB を問い合わせず保存しないこと", async () => {
+    const { usecase, updateBookRepository } = createUsecase();
+
+    const result = await usecase.execute({
+      userId: USER_ID,
+      bookId: BOOK_ID.value,
+      body: { ...BODY, works: [{ id: WORK_ID_1, sort: 1 }, { id: "", sort: 2 }] },
+    });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [{ field: "works.1.id", error: { type: "WORK_ID_EMPTY" } }],
+    });
+    expect(updateBookRepository.findBook).not.toHaveBeenCalled();
+    expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
+  });
+
   it("画面の表示時点の更新日時の形式が不正な場合、INVALID_INPUT を返し、DB を問い合わせず保存しないこと", async () => {
     const { usecase, updateBookRepository } = createUsecase();
 
