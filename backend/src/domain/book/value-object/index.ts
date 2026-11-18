@@ -1,3 +1,5 @@
+export * from "./author-id";
+export * from "./author-name";
 export * from "./book-id";
 export * from "./book-list-pagination";
 export * from "./book-memo";
