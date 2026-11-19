@@ -35,6 +35,7 @@ function createBook(): BookAggregate {
       WorkEntity.reconstruct({ id: WorkId.of(WORK_ID), title: WorkTitle.of("作品1"), sort: WorkSort.of(1), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: false, updatedAt: Timestamp.of(WORK_UPDATED_AT) }),
     ],
     updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+    authors: [],
   });
 }
 

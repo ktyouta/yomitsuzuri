@@ -46,6 +46,7 @@ function createBook(): BookAggregate {
       createWork(DELETED_WORK_ID, "削除済み作品", null, true),
     ],
     updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+    authors: [],
   });
 }
 

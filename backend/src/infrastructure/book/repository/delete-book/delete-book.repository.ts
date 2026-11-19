@@ -74,6 +74,7 @@ export class DeleteBookRepository implements IDeleteBookRepository {
         })
       ),
       updatedAt: Timestamp.of(book.updatedAt),
+      authors: [],
     });
   }
 

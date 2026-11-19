@@ -77,6 +77,7 @@ export class UpdateWorkRepository implements IUpdateWorkRepository {
         })
       ),
       updatedAt: Timestamp.of(book.updatedAt),
+      authors: [],
     });
   }
 

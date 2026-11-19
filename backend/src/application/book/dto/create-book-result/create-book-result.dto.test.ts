@@ -12,6 +12,7 @@ describe("CreateBookResultDto", () => {
       memo: BookMemo.of("メモ"),
       iconId: IconId.of(2),
       updatedAt: Timestamp.of("2026-01-02T00:00:00.000Z"),
+      authorNames: [],
     });
     const snapshot = book.toSnapshot();
 

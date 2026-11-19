@@ -1,7 +1,8 @@
 import { err, ok, type Result } from "neverthrow";
 import type { Timestamp, UserId } from "../../../shared";
+import { AuthorEntity, type AuthorSnapshotType } from "../../entity";
 import { WorkEntity, type WorkSnapshotType } from "../../entity/work-entity/work-entity";
-import { BookId, ReadingStatusId, WorkMemo, WorkSort, WorkTitle, type BookMemo, type BookTitle, type CurrentPage, type IconId, type PublishedDate, type WorkId } from "../../value-object";
+import { AuthorName, BookId, ReadingStatusId, WorkMemo, WorkSort, WorkTitle, type BookMemo, type BookTitle, type CurrentPage, type IconId, type PublishedDate, type WorkId } from "../../value-object";
 
 type CreateBookParamType = {
     userId: UserId;
@@ -12,6 +13,7 @@ type CreateBookParamType = {
     iconId: IconId;
     /** 作成日時（書籍と、自動で作成する作品の更新日時にする） */
     updatedAt: Timestamp;
+    authorNames: AuthorName[];
 };
 
 type BookAggregateReconstructParamType = {
@@ -26,6 +28,7 @@ type BookAggregateReconstructParamType = {
     deleteFlg: boolean;
     works: WorkEntity[];
     updatedAt: Timestamp;
+    authors: AuthorEntity[];
 };
 
 type UpdateWorkSortParamType = {
@@ -138,6 +141,7 @@ type BookSnapshotType = {
     deleteFlg: boolean;
     works: WorkSnapshotType[];
     updatedAt: string;
+    authors: AuthorSnapshotType[];
 }
 
 export class BookAggregate {
@@ -153,6 +157,7 @@ export class BookAggregate {
         private _deleteFlg: boolean,
         private _works: WorkEntity[],
         private _updatedAt: Timestamp,
+        private _authors: AuthorEntity[],
     ) { }
 
     get id() {
@@ -188,6 +193,11 @@ export class BookAggregate {
                 updatedAt: params.updatedAt,
             })],
             params.updatedAt,
+            params.authorNames.map((authorName) => {
+                return AuthorEntity.create({
+                    name: authorName,
+                });
+            })
         );
     }
 
@@ -312,6 +322,7 @@ export class BookAggregate {
             params.deleteFlg,
             params.works,
             params.updatedAt,
+            params.authors,
         );
     }
 
@@ -400,6 +411,7 @@ export class BookAggregate {
             deleteFlg: this._deleteFlg,
             works: this._works.map((work) => work.toSnapshot()),
             updatedAt: this._updatedAt.value,
+            authors: this._authors.map((author) => author.toSnapshot()),
         };
     }
 

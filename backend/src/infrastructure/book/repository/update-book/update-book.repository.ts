@@ -74,6 +74,7 @@ export class UpdateBookRepository implements IUpdateBookRepository {
         })
       ),
       updatedAt: Timestamp.of(book.updatedAt),
+      authors: [],
     });
   }
 

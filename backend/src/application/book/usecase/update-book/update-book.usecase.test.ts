@@ -49,6 +49,7 @@ function createBook(): BookAggregate {
       WorkEntity.reconstruct({ id: WorkId.of(DELETED_WORK_ID), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(null), memo: WorkMemo.of(null), iconId: IconId.of(1), deleteFlg: true, updatedAt: Timestamp.of(WORK_UPDATED_AT) }),
     ],
     updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+    authors: [],
   });
 }
 
@@ -123,6 +124,7 @@ describe("UpdateBookUsecase", () => {
         { id: DELETED_WORK_ID, title: "削除済み作品", sort: null, memo: null, iconId: 1, deleteFlg: true, updatedAt: WORK_UPDATED_AT },
       ],
       updatedAt: NOW,
+      authors: [],
     });
 
     const dto = result._unsafeUnwrap();

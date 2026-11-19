@@ -75,6 +75,7 @@ describe("CreateBookUsecase", () => {
         },
       ],
       updatedAt: NOW,
+      authors: [],
     });
 
     expect(result.isOk()).toBe(true);

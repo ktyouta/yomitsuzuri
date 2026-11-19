@@ -43,6 +43,7 @@ function createBook(works: WorkEntity[] = [
     deleteFlg: false,
     works,
     updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+    authors: [],
   });
 }
 

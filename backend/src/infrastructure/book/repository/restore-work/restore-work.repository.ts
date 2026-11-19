@@ -76,6 +76,7 @@ export class RestoreWorkRepository implements IRestoreWorkRepository {
         })
       ),
       updatedAt: Timestamp.of(book.updatedAt),
+      authors: [],
     });
   }
 

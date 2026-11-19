@@ -20,6 +20,7 @@ describe("UpdateBookResultDto", () => {
         WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS2"), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(3), memo: WorkMemo.of(null), iconId: IconId.of(6), deleteFlg: true, updatedAt: Timestamp.of("2025-12-01T00:00:00.000Z") }),
       ],
       updatedAt: Timestamp.of("2026-01-02T00:00:00.000Z"),
+      authors: [],
     });
 
     const dto = new UpdateBookResultDto(book);

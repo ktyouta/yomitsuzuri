@@ -55,6 +55,7 @@ function createBook(deleteFlg = false): BookAggregate {
       work(WORK_ID_2, "作品2", 2),
     ],
     updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+    authors: [],
   });
 }
 
@@ -76,6 +77,7 @@ function createBookWithDeletedWork(): BookAggregate {
       work(WORK_ID_3, "作品3", null, true),
     ],
     updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+    authors: [],
   });
 }
 
@@ -89,6 +91,7 @@ describe("BookAggregate", () => {
       memo: BookMemo.of("メモ"),
       iconId: IconId.of(2),
       updatedAt: Timestamp.of(NEW_UPDATED_AT),
+      authorNames: [],
     });
 
     const snapshot = book.toSnapshot();
@@ -115,6 +118,7 @@ describe("BookAggregate", () => {
         },
       ],
       updatedAt: NEW_UPDATED_AT,
+      authors: [],
     });
   });
 
@@ -127,6 +131,7 @@ describe("BookAggregate", () => {
       memo: BookMemo.of(null),
       iconId: IconId.of(1),
       updatedAt: Timestamp.of(NEW_UPDATED_AT),
+      authorNames: [],
     });
 
     const snapshot = book.toSnapshot();
@@ -145,6 +150,7 @@ describe("BookAggregate", () => {
       memo: BookMemo.of(null),
       iconId: IconId.of(1),
       updatedAt: Timestamp.of(NEW_UPDATED_AT),
+      authorNames: [],
     });
 
     const snapshot = book.toSnapshot();
@@ -168,6 +174,7 @@ describe("BookAggregate", () => {
         WorkEntity.reconstruct({ id: WorkId.of(WORK_ID_2), title: WorkTitle.of("作品2"), sort: WorkSort.of(2), memo: WorkMemo.of(null), iconId: IconId.of(5), deleteFlg: true, updatedAt: Timestamp.of(WORK_UPDATED_AT) }),
       ],
       updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+      authors: [],
     });
 
     const snapshot = book.toSnapshot();
@@ -187,6 +194,7 @@ describe("BookAggregate", () => {
         { id: WORK_ID_2, title: "作品2", sort: 2, memo: null, iconId: 5, deleteFlg: true, updatedAt: WORK_UPDATED_AT },
       ],
       updatedAt: BOOK_UPDATED_AT,
+      authors: [],
     });
   });
 
@@ -279,6 +287,7 @@ describe("BookAggregate", () => {
           workSnapshot(WORK_ID_2, "作品2", 1),
         ],
         updatedAt: NEW_UPDATED_AT,
+        authors: [],
       });
     });
 
@@ -547,6 +556,7 @@ describe("BookAggregate", () => {
           work(WORK_ID_3, "作品3", null, true),
         ],
         updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+        authors: [],
       });
     }
 
@@ -653,6 +663,7 @@ describe("BookAggregate", () => {
           work(WORK_ID_3, "作品3", 5, true),
         ],
         updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+        authors: [],
       });
     }
 
@@ -687,6 +698,7 @@ describe("BookAggregate", () => {
         deleteFlg: false,
         works: [work(WORK_ID_1, "作品1", null, true)],
         updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+        authors: [],
       });
 
       const result = book.restoreWork(restoreWorkParam(WORK_ID_1));
