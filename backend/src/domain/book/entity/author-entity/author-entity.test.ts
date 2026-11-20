@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { AuthorEntity } from "..";
-import { AuthorId, AuthorName } from "../../value-object";
+import { AuthorId, AuthorName, AuthorSortOrder } from "../../value-object";
 
 const AUTHOR_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
 const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
@@ -9,6 +9,7 @@ function createAuthor(deleteFlg = false) {
   return AuthorEntity.reconstruct({
     id: AuthorId.of(AUTHOR_ID),
     name: AuthorName.of("東野圭吾"),
+    sortOrder: AuthorSortOrder.of(1),
     deleteFlg,
   });
 }
@@ -18,11 +19,13 @@ describe("AuthorEntity", () => {
     it("ID を採番し、渡した値と削除されていない状態を持つこと", () => {
       const author = AuthorEntity.create({
         name: AuthorName.of("東野圭吾"),
+        sortOrder: AuthorSortOrder.of(1),
       });
 
       expect(author.toSnapshot()).toEqual({
         id: expect.stringMatching(ULID_PATTERN),
         name: "東野圭吾",
+        sortOrder: 1,
         deleteFlg: false,
       });
     });
@@ -35,6 +38,7 @@ describe("AuthorEntity", () => {
       expect(author.toSnapshot()).toEqual({
         id: AUTHOR_ID,
         name: "東野圭吾",
+        sortOrder: 1,
         deleteFlg: true,
       });
     });

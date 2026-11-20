@@ -133,6 +133,7 @@ export class UpdateBookUsecase {
             works,
             expectedUpdatedAt,
             updatedAt: Timestamp.create(),
+            authorNames: [],
         });
         if (updateResult.isErr()) {
             return err(updateResult.error);

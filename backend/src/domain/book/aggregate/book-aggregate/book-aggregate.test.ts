@@ -92,7 +92,7 @@ describe("BookAggregate", () => {
       iconId: IconId.of(2),
       updatedAt: Timestamp.of(NEW_UPDATED_AT),
       authorNames: [],
-    });
+    })._unsafeUnwrap();
 
     const snapshot = book.toSnapshot();
 
@@ -132,7 +132,7 @@ describe("BookAggregate", () => {
       iconId: IconId.of(1),
       updatedAt: Timestamp.of(NEW_UPDATED_AT),
       authorNames: [],
-    });
+    })._unsafeUnwrap();
 
     const snapshot = book.toSnapshot();
 
@@ -151,7 +151,7 @@ describe("BookAggregate", () => {
       iconId: IconId.of(1),
       updatedAt: Timestamp.of(NEW_UPDATED_AT),
       authorNames: [],
-    });
+    })._unsafeUnwrap();
 
     const snapshot = book.toSnapshot();
 
@@ -260,6 +260,7 @@ describe("BookAggregate", () => {
         works,
         expectedUpdatedAt: Timestamp.of(expectedUpdatedAt),
         updatedAt: Timestamp.of(NEW_UPDATED_AT),
+        authorNames: [],
       };
     }
 

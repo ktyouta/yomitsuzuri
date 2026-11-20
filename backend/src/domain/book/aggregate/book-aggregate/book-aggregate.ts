@@ -2,7 +2,7 @@ import { err, ok, type Result } from "neverthrow";
 import type { Timestamp, UserId } from "../../../shared";
 import { AuthorEntity, type AuthorSnapshotType } from "../../entity";
 import { WorkEntity, type WorkSnapshotType } from "../../entity/work-entity/work-entity";
-import { AuthorName, BookId, ReadingStatusId, WorkMemo, WorkSort, WorkTitle, type BookMemo, type BookTitle, type CurrentPage, type IconId, type PublishedDate, type WorkId } from "../../value-object";
+import { AuthorName, AuthorSortOrder, BookId, ReadingStatusId, WorkMemo, WorkSort, WorkTitle, type BookMemo, type BookTitle, type CurrentPage, type IconId, type PublishedDate, type WorkId } from "../../value-object";
 
 type CreateBookParamType = {
     userId: UserId;
@@ -48,6 +48,7 @@ type UpdateBookParamType = {
     expectedUpdatedAt: Timestamp;
     /** 更新後の書籍の更新日時 */
     updatedAt: Timestamp;
+    authorNames: AuthorName[];
 };
 
 type DeleteBookParamType = {
@@ -84,6 +85,8 @@ type RestoreWorkParamType = {
 export type BookValidationError = { type: "DUPLICATE_WORK_ID"; id: string }
     | { type: "DUPLICATE_WORK_SORT"; sort: number };
 
+export type BookCreateError = { type: "DUPLICATE_AUTHOR_NAME"; names: string[] };
+
 /**
  * 書籍更新の失敗
  * - CONFLICT_BOOK: 画面の表示後に、書籍が他の操作で更新された
@@ -92,7 +95,8 @@ export type BookValidationError = { type: "DUPLICATE_WORK_ID"; id: string }
  */
 export type BookUpdateError = { type: "CONFLICT_BOOK" }
     | { type: "WORKS_MISMATCH" }
-    | { type: "INVALID_WORKS"; errors: BookValidationError[] };
+    | { type: "INVALID_WORKS"; errors: BookValidationError[] }
+    | { type: "DUPLICATE_AUTHOR_NAME"; names: string[] };
 
 export type BookDeleteError =
     | { type: "CONFLICT_BOOK" };
@@ -174,8 +178,14 @@ export class BookAggregate {
      * @param params 書籍の登録内容
      * @returns 読書状況が初期値（未読）の書籍集約
      */
-    static create(params: CreateBookParamType): BookAggregate {
-        return new BookAggregate(
+    static create(params: CreateBookParamType): Result<BookAggregate, BookCreateError> {
+
+        const duplicateAuthors = BookAggregate.checkAuthorsName(params.authorNames);
+        if (duplicateAuthors.length > 0) {
+            return err({ type: "DUPLICATE_AUTHOR_NAME", names: duplicateAuthors });
+        }
+
+        return ok(new BookAggregate(
             BookId.create(),
             params.userId,
             params.title,
@@ -193,12 +203,13 @@ export class BookAggregate {
                 updatedAt: params.updatedAt,
             })],
             params.updatedAt,
-            params.authorNames.map((authorName) => {
+            params.authorNames.map((authorName, index) => {
                 return AuthorEntity.create({
                     name: authorName,
+                    sortOrder: AuthorSortOrder.of(index + 1)
                 });
             })
-        );
+        ));
     }
 
     /**
@@ -244,6 +255,11 @@ export class BookAggregate {
             return err(works.error);
         }
 
+        const duplicateAuthors = BookAggregate.checkAuthorsName(params.authorNames);
+        if (duplicateAuthors.length > 0) {
+            return err({ type: "DUPLICATE_AUTHOR_NAME", names: duplicateAuthors });
+        }
+
         this._title = params.title;
         this._publishedDate = params.publishedDate;
         this._readingStatusId = params.readingStatus;
@@ -252,6 +268,12 @@ export class BookAggregate {
         this._iconId = params.iconId;
         this._works = works.value;
         this._updatedAt = params.updatedAt;
+        this._authors = params.authorNames.map((authorName, index) => {
+            return AuthorEntity.create({
+                name: authorName,
+                sortOrder: AuthorSortOrder.of(index + 1)
+            });
+        });
 
         return ok(undefined);
     }
@@ -302,6 +324,21 @@ export class BookAggregate {
         }
 
         return ok(newWorks);
+    }
+
+    static checkAuthorsName(authorNames: AuthorName[]): string[] {
+        const duplicateNameSet = new Set<string>();
+        const duplicateNameList: string[] = [];
+        for (const authorName of authorNames) {
+            const value = authorName.value;
+            if (duplicateNameSet.has(value)) {
+                duplicateNameList.push(value);
+                continue;
+            }
+            duplicateNameSet.add(value);
+        }
+
+        return duplicateNameList;
     }
 
     /**

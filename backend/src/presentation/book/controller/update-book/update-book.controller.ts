@@ -54,6 +54,8 @@ const updateBook = new Hono<AppEnv>().put(
             return c.json({ message: "作品が他の画面で変更されています。最新の情報を読み込み直してください。" }, HTTP_STATUS.CONFLICT);
           case "INVALID_WORKS":
             return c.json({ message: "入力エラー", data: error.errors.map((e) => ({ field: "works", message: toInputErrorMessage(e) })) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+          case "DUPLICATE_AUTHOR_NAME":
+            return c.json({ message: "入力エラー", data: [{ field: "authorNames", message: "著者名が重複しています。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           default: {
             // 全てのエラー種別を網羅していることを型で保証する
             error satisfies never;

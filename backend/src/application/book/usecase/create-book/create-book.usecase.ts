@@ -68,7 +68,12 @@ export class CreateBookUsecase {
     }
 
     // 書籍集約（書籍タイトルと同名の作品を1件含む）
-    const book = BookAggregate.create({ userId, title, publishedDate, currentPage, memo, iconId, updatedAt: Timestamp.create(), authorNames: [] });
+    const created = BookAggregate.create({ userId, title, publishedDate, currentPage, memo, iconId, updatedAt: Timestamp.create(), authorNames: [] });
+    if (created.isErr()) {
+      // 著者は未指定（空配列）のため重複は起こり得ない
+      throw new Error(`書籍集約の作成に失敗しました。type:${created.error.type}`);
+    }
+    const book = created.value;
 
     // タイトル重複
     const uniqueness = await this.uniquenessService.validate(userId, book.id, title);

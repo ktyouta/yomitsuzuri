@@ -1,28 +1,32 @@
-import { AuthorId, type AuthorName } from "../../value-object";
+import { AuthorId, AuthorSortOrder, type AuthorName } from "../../value-object";
 
 type CreateAuthorParamType = {
     name: AuthorName;
+    sortOrder: AuthorSortOrder;
 };
 
 type AuthorReconstructParamType = {
     id: AuthorId;
     name: AuthorName;
+    sortOrder: AuthorSortOrder;
     deleteFlg: boolean;
 };
 
 export type AuthorSnapshotType = {
     id: string;
     name: string;
+    sortOrder: number;
     deleteFlg: boolean;
 }
 
 /**
- * 登場人物（作品に登場する人物）
+ * 著者（書籍の著者。書籍内での表示順を持つ）
  */
 export class AuthorEntity {
 
     private constructor(private readonly _id: AuthorId,
         private _name: AuthorName,
+        private _sortOrder: AuthorSortOrder,
         private _deleteFlg: boolean,
     ) { }
 
@@ -34,52 +38,58 @@ export class AuthorEntity {
         return this._name;
     }
 
+    get sortOrder() {
+        return this._sortOrder;
+    }
+
     get deleteFlg() {
         return this._deleteFlg;
     }
 
     /**
-     * 登場人物作成
-     * @param params 作成する登場人物の情報
-     * @returns 新しい ID を採番した、削除されていない登場人物
+     * 著者作成
+     * @param params 作成する著者の情報
+     * @returns 新しい ID を採番した、削除されていない著者
      */
     static create(params: CreateAuthorParamType) {
         return new AuthorEntity(
             AuthorId.create(),
             params.name,
+            params.sortOrder,
             false
         );
     }
 
     /**
-     * 永続化済みの値から登場人物を復元する
-     * @param params 永続化済みの登場人物の情報
-     * @returns 引数の値をそのまま持つ登場人物
+     * 永続化済みの値から著者を復元する
+     * @param params 永続化済みの著者の情報
+     * @returns 引数の値をそのまま持つ著者
      */
     static reconstruct(params: AuthorReconstructParamType) {
         return new AuthorEntity(
             params.id,
             params.name,
+            params.sortOrder,
             params.deleteFlg,
         );
     }
 
     /**
-     * 登場人物削除（自身を削除済みにする）
-     * @throws 既に削除済みの登場人物の場合
+     * 著者削除（自身を削除済みにする）
+     * @throws 既に削除済みの著者の場合
      */
     delete(): void {
         if (this._deleteFlg) {
-            throw new Error(`既に削除済みの登場人物です。`);
+            throw new Error(`既に削除済みの著者です。`);
         }
         this._deleteFlg = true;
     }
 
     /**
-     * 登場人物復元（自身の削除済みを解除する）
+     * 著者復元（自身の削除済みを解除する）
      *
      * 事前条件（満たさない場合は throw）:
-     * - 登場人物が削除済みであること
+     * - 著者が削除済みであること
      *
      * 事後条件:
      * - 自身の削除済みを解除する（ID・作品・名前等の他の値は変更しない）
@@ -87,19 +97,20 @@ export class AuthorEntity {
      */
     restore(): void {
         if (!this._deleteFlg) {
-            throw new Error(`削除されていない登場人物です。`);
+            throw new Error(`削除されていない著者です。`);
         }
         this._deleteFlg = false;
     }
 
     /**
      * スナップショットを作成
-     * @returns 登場人物の値
+     * @returns 著者の値
      */
     toSnapshot(): AuthorSnapshotType {
         return {
             id: this._id.value,
             name: this._name.value,
+            sortOrder: this._sortOrder.value,
             deleteFlg: this._deleteFlg,
         };
     }

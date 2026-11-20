@@ -13,7 +13,7 @@ describe("CreateBookResultDto", () => {
       iconId: IconId.of(2),
       updatedAt: Timestamp.of("2026-01-02T00:00:00.000Z"),
       authorNames: [],
-    });
+    })._unsafeUnwrap();
     const snapshot = book.toSnapshot();
 
     const dto = new CreateBookResultDto(book);

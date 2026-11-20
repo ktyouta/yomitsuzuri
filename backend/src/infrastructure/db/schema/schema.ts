@@ -267,6 +267,7 @@ export const authorTransaction = sqliteTable(
     id: text("id").primaryKey(), // ULID
     bookId: text("book_id").notNull().references(() => bookTransaction.id, { onDelete: "no action" }), // FK → book_transaction.id
     name: text("name").notNull(),
+    sortOrder: integer("sort_order").notNull(),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
