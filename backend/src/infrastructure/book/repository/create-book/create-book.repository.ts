@@ -1,6 +1,6 @@
 import type { BookAggregate, ICreateBookRepository } from "../../../../domain";
 import type { Database } from "../../../db";
-import { bookTransaction, workTransaction } from "../../../db";
+import { authorTransaction, bookTransaction, workTransaction } from "../../../db";
 
 /**
  * 書籍作成リポジトリ実装
@@ -43,6 +43,17 @@ export class CreateBookRepository implements ICreateBookRepository {
           deleteFlg: e.deleteFlg,
           createdAt: e.updatedAt,
           updatedAt: e.updatedAt,
+        })
+      ),
+      ...snapshot.authors.map((e) =>
+        this.db.insert(authorTransaction).values({
+          id: e.id,
+          bookId: snapshot.id,
+          name: e.name,
+          sortOrder: e.sortOrder,
+          deleteFlg: e.deleteFlg,
+          createdAt: snapshot.updatedAt,
+          updatedAt: snapshot.updatedAt,
         })
       ),
     ]);

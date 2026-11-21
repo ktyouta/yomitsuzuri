@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { BookAggregate } from "..";
-import { WorkEntity } from "../../entity";
-import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../value-object";
+import { AuthorEntity, WorkEntity } from "../../entity";
+import { AuthorId, AuthorName, AuthorSortOrder, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../value-object";
 import { Timestamp, UserId } from "../../../shared";
 
 const USER_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
@@ -9,6 +9,7 @@ const BOOK_ID = "01ARZ3NDEKTSV4RRFFQ69G5FAW";
 const WORK_ID_1 = "01ARZ3NDEKTSV4RRFFQ69G5FAX";
 const WORK_ID_2 = "01ARZ3NDEKTSV4RRFFQ69G5FAY";
 const WORK_ID_3 = "01ARZ3NDEKTSV4RRFFQ69G5FAZ";
+const AUTHOR_ID_1 = "01ARZ3NDEKTSV4RRFFQ69G5FB0";
 const ULID_PATTERN = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
 /** 書籍の取得時点の更新日時 */
@@ -36,6 +37,11 @@ function work(id: string, title: string, sort: number | null, deleteFlg = false)
 /** work() で作成した作品のスナップショット */
 function workSnapshot(id: string, title: string, sort: number | null, deleteFlg = false) {
   return { id, title, sort, memo: null, iconId: 1, deleteFlg, updatedAt: WORK_UPDATED_AT };
+}
+
+/** 著者名の一覧（値は制約を満たすこと） */
+function authorNames(...names: string[]) {
+  return names.map((name) => AuthorName.of(name));
 }
 
 /** 作品1（未削除）・作品2（未削除）を持つ書籍集約 */
@@ -156,6 +162,49 @@ describe("BookAggregate", () => {
     const snapshot = book.toSnapshot();
 
     expect(snapshot.works[0]?.id).not.toBe(snapshot.id);
+  });
+
+  describe("create の著者", () => {
+    /** 著者名だけを指定する書籍の登録内容 */
+    function createParam(names: AuthorName[]) {
+      return {
+        userId: UserId.of(USER_ID),
+        title: BookTitle.of("容疑者Xの献身"),
+        publishedDate: PublishedDate.of(null),
+        currentPage: CurrentPage.of(null),
+        memo: BookMemo.of(null),
+        iconId: IconId.of(1),
+        updatedAt: Timestamp.of(NEW_UPDATED_AT),
+        authorNames: names,
+      };
+    }
+
+    it("著者を入力順に、先頭から 1 始まりの表示順・未削除で作成すること（著者ごとに別の ID を採番する）", () => {
+      const book = BookAggregate.create(createParam(authorNames("東野圭吾", "湊かなえ")))._unsafeUnwrap();
+
+      const authors = book.toSnapshot().authors;
+
+      expect(authors).toEqual([
+        { id: expect.stringMatching(ULID_PATTERN), name: "東野圭吾", sortOrder: 1, deleteFlg: false },
+        { id: expect.stringMatching(ULID_PATTERN), name: "湊かなえ", sortOrder: 2, deleteFlg: false },
+      ]);
+      expect(authors[0]?.id).not.toBe(authors[1]?.id);
+    });
+
+    it("著者名が重複する場合は DUPLICATE_AUTHOR_NAME で、2件目以降の出現ごとに著者名を返すこと", () => {
+      const result = BookAggregate.create(createParam(authorNames("東野圭吾", "湊かなえ", "東野圭吾", "東野圭吾")));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_AUTHOR_NAME", names: ["東野圭吾", "東野圭吾"] });
+    });
+
+    it("前後の空白だけが異なる著者名も重複として扱うこと", () => {
+      const result = BookAggregate.create(createParam([
+        AuthorName.create("東野圭吾")._unsafeUnwrap(),
+        AuthorName.create(" 東野圭吾　")._unsafeUnwrap(),
+      ]));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_AUTHOR_NAME", names: ["東野圭吾"] });
+    });
   });
 
   it("reconstruct で復元した集約のスナップショットが、渡した値をそのまま返すこと", () => {
@@ -429,6 +478,82 @@ describe("BookAggregate", () => {
         ]));
 
         expect(result.isOk()).toBe(true);
+      });
+    });
+
+    describe("著者", () => {
+      /** 作品1・作品2と、著者1件（AUTHOR_ID_1「既存の著者」）を持つ書籍集約 */
+      function createBookWithAuthor(): BookAggregate {
+        return BookAggregate.reconstruct({
+          id: BookId.of(BOOK_ID),
+          userId: UserId.of(USER_ID),
+          title: BookTitle.of("短編集"),
+          publishedDate: PublishedDate.of(null),
+          readingStatusId: ReadingStatusId.of(1),
+          currentPage: CurrentPage.of(null),
+          memo: BookMemo.of(null),
+          iconId: IconId.of(1),
+          deleteFlg: false,
+          works: [
+            work(WORK_ID_1, "作品1", 1),
+            work(WORK_ID_2, "作品2", 2),
+          ],
+          updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+          authors: [
+            AuthorEntity.reconstruct({ id: AuthorId.of(AUTHOR_ID_1), name: AuthorName.of("既存の著者"), sortOrder: AuthorSortOrder.of(1), deleteFlg: false }),
+          ],
+        });
+      }
+
+      const WORKS = [workParam(WORK_ID_1, 1), workParam(WORK_ID_2, 2)];
+
+      it("既存の著者を、引数の著者で全件置き換えること（入力順に 1 始まりの表示順・未削除で、新しい ID を採番する）", () => {
+        const book = createBookWithAuthor();
+
+        const result = book.update({ ...updateParam(WORKS), authorNames: authorNames("東野圭吾", "湊かなえ") });
+
+        expect(result.isOk()).toBe(true);
+        const authors = book.toSnapshot().authors;
+        expect(authors).toEqual([
+          { id: expect.stringMatching(ULID_PATTERN), name: "東野圭吾", sortOrder: 1, deleteFlg: false },
+          { id: expect.stringMatching(ULID_PATTERN), name: "湊かなえ", sortOrder: 2, deleteFlg: false },
+        ]);
+        expect(authors.map((e) => e.id)).not.toContain(AUTHOR_ID_1);
+      });
+
+      it("著者が空の場合は、既存の著者をすべて取り除くこと", () => {
+        const book = createBookWithAuthor();
+
+        const result = book.update({ ...updateParam(WORKS), authorNames: [] });
+
+        expect(result.isOk()).toBe(true);
+        expect(book.toSnapshot().authors).toEqual([]);
+      });
+
+      it("著者名が重複する場合は DUPLICATE_AUTHOR_NAME を返し、自身を変更しないこと", () => {
+        const book = createBookWithAuthor();
+        const before = book.toSnapshot();
+
+        const result = book.update({ ...updateParam(WORKS), authorNames: authorNames("東野圭吾", "東野圭吾") });
+
+        expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_AUTHOR_NAME", names: ["東野圭吾"] });
+        expect(book.toSnapshot()).toEqual(before);
+      });
+
+      it("画面の表示時点の更新日時が一致しない場合は、著者名の重複より CONFLICT_BOOK を優先すること", () => {
+        const book = createBookWithAuthor();
+
+        const result = book.update({ ...updateParam(WORKS, STALE_UPDATED_AT), authorNames: authorNames("東野圭吾", "東野圭吾") });
+
+        expect(result._unsafeUnwrapErr()).toEqual({ type: "CONFLICT_BOOK" });
+      });
+
+      it("作品の指定が既存の作品と一致しない場合は、著者名の重複より WORKS_MISMATCH を優先すること", () => {
+        const book = createBookWithAuthor();
+
+        const result = book.update({ ...updateParam([workParam(WORK_ID_1, 1)]), authorNames: authorNames("東野圭吾", "東野圭吾") });
+
+        expect(result._unsafeUnwrapErr()).toEqual({ type: "WORKS_MISMATCH" });
       });
     });
   });

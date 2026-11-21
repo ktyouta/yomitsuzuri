@@ -27,6 +27,7 @@ const BODY = {
     { id: WORK_ID_2, sort: 1 },
   ],
   updatedAt: BOOK_UPDATED_AT,
+  authorNames: [],
 };
 
 /**
@@ -285,6 +286,38 @@ describe("UpdateBookUsecase", () => {
     expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
   });
 
+  describe("著者", () => {
+    it("著者名が空欄・空白のみの著者はエラーにせず省き、残りの著者を入力順に 1 から表示順を振って保存すること（前後の空白は除去する）", async () => {
+      const { usecase, updateBookRepository } = createUsecase();
+
+      const result = await usecase.execute({
+        userId: USER_ID,
+        bookId: BOOK_ID.value,
+        body: { ...BODY, authorNames: [{ name: "" }, { name: " 東野圭吾 " }, { name: "　 " }, { name: "湊かなえ" }] },
+      });
+
+      expect(result.isOk()).toBe(true);
+      const authors = updateBookRepository.updateBook.mock.calls[0]?.[0].toSnapshot().authors;
+      expect(authors?.map((e) => ({ name: e.name, sortOrder: e.sortOrder }))).toEqual([
+        { name: "東野圭吾", sortOrder: 1 },
+        { name: "湊かなえ", sortOrder: 2 },
+      ]);
+    });
+
+    it("著者名が重複する場合、DUPLICATE_AUTHOR_NAME を返し、保存しないこと（前後の空白を除いた値で判定する）", async () => {
+      const { usecase, updateBookRepository } = createUsecase();
+
+      const result = await usecase.execute({
+        userId: USER_ID,
+        bookId: BOOK_ID.value,
+        body: { ...BODY, authorNames: [{ name: "東野圭吾" }, { name: " 東野圭吾" }] },
+      });
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_AUTHOR_NAME", names: ["東野圭吾"] });
+      expect(updateBookRepository.updateBook).not.toHaveBeenCalled();
+    });
+  });
+
   it("入力値が制約を満たさない場合、INVALID_INPUT で書籍・作品の違反をすべて項目名とともに返し、DB を問い合わせず保存しないこと", async () => {
     const { usecase, updateBookRepository, uniquenessRepository, iconValidityRepository, readingStatusValidityRepository } = createUsecase();
 
@@ -303,6 +336,7 @@ describe("UpdateBookUsecase", () => {
           { id: WORK_ID_2, sort: 0 },
         ],
         updatedAt: BOOK_UPDATED_AT,
+        authorNames: [{ name: "" }, { name: "あ".repeat(101) }],
       },
     });
 
@@ -316,6 +350,8 @@ describe("UpdateBookUsecase", () => {
         { field: "memo", error: { type: "BOOK_MEMO_TOO_LONG", max: 2000 } },
         { field: "iconId", error: { type: "ICON_ID_INVALID" } },
         { field: "works.1.sort", error: { type: "WORK_SORT_INVALID", min: 1 } },
+        // 著者の添字は、空欄を省く前の位置
+        { field: "authorNames.1.name", error: { type: "AUTHOR_NAME_TOO_LONG", max: 100 } },
       ],
     });
     expect(updateBookRepository.findBook).not.toHaveBeenCalled();

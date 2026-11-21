@@ -7,14 +7,15 @@ const VALID_BODY = {
   currentPage: 120,
   memo: "メモ",
   iconId: 2,
+  authorNames: [{ name: "東野圭吾" }],
 };
 
 /**
  * 型・構造のみを検証する（値の制約は値オブジェクトのテストで検証する）
  */
 describe("CreateBookSchema", () => {
-  it("タイトルとアイコンのみの場合、通ること", () => {
-    const result = CreateBookSchema.safeParse({ title: "容疑者Xの献身", iconId: 1 });
+  it("タイトル・アイコン・著者（空配列）のみの場合、通ること", () => {
+    const result = CreateBookSchema.safeParse({ title: "容疑者Xの献身", iconId: 1, authorNames: [] });
     expect(result.success).toBe(true);
   });
 
@@ -49,6 +50,9 @@ describe("CreateBookSchema", () => {
     { currentPage: "120" },
     { memo: 1 },
     { iconId: "2" },
+    { authorNames: undefined },
+    { authorNames: ["東野圭吾"] },
+    { authorNames: [{ name: 1 }] },
   ])("型が異なる場合（%j）、エラーになること", (override) => {
     const result = CreateBookSchema.safeParse({ ...VALID_BODY, ...override });
     expect(result.success).toBe(false);

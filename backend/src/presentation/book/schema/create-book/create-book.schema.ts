@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+const CreateAuthorSchema = z.object({
+  name: z.string(),
+});
+
 /**
  * 書籍作成リクエストスキーマ
  *
@@ -12,4 +16,5 @@ export const CreateBookSchema = z.object({
   currentPage: z.number().nullish(),
   memo: z.string().nullish(),
   iconId: z.number(),
+  authorNames: z.array(CreateAuthorSchema),
 });

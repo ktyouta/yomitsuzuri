@@ -1,9 +1,9 @@
 import { err, ok, Result } from "neverthrow";
-import { BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, WorkId, WorkSort, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type BookTitleUniquenessError, type BookUpdateError, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type TimestampError, type UserId, type WorkIdError, type WorkSortError } from "../../../../domain";
+import { AuthorName, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, WorkId, WorkSort, type AuthorNameError, type BookMemoError, type BookTitleError, type BookTitleUniquenessDomainService, type BookTitleUniquenessError, type BookUpdateError, type CurrentPageError, type IconIdError, type IconValidityDomainService, type IUpdateBookRepository, type PublishedDateError, type ReadingStatusIdError, type ReadingStatusValidityDomainService, type TimestampError, type UserId, type WorkIdError, type WorkSortError } from "../../../../domain";
 import { UpdateBookResultDto } from "../../dto";
 
 /**
- * 書籍更新の入力値の制約違反（field は入力値の項目名。作品は `works.{作品の添字}.{項目名}`）
+ * 書籍更新の入力値の制約違反（field は入力値の項目名。作品は `works.{作品の添字}.{項目名}`、著者は `authorNames.{著者の添字}.name`）
  */
 export type UpdateBookInputError =
     | { field: "title"; error: BookTitleError }
@@ -14,7 +14,8 @@ export type UpdateBookInputError =
     | { field: "iconId"; error: IconIdError }
     | { field: "updatedAt"; error: TimestampError }
     | { field: `works.${number}.id`; error: WorkIdError }
-    | { field: `works.${number}.sort`; error: WorkSortError };
+    | { field: `works.${number}.sort`; error: WorkSortError }
+    | { field: `authorNames.${number}.name`; error: AuthorNameError };
 
 export type UpdateBookError =
     | { type: "INVALID_INPUT"; errors: UpdateBookInputError[] }
@@ -29,6 +30,10 @@ type UpdateWorkBody = {
     sort: number;
 };
 
+type UpdateAuthorBody = {
+    name: string;
+};
+
 type UpdateBookBody = {
     title: string;
     publishedDate?: string | null;
@@ -38,6 +43,7 @@ type UpdateBookBody = {
     iconId: number;
     works: UpdateWorkBody[];
     updatedAt: string;
+    authorNames: UpdateAuthorBody[];
 };
 
 type PropsType = {
@@ -60,6 +66,22 @@ function createWorkParam(work: UpdateWorkBody, index: number) {
     ]).map(([id, sort]) => ({ id, sort }));
 }
 
+/**
+ * 著者の入力値から、著者名の一覧を生成する（空欄・空白のみの著者は省く）
+ * @param authors 著者の入力値
+ * @returns 成功時は入力順の著者名、制約違反時は違反すべて（項目名の添字は、空欄を省く前の位置）
+ */
+function createAuthorNames(authors: UpdateAuthorBody[]) {
+    return Result.combineWithAllErrors(
+        authors.flatMap((author, index) => {
+            if (!author.name.trim()) {
+                return [];
+            }
+            return [AuthorName.create(author.name).mapErr((error): UpdateBookInputError => ({ field: `authorNames.${index}.name`, error }))];
+        }),
+    );
+}
+
 export class UpdateBookUsecase {
 
     constructor(private readonly updateBookRepository: IUpdateBookRepository,
@@ -70,12 +92,13 @@ export class UpdateBookUsecase {
     /**
      * 書籍更新
      * 書籍情報を更新し、書籍に収録された削除されていない作品の表示順を並び替える（作品の追加・削除・復元と、作品名・メモ・アイコンの変更は行わない）。
+     * 著者は入力の内容で全件を入れ替え、入力順に表示順を振る。著者名が空欄・空白のみの著者は、エラーにせず省く。
      * @param userId 書籍を所有するユーザーID
      * @param bookId 更新対象の書籍ID
      * @param body 書籍の更新内容、削除されていない作品の ID と表示順（削除済みの作品を含めると WORKS_MISMATCH）、画面の表示時点の書籍の更新日時
      * @returns 成功時は更新後の書籍と作品の DTO（作品は削除済みを含む）。
      * 入力値が制約を満たさない（違反はすべて返し、DB は問い合わせない）・書籍が存在しない・書籍のアイコンが無効・読書状況が無効・同名書籍が存在する（自身を除き、削除済みを含む。削除済みだけの場合は DUPLICATE_DELETED_TITLE）・
-     * 画面の表示後に書籍が更新された（保存時に更新されていた場合を含む）・作品の指定に誤りがある・作品の指定が既存の作品と一致しない・作品が不変条件に違反する場合はエラー（いずれも保存しない）
+     * 画面の表示後に書籍が更新された（保存時に更新されていた場合を含む）・作品の指定に誤りがある・作品の指定が既存の作品と一致しない・作品が不変条件に違反する・著者名が重複する（DUPLICATE_AUTHOR_NAME）場合はエラー（いずれも保存しない）
      * @throws bookId が空の場合（DB は問い合わせない）
      */
     async execute({ userId, bookId, body }: PropsType): Promise<Result<UpdateBookResultDto, UpdateBookError>> {
@@ -93,11 +116,12 @@ export class UpdateBookUsecase {
                 Timestamp.fromInput(body.updatedAt).mapErr((error): UpdateBookInputError => ({ field: "updatedAt", error })),
             ]),
             Result.combineWithAllErrors(body.works.map(createWorkParam)).mapErr((errors) => errors.flat()),
+            createAuthorNames(body.authorNames),
         ]);
         if (input.isErr()) {
             return err({ type: "INVALID_INPUT", errors: input.error.flat() });
         }
-        const [[title, publishedDate, readingStatusId, currentPage, memo, iconId, expectedUpdatedAt], works] = input.value;
+        const [[title, publishedDate, readingStatusId, currentPage, memo, iconId, expectedUpdatedAt], works, authorNames] = input.value;
 
         // 更新対象の書籍を取得
         const book = await this.updateBookRepository.findBook(userId, id);
@@ -133,7 +157,7 @@ export class UpdateBookUsecase {
             works,
             expectedUpdatedAt,
             updatedAt: Timestamp.create(),
-            authorNames: [],
+            authorNames,
         });
         if (updateResult.isErr()) {
             return err(updateResult.error);

@@ -40,6 +40,8 @@ const createBook = new Hono<AppEnv>().post(
             return c.json({ message: "同名の書籍が既に登録されています（削除済み）。復元するか、別のタイトルにしてください。" }, HTTP_STATUS.CONFLICT);
           case "INVALID_ICON":
             return c.json({ message: "入力エラー", data: [{ field: "iconId", message: "指定されたアイコンは存在しません。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
+          case "DUPLICATE_AUTHOR_NAME":
+            return c.json({ message: "入力エラー", data: [{ field: "authorNames", message: "著者名が重複しています。" }] }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
           default: {
             // 全てのエラー種別を網羅していることを型で保証する
             error satisfies never;

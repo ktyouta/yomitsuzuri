@@ -1,4 +1,4 @@
-import type { BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterIdError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CharacterRelationNameError, CurrentPageError, EventContentError, EventIdError, EventOccurredTimingError, EventSortOrderError, EventTimelineUpdateError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, TimestampError, WordMemoError, WordPageError, WordTextError, WorkIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
+import type { AuthorNameError, BookListPaginationError, BookMemoError, BookTitleError, BookValidationError, CharacterAgeError, CharacterCharacteristicError, CharacterIdError, CharacterMemoError, CharacterNameError, CharacterOccupationError, CharacterRelationNameError, CurrentPageError, EventContentError, EventIdError, EventOccurredTimingError, EventSortOrderError, EventTimelineUpdateError, GenderIdError, IconIdError, PublishedDateError, ReadingStatusIdError, TimestampError, WordMemoError, WordPageError, WordTextError, WorkIdError, WorkMemoError, WorkSortError, WorkTitleError } from "../../../domain";
 
 /**
  * 書籍コンテキストの入力値の違反（値オブジェクトの制約違反、集約の作品の指定の誤り・不変条件の違反）
@@ -32,6 +32,7 @@ type BookInputError =
   | EventContentError
   | EventIdError
   | EventSortOrderError
+  | AuthorNameError
   | Extract<EventTimelineUpdateError, { type: "DUPLICATE_SORT_ORDER" }>;
 
 /**
@@ -115,6 +116,10 @@ export function toInputErrorMessage(error: BookInputError): string {
       return `時系列順は${error.min}以上の整数で入力してください`;
     case "DUPLICATE_SORT_ORDER":
       return "時系列順が重複しています。";
+    case "AUTHOR_NAME_EMPTY":
+      return "著者名は必須です";
+    case "AUTHOR_NAME_TOO_LONG":
+      return `著者名は${error.max}文字以内で入力してください`;
     default: {
       // 全てのエラー種別を網羅していることを型で保証する
       error satisfies never;

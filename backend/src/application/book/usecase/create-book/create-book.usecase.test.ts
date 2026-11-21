@@ -11,6 +11,7 @@ const BODY = {
   currentPage: 120,
   memo: "メモ",
   iconId: 2,
+  authorNames: [],
 };
 
 type Options = {
@@ -90,7 +91,7 @@ describe("CreateBookUsecase", () => {
   it("出版日・現在のページ数・メモが未指定の場合、null で保存されること", async () => {
     const { usecase, createBookRepository } = createUsecase();
 
-    await usecase.execute({ userId: USER_ID, body: { title: "容疑者Xの献身", iconId: 1 } });
+    await usecase.execute({ userId: USER_ID, body: { title: "容疑者Xの献身", iconId: 1, authorNames: [] } });
 
     const snapshot = createBookRepository.createBook.mock.calls[0]?.[0].toSnapshot();
     expect(snapshot?.publishedDate).toBeNull();
@@ -146,6 +147,7 @@ describe("CreateBookUsecase", () => {
         currentPage: -1,
         memo: "あ".repeat(2001),
         iconId: 0,
+        authorNames: [{ name: "あ".repeat(101) }],
       },
     });
 
@@ -157,11 +159,60 @@ describe("CreateBookUsecase", () => {
         { field: "currentPage", error: { type: "CURRENT_PAGE_INVALID", min: 0 } },
         { field: "memo", error: { type: "BOOK_MEMO_TOO_LONG", max: 2000 } },
         { field: "iconId", error: { type: "ICON_ID_INVALID" } },
+        { field: "authorNames.0.name", error: { type: "AUTHOR_NAME_TOO_LONG", max: 100 } },
       ],
     });
     expect(iconValidityRepository.findValidIds).not.toHaveBeenCalled();
     expect(uniquenessRepository.findBook).not.toHaveBeenCalled();
     expect(createBookRepository.createBook).not.toHaveBeenCalled();
+  });
+
+  describe("著者", () => {
+    it("著者を入力順に、1 から始まる表示順で保存すること（前後の空白は除去する）", async () => {
+      const { usecase, createBookRepository } = createUsecase();
+
+      await usecase.execute({ userId: USER_ID, body: { ...BODY, authorNames: [{ name: " 東野圭吾 " }, { name: "湊かなえ" }] } });
+
+      const authors = createBookRepository.createBook.mock.calls[0]?.[0].toSnapshot().authors;
+      expect(authors?.map((e) => ({ name: e.name, sortOrder: e.sortOrder }))).toEqual([
+        { name: "東野圭吾", sortOrder: 1 },
+        { name: "湊かなえ", sortOrder: 2 },
+      ]);
+    });
+
+    it("著者名が空欄・空白のみの著者は、エラーにせず省き、残りの著者に詰めて表示順を振ること", async () => {
+      const { usecase, createBookRepository } = createUsecase();
+
+      const result = await usecase.execute({ userId: USER_ID, body: { ...BODY, authorNames: [{ name: "" }, { name: "東野圭吾" }, { name: "　 " }, { name: "湊かなえ" }] } });
+
+      expect(result.isOk()).toBe(true);
+      const authors = createBookRepository.createBook.mock.calls[0]?.[0].toSnapshot().authors;
+      expect(authors?.map((e) => ({ name: e.name, sortOrder: e.sortOrder }))).toEqual([
+        { name: "東野圭吾", sortOrder: 1 },
+        { name: "湊かなえ", sortOrder: 2 },
+      ]);
+    });
+
+    it("著者名の制約違反の項目名は、空欄を省く前の添字にすること", async () => {
+      const { usecase, createBookRepository } = createUsecase();
+
+      const result = await usecase.execute({ userId: USER_ID, body: { ...BODY, authorNames: [{ name: "" }, { name: "あ".repeat(101) }] } });
+
+      expect(result._unsafeUnwrapErr()).toEqual({
+        type: "INVALID_INPUT",
+        errors: [{ field: "authorNames.1.name", error: { type: "AUTHOR_NAME_TOO_LONG", max: 100 } }],
+      });
+      expect(createBookRepository.createBook).not.toHaveBeenCalled();
+    });
+
+    it("著者名が重複する場合、DUPLICATE_AUTHOR_NAME を返し、保存しないこと（前後の空白を除いた値で判定する）", async () => {
+      const { usecase, createBookRepository } = createUsecase();
+
+      const result = await usecase.execute({ userId: USER_ID, body: { ...BODY, authorNames: [{ name: "東野圭吾" }, { name: " 東野圭吾" }] } });
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_AUTHOR_NAME", names: ["東野圭吾"] });
+      expect(createBookRepository.createBook).not.toHaveBeenCalled();
+    });
   });
 
   it("違反している項目だけを INVALID_INPUT で返すこと", async () => {

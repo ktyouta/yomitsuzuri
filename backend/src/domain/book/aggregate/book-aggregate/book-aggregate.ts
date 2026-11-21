@@ -175,8 +175,14 @@ export class BookAggregate {
     /**
      * 新規登録する書籍集約を作成する
      * 書籍タイトルと同名・書籍と同じアイコンの作品を1件、表示順の先頭として自動で作成する（以降は書籍と連動しない）
+     *
+     * 不変条件（違反した場合は err で返す）:
+     * - DUPLICATE_AUTHOR_NAME: 著者名（前後の空白を除去済みの値）が重複しないこと。2件目以降の出現ごとに著者名を返す
+     *
+     * 事後条件:
+     * - ok の場合: 著者を引数の順に、先頭から 1 始まりの表示順・未削除で作成する（著者ごとに新しい ID を採番する）
      * @param params 書籍の登録内容
-     * @returns 読書状況が初期値（未読）の書籍集約
+     * @returns 成功時は読書状況が初期値（未読）の書籍集約、著者名が重複する場合はその内容を持つ Result
      */
     static create(params: CreateBookParamType): Result<BookAggregate, BookCreateError> {
 
@@ -232,12 +238,16 @@ export class BookAggregate {
      * 不変条件（並び替え後の作品一覧で判定し、違反はすべて収集して INVALID_WORKS の err で返す）:
      * - 表示順を持つ作品同士で表示順が重複しないこと（個別に削除した作品は表示順を持たない。docs/delete-restore/plan.md の U13）
      *
+     * 著者の不変条件（作品の判定がすべて通った後に判定する）:
+     * - DUPLICATE_AUTHOR_NAME: 著者名（前後の空白を除去済みの値）が重複しないこと。2件目以降の出現ごとに著者名を返す
+     *
      * 事後条件:
      * - ok の場合: 自身の書籍情報（更新日時を含む）を引数の内容に置き換え、削除されていない作品の表示順だけを引数の内容に置き換える。
-     *   作品の表示順以外の値（作品の更新日時を含む）と、削除済みの作品は変更せずに保持する
+     *   作品の表示順以外の値（作品の更新日時を含む）と、削除済みの作品は変更せずに保持する。
+     *   著者は全件を引数の著者に置き換える（引数の順に、先頭から 1 始まりの表示順・未削除で、新しい ID を採番する。空の場合は著者なしにする）
      * - err の場合: 自身は変更しない
-     * @param params 更新後の書籍情報・更新日時、削除されていない作品の ID と表示順の一覧、画面の表示時点の書籍の更新日時
-     * @returns 成功時は ok、排他の失敗・作品の指定の誤り・不一致・不変条件の違反時はその内容を持つ Result
+     * @param params 更新後の書籍情報・更新日時、削除されていない作品の ID と表示順の一覧、著者名の一覧、画面の表示時点の書籍の更新日時
+     * @returns 成功時は ok、排他の失敗・作品の指定の誤り・不一致・不変条件の違反・著者名の重複時はその内容を持つ Result
      * @throws 事前条件を満たさない場合
      */
     update(params: UpdateBookParamType): Result<void, BookUpdateError> {
@@ -326,7 +336,12 @@ export class BookAggregate {
         return ok(newWorks);
     }
 
-    static checkAuthorsName(authorNames: AuthorName[]): string[] {
+    /**
+     * 著者名の重複を検出する（著者名は前後の空白を除去済みの値で比較する）
+     * @param authorNames 著者名の一覧（入力順）
+     * @returns 重複していた著者名の一覧（2件目以降の出現ごとに1件。重複がなければ空配列）
+     */
+    private static checkAuthorsName(authorNames: AuthorName[]): string[] {
         const duplicateNameSet = new Set<string>();
         const duplicateNameList: string[] = [];
         for (const authorName of authorNames) {

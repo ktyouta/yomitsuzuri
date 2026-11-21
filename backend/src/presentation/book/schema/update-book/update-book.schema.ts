@@ -9,6 +9,13 @@ const UpdateWorkSchema = z.object({
 });
 
 /**
+ * 著者のリクエストスキーマ（書籍の更新では著者を全件入れ替える）
+ */
+const UpdateAuthorSchema = z.object({
+  name: z.string(),
+});
+
+/**
  * 書籍更新リクエストスキーマ
  *
  * 型・構造のみを検証する。値の制約（文字数・形式等）は値オブジェクト、
@@ -24,4 +31,5 @@ export const UpdateBookSchema = z.object({
   iconId: z.number(),
   works: z.array(UpdateWorkSchema),
   updatedAt: z.string(),
+  authorNames: z.array(UpdateAuthorSchema),
 });

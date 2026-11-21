@@ -143,6 +143,10 @@ export class DeleteBookRepository implements IDeleteBookRepository {
         .update(eventTransaction)
         .set({ deleteFlg: true, updatedAt: snapshot.updatedAt })
         .where(and(inArray(eventTransaction.workId, workIds), eq(eventTransaction.deleteFlg, false), bookDeleted)),
+      this.db
+        .update(authorTransaction)
+        .set({ deleteFlg: true, updatedAt: snapshot.updatedAt })
+        .where(and(eq(authorTransaction.bookId, snapshot.id), bookDeleted)),
     ]);
 
     return bookResult.length > 0;

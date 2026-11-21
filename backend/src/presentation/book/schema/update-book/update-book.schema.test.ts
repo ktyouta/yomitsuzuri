@@ -12,6 +12,7 @@ const VALID_BODY = {
   iconId: 2,
   works: [WORK],
   updatedAt: "2026-01-01T00:00:00.000Z",
+  authorNames: [{ name: "東野圭吾" }],
 };
 
 /**
@@ -45,7 +46,7 @@ describe("UpdateBookSchema", () => {
     expect(UpdateBookSchema.safeParse({ ...VALID_BODY, works: [WORK, WORK] }).success).toBe(true);
   });
 
-  it.each(["title", "readingStatus", "iconId", "works", "updatedAt"])("%s がない場合、エラーになること", (key) => {
+  it.each(["title", "readingStatus", "iconId", "works", "updatedAt", "authorNames"])("%s がない場合、エラーになること", (key) => {
     const body: Record<string, unknown> = { ...VALID_BODY };
     delete body[key];
     expect(UpdateBookSchema.safeParse(body).success).toBe(false);
@@ -66,6 +67,8 @@ describe("UpdateBookSchema", () => {
     { iconId: "2" },
     { works: {} },
     { updatedAt: 1 },
+    { authorNames: ["東野圭吾"] },
+    { authorNames: [{ name: 1 }] },
   ])("型が異なる場合（%j）、エラーになること", (override) => {
     const result = UpdateBookSchema.safeParse({ ...VALID_BODY, ...override });
     expect(result.success).toBe(false);
