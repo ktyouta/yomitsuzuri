@@ -25,6 +25,7 @@ export * from "./get-list-word";
 export * from "./get-work";
 export * from "./icon-validity";
 export * from "./reading-status-validity";
+export * from "./restore-book";
 export * from "./restore-character";
 export * from "./restore-character-relation";
 export * from "./restore-event";
