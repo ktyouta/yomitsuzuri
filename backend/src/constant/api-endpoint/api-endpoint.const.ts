@@ -12,6 +12,7 @@ export const API_ENDPOINT = {
   USER_DARK_MODE: "/api/v1/user/dark-mode",
   BOOKS: "/api/v1/books",
   BOOKS_ID: "/api/v1/books/:bookId",
+  BOOKS_ID_RESTORE: "/api/v1/books/:bookId/restore",
   BOOKS_ID_READING_PROGRESS: "/api/v1/books/:bookId/reading-progress",
   BOOKS_ID_TAGS_ID: "/api/v1/books/:bookId/tags/:tagId",
   BOOKS_ID_WORKS: "/api/v1/books/:bookId/works",

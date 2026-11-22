@@ -18,6 +18,7 @@ export * from "./get-list-character-relation";
 export * from "./get-list-event";
 export * from "./get-list-word";
 export * from "./get-work";
+export * from "./restore-book";
 export * from "./restore-character";
 export * from "./restore-character-relation";
 export * from "./restore-event";

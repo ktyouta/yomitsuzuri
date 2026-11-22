@@ -30,9 +30,9 @@ export interface IRestoreBookRepository {
    * 書籍・著者・作品・配下は、すべて保存するか、何も保存しないかのどちらかにする（親が有効で子だけ削除済みの状態を作らないため。U14）。
    * 保存時点の書籍が削除されていない、または書籍の更新日時が expectedUpdatedAt と一致しない場合（取得後に他の操作で更新された場合）は、何も保存しない。
    * @param book 復元後の書籍
-   * @param eventTimeline 削除済みを解除し、時系列順を付けた作品ごとの出来事の並び
+   * @param eventTimelineList 削除済みを解除し、時系列順を付けた作品ごとの出来事の並び
    * @param expectedUpdatedAt 取得時点の書籍の更新日時
    * @returns 保存した場合は true、他の操作で更新されていたため保存しなかった場合は false
    */
-  restoreBook(book: BookAggregate, eventTimeline: EventTimelineAggregate[], expectedUpdatedAt: Timestamp): Promise<boolean>;
+  restoreBook(book: BookAggregate, eventTimelineList: EventTimelineAggregate[], expectedUpdatedAt: Timestamp): Promise<boolean>;
 }
