@@ -56,6 +56,13 @@ type DeleteBookParamType = {
     expectedUpdatedAt: Timestamp;
 };
 
+type RestoreBookParamType = {
+    /** 復元後の書籍・作品の更新日時 */
+    updatedAt: Timestamp;
+    /** 画面の表示時点の書籍の更新日時（排他チェックに使う） */
+    expectedUpdatedAt: Timestamp;
+};
+
 type UpdateSingleWorkParamType = {
     id: WorkId;
     title: WorkTitle;
@@ -99,6 +106,13 @@ export type BookUpdateError = { type: "CONFLICT_BOOK" }
     | { type: "DUPLICATE_AUTHOR_NAME"; names: string[] };
 
 export type BookDeleteError =
+    | { type: "CONFLICT_BOOK" };
+
+/**
+ * 書籍の復元の失敗
+ * - CONFLICT_BOOK: 画面の表示後に、書籍が他の操作で更新された
+ */
+export type BookRestoreError =
     | { type: "CONFLICT_BOOK" };
 
 /**
@@ -496,14 +510,70 @@ export class BookAggregate {
     }
 
     /**
-     * 書籍復元（自身の削除済みを解除する）
-     * @throws 削除されていない書籍の場合
+     * 書籍復元（自身と、収録された作品の削除済みを解除する）
+     *
+     * 事前条件（満たさない場合は throw。自身は変更しない）:
+     * - 書籍が削除済みであること
+     * - 作品がすべて削除済みであること（書籍の削除で作品も削除するため。docs/delete-restore/plan.md の U10・U14）
+     *
+     * 画面の表示時点の書籍の更新日時（params.expectedUpdatedAt）が、自身の更新日時と一致しない場合は CONFLICT_BOOK を err で返す。
+     *
+     * 事後条件:
+     * - ok の場合:
+     *   - 自身の削除済みを解除し、更新日時を params.updatedAt にする
+     *   - 作品をすべて復元し、更新日時を params.updatedAt にする
+     *   - 表示順を持つ作品（書籍ごと削除したもの）は、表示順を変えない（U13）
+     *   - 表示順を持たない作品（個別に削除していたもの）は、ID 順（作成順）に、表示順の最大値+1 から順に末尾に付ける（U13）
+     * - err の場合: 自身は変更しない
+     * @param params 復元後の更新日時、画面の表示時点の書籍の更新日時
+     * @returns 成功時は ok、排他の失敗時は CONFLICT_BOOK
+     * @throws 事前条件を満たさない場合
      */
-    restore(): void {
+    restore(params: RestoreBookParamType): Result<undefined, BookRestoreError> {
         if (!this._deleteFlg) {
             throw new Error(`削除されていない書籍です。`);
         }
+        const notDeletedWork = this._works.find((work) => !work.deleteFlg);
+        if (notDeletedWork) {
+            throw new Error(`削除されていない作品が含まれています。workId:${notDeletedWork.id.value}`);
+        }
+        if (!this._updatedAt.equals(params.expectedUpdatedAt)) {
+            return err({ type: "CONFLICT_BOOK" });
+        }
+
+        // 表示順を持つ作品（書籍ごと削除したもの）は、そのままの表示順で戻す
+        this._works
+            .filter((work) => work.sort.value !== null)
+            .forEach((work) => {
+                work.restore({ nextSort: work.sort, updatedAt: params.updatedAt });
+            });
+
+        // 表示順を持たない作品（個別に削除していたもの）は、ID 順（作成順）で末尾に付ける
+        // 1件ずつ復元するため、nextSortOrder は直前に復元した作品の次の値になる
+        this._works
+            .filter((work) => work.sort.value === null)
+            .sort((a, b) => BookAggregate.compareWorkId(a, b))
+            .forEach((work) => {
+                work.restore({ nextSort: this.nextSortOrder(), updatedAt: params.updatedAt });
+            });
+
         this._deleteFlg = false;
+        this._updatedAt = params.updatedAt;
+        return ok(undefined);
+    }
+
+    /**
+     * 作品を ID の昇順（ULID のため作成順）に並べるための比較
+     * @param a 比較する作品
+     * @param b 比較する作品
+     * @returns a が先なら負、b が先なら正、同じ ID なら 0
+     */
+    private static compareWorkId(a: WorkEntity, b: WorkEntity): number {
+        if (a.id.value === b.id.value) {
+            return 0;
+        }
+
+        return a.id.value < b.id.value ? -1 : 1;
     }
 
     /**

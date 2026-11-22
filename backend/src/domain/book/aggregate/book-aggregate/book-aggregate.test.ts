@@ -276,19 +276,94 @@ describe("BookAggregate", () => {
   });
 
   describe("restore", () => {
-    it("自身の削除済みを解除すること", () => {
-      const book = createBook(true);
+    /** 削除済みの書籍集約（作品はすべて削除済み） */
+    function createDeletedBook(works: WorkEntity[]): BookAggregate {
+      return BookAggregate.reconstruct({
+        id: BookId.of(BOOK_ID),
+        userId: UserId.of(USER_ID),
+        title: BookTitle.of("短編集"),
+        publishedDate: PublishedDate.of(null),
+        readingStatusId: ReadingStatusId.of(1),
+        currentPage: CurrentPage.of(null),
+        memo: BookMemo.of(null),
+        iconId: IconId.of(1),
+        deleteFlg: true,
+        works,
+        updatedAt: Timestamp.of(BOOK_UPDATED_AT),
+        authors: [],
+      });
+    }
+
+    const RESTORE_PARAMS = { updatedAt: Timestamp.of(NEW_UPDATED_AT), expectedUpdatedAt: Timestamp.of(BOOK_UPDATED_AT) };
+
+    it("自身の削除済みを解除し、更新日時を置き換えること", () => {
+      const book = createDeletedBook([work(WORK_ID_1, "作品1", 1, true)]);
       const before = book.toSnapshot();
 
-      book.restore();
+      const result = book.restore(RESTORE_PARAMS);
 
-      expect(book.toSnapshot()).toEqual({ ...before, deleteFlg: false });
+      expect(result.isOk()).toBe(true);
+      expect(book.toSnapshot()).toEqual({
+        ...before,
+        deleteFlg: false,
+        updatedAt: NEW_UPDATED_AT,
+        works: [{ ...workSnapshot(WORK_ID_1, "作品1", 1), updatedAt: NEW_UPDATED_AT }],
+      });
+    });
+
+    it("表示順を持つ作品はそのまま戻し、表示順を持たない作品は ID 順で末尾に付け、作品の更新日時を置き換えること", () => {
+      // 並び順が ID 順と一致しないように並べる
+      const book = createDeletedBook([
+        work(WORK_ID_3, "作品3", null, true),
+        work(WORK_ID_2, "作品2", 1, true),
+        work(WORK_ID_1, "作品1", null, true),
+      ]);
+
+      book.restore(RESTORE_PARAMS);
+
+      expect(book.toSnapshot().works).toEqual([
+        { ...workSnapshot(WORK_ID_3, "作品3", 3), updatedAt: NEW_UPDATED_AT },
+        { ...workSnapshot(WORK_ID_2, "作品2", 1), updatedAt: NEW_UPDATED_AT },
+        { ...workSnapshot(WORK_ID_1, "作品1", 2), updatedAt: NEW_UPDATED_AT },
+      ]);
+    });
+
+    it("表示順を持つ作品がない場合、表示順を持たない作品を ID 順で先頭から付けること", () => {
+      const book = createDeletedBook([
+        work(WORK_ID_2, "作品2", null, true),
+        work(WORK_ID_1, "作品1", null, true),
+      ]);
+
+      book.restore(RESTORE_PARAMS);
+
+      expect(book.toSnapshot().works.map((e) => ({ id: e.id, sort: e.sort }))).toEqual([
+        { id: WORK_ID_2, sort: 2 },
+        { id: WORK_ID_1, sort: 1 },
+      ]);
+    });
+
+    it("画面の表示時点の更新日時が一致しない場合は CONFLICT_BOOK を返し、自身を変更しないこと", () => {
+      const book = createDeletedBook([work(WORK_ID_1, "作品1", 1, true), work(WORK_ID_2, "作品2", null, true)]);
+      const before = book.toSnapshot();
+
+      const result = book.restore({ updatedAt: Timestamp.of(NEW_UPDATED_AT), expectedUpdatedAt: Timestamp.of(STALE_UPDATED_AT) });
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "CONFLICT_BOOK" });
+      expect(book.toSnapshot()).toEqual(before);
     });
 
     it("削除されていない場合は throw すること", () => {
       const book = createBook();
 
-      expect(() => book.restore()).toThrow();
+      expect(() => book.restore(RESTORE_PARAMS)).toThrow("削除されていない書籍です。");
+    });
+
+    it("削除されていない作品が含まれる場合は throw し、自身を変更しないこと", () => {
+      const book = createDeletedBook([work(WORK_ID_1, "作品1", 1, true), work(WORK_ID_2, "作品2", 2)]);
+      const before = book.toSnapshot();
+
+      expect(() => book.restore(RESTORE_PARAMS)).toThrow("削除されていない作品が含まれています。");
+      expect(book.toSnapshot()).toEqual(before);
     });
   });
 
