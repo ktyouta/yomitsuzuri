@@ -3,6 +3,7 @@ export * from "./create-character";
 export * from "./create-character-relation";
 export * from "./create-event";
 export * from "./create-word";
+export * from "./create-work";
 export * from "./delete-book";
 export * from "./delete-character";
 export * from "./delete-character-relation";
