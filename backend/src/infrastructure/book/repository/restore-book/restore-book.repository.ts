@@ -83,13 +83,14 @@ export class RestoreBookRepository implements IRestoreBookRepository {
   /**
    * 復元対象の書籍に収録された作品の、出来事の並びを取得する
    * @param userId 書籍を所有するユーザーID
-   * @param workId 作品ID
-   * @returns 作品に属する、論理削除済みの出来事の並び（出来事がない・他ユーザーの書籍の作品・書籍が削除されていない場合は空の並び）
+   * @param bookId 復元対象の書籍ID
+   * @returns 作品ごとの、論理削除済みの出来事の並びの配列（削除済みの出来事がない作品は含まない。他ユーザーの書籍・書籍が削除されていない場合は空の配列）
    */
-  async findEventTimeline(userId: UserId, workId: WorkId): Promise<EventTimelineAggregate> {
+  async findEventTimeline(userId: UserId, bookId: BookId): Promise<EventTimelineAggregate[]> {
     const events = await this.db
       .select({
         id: eventTransaction.id,
+        workId: eventTransaction.workId,
         occurredTiming: eventTransaction.occurredTiming,
         content: eventTransaction.content,
         sortOrder: eventTransaction.sortOrder,
@@ -100,24 +101,41 @@ export class RestoreBookRepository implements IRestoreBookRepository {
       .innerJoin(workTransaction, eq(eventTransaction.workId, workTransaction.id))
       .innerJoin(bookTransaction, eq(workTransaction.bookId, bookTransaction.id))
       .where(and(
-        eq(eventTransaction.workId, workId.value),
+        eq(bookTransaction.id, bookId.value),
         eq(eventTransaction.deleteFlg, true),
         eq(workTransaction.deleteFlg, true),
         eq(bookTransaction.userId, userId.value),
-        eq(bookTransaction.deleteFlg, false),
+        eq(bookTransaction.deleteFlg, true),
       ));
 
-    return EventTimelineAggregate.reconstruct({
-      workId,
-      events: events.map((event) => EventEntity.reconstruct({
-        id: EventId.of(event.id),
-        workId,
-        occurredTiming: EventOccurredTiming.of(event.occurredTiming),
-        content: EventContent.of(event.content),
-        sortOrder: EventSortOrder.of(event.sortOrder),
-        deleteFlg: event.deleteFlg,
-      })),
-    });
+    const eventMap = new Map<string, typeof events>();
+    for (const event of events) {
+      const workId = event.workId;
+      const eventList = eventMap.get(workId);
+      if (!eventList) {
+        eventMap.set(workId, [event]);
+        continue;
+      }
+      eventList.push(event);
+    }
+
+    const eventTimelineList: EventTimelineAggregate[] = [];
+    for (const [workId, eventList] of eventMap) {
+      const eventTimeline = EventTimelineAggregate.reconstruct({
+        workId: WorkId.of(workId),
+        events: eventList.map((event) => EventEntity.reconstruct({
+          id: EventId.of(event.id),
+          workId: WorkId.of(workId),
+          occurredTiming: EventOccurredTiming.of(event.occurredTiming),
+          content: EventContent.of(event.content),
+          sortOrder: EventSortOrder.of(event.sortOrder),
+          deleteFlg: event.deleteFlg,
+        })),
+      });
+      eventTimelineList.push(eventTimeline);
+    }
+
+    return eventTimelineList;
   }
 
   /**

@@ -1,6 +1,6 @@
 import type { Timestamp, UserId } from "../../../shared";
 import type { BookAggregate, EventTimelineAggregate } from "../../aggregate";
-import type { BookId, WorkId } from "../../value-object";
+import type { BookId } from "../../value-object";
 
 /**
  * 書籍復元リポジトリインターフェース
@@ -17,10 +17,10 @@ export interface IRestoreBookRepository {
   /**
    * 復元対象の書籍に収録された作品の、出来事の並びを取得する
    * @param userId 書籍を所有するユーザーID
-   * @param workId 作品ID
-   * @returns 作品に属する、論理削除済みの出来事の並び（出来事がない・他ユーザーの書籍の作品・書籍が削除されていない場合は空の並び）
+   * @param bookId 復元対象の書籍ID
+   * @returns 作品ごとの、論理削除済みの出来事の並びの配列（削除済みの出来事がない作品は含まない。他ユーザーの書籍・書籍が削除されていない場合は空の配列）
    */
-  findEventTimeline(userId: UserId, workId: WorkId): Promise<EventTimelineAggregate>;
+  findEventTimeline(userId: UserId, bookId: BookId): Promise<EventTimelineAggregate[]>;
 
   /**
    * 書籍復元
