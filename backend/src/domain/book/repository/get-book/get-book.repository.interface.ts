@@ -34,6 +34,10 @@ export type WorkItem = {
   deleteFlg: boolean;
 };
 
+export type AuthorItem = {
+  name: string;
+}
+
 /**
  * 書籍詳細取得リポジトリインターフェース
  */
@@ -53,4 +57,12 @@ export interface IGetBookRepository {
    * @returns 論理削除済みを含む作品一覧（書籍が取得対象外の場合は空配列）
    */
   findWork(userId: UserId, bookId: BookId): Promise<WorkItem[]>;
+
+  /**
+   * 書籍の著者一覧を取得（表示順の昇順・同じ表示順内は ID の昇順）
+   * @param userId 書籍を所有するユーザーID
+   * @param bookId 書籍ID
+   * @returns 著者一覧（書籍が取得対象外の場合は空配列）
+   */
+  findAuthor(userId: UserId, bookId: BookId): Promise<AuthorItem[]>;
 }

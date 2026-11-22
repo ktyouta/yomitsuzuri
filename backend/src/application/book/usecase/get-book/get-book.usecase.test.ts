@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { GetBookUsecase } from "..";
-import { UserId, type BookItem, type IGetBookRepository, type WorkItem } from "../../../../domain";
+import { UserId, type AuthorItem, type BookItem, type IGetBookRepository, type WorkItem } from "../../../../domain";
 
 const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
 const BOOK_ID = "01BX5ZZKBKACTAV9WEVGEMMVRZ";
@@ -22,32 +22,38 @@ const WORKS: WorkItem[] = [
   { id: "01BX5ZZKBKACTAV9WEVGEMMVS0", title: "テスト書籍", sort: 1, memo: null, iconId: 1, icon: "📘", deleteFlg: false },
 ];
 
-function createRepository(book: BookItem | null, works: WorkItem[]) {
+const AUTHORS: AuthorItem[] = [
+  { name: "著者A" },
+  { name: "著者B" },
+];
+
+function createRepository(book: BookItem | null, works: WorkItem[], authors: AuthorItem[]) {
   return {
     findBook: vi.fn<IGetBookRepository["findBook"]>().mockResolvedValue(book),
     findWork: vi.fn<IGetBookRepository["findWork"]>().mockResolvedValue(works),
+    findAuthor: vi.fn<IGetBookRepository["findAuthor"]>().mockResolvedValue(authors),
   } satisfies IGetBookRepository;
 }
 
 describe("GetBookUsecase", () => {
-  it("取得した書籍情報と作品一覧をそのまま返すこと", async () => {
-    const usecase = new GetBookUsecase(createRepository(BOOK, WORKS));
+  it("取得した書籍情報・作品一覧・著者一覧をそのまま返すこと", async () => {
+    const usecase = new GetBookUsecase(createRepository(BOOK, WORKS, AUTHORS));
 
     const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID });
 
-    expect(result._unsafeUnwrap().value).toEqual({ ...BOOK, works: WORKS });
+    expect(result._unsafeUnwrap().value).toEqual({ ...BOOK, works: WORKS, authors: AUTHORS });
   });
 
   it("書籍が取得できない場合、NOT_FOUND を返すこと", async () => {
-    const usecase = new GetBookUsecase(createRepository(null, []));
+    const usecase = new GetBookUsecase(createRepository(null, [], []));
 
     const result = await usecase.execute({ userId: USER_ID, bookId: BOOK_ID });
 
     expect(result._unsafeUnwrapErr()).toEqual({ type: "NOT_FOUND" });
   });
 
-  it("指定したユーザー・書籍IDで書籍と作品一覧を問い合わせること", async () => {
-    const repository = createRepository(BOOK, WORKS);
+  it("指定したユーザー・書籍IDで書籍・作品一覧・著者一覧を問い合わせること", async () => {
+    const repository = createRepository(BOOK, WORKS, AUTHORS);
     const usecase = new GetBookUsecase(repository);
 
     await usecase.execute({ userId: USER_ID, bookId: BOOK_ID });
@@ -58,14 +64,18 @@ describe("GetBookUsecase", () => {
     const [workUserId, workBookId] = repository.findWork.mock.calls[0];
     expect(workUserId).toBe(USER_ID);
     expect(workBookId.value).toBe(BOOK_ID);
+    const [authorUserId, authorBookId] = repository.findAuthor.mock.calls[0];
+    expect(authorUserId).toBe(USER_ID);
+    expect(authorBookId.value).toBe(BOOK_ID);
   });
 
-  it("書籍IDが空の場合、例外になり、書籍も作品も問い合わせないこと", async () => {
-    const repository = createRepository(BOOK, WORKS);
+  it("書籍IDが空の場合、例外になり、書籍も作品も著者も問い合わせないこと", async () => {
+    const repository = createRepository(BOOK, WORKS, AUTHORS);
     const usecase = new GetBookUsecase(repository);
 
     await expect(usecase.execute({ userId: USER_ID, bookId: "" })).rejects.toThrow("書籍IDが設定されていません。");
     expect(repository.findBook).not.toHaveBeenCalled();
     expect(repository.findWork).not.toHaveBeenCalled();
+    expect(repository.findAuthor).not.toHaveBeenCalled();
   });
 });

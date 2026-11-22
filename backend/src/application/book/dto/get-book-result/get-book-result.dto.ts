@@ -1,4 +1,4 @@
-import type { BookItem, WorkItem } from "../../../../domain";
+import type { AuthorItem, BookItem, WorkItem } from "../../../../domain";
 
 export type GetBookResultType = {
   id: string;
@@ -20,6 +20,9 @@ export type GetBookResultType = {
     icon: string | null;
     deleteFlg: boolean;
   }[];
+  authors: {
+    name: string;
+  }[];
 };
 
 /**
@@ -31,8 +34,9 @@ export class GetBookResultDto {
   /**
    * @param book 書籍情報
    * @param works 書籍に収録された作品一覧（論理削除済みを含む）
+   * @param authors 書籍の著者一覧（表示順）
    */
-  constructor(book: BookItem, works: WorkItem[]) {
+  constructor(book: BookItem, works: WorkItem[], authors: AuthorItem[]) {
     this._value = {
       id: book.id,
       title: book.title,
@@ -53,6 +57,7 @@ export class GetBookResultDto {
         icon: e.icon,
         deleteFlg: e.deleteFlg,
       })),
+      authors,
     };
   }
 

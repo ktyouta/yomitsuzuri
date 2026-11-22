@@ -1,7 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
-import type { BookId, BookItem, IGetBookRepository, UserId, WorkItem } from "../../../../domain";
+import type { AuthorItem, BookId, BookItem, IGetBookRepository, UserId, WorkItem } from "../../../../domain";
 import type { Database } from "../../../db";
-import { bookTransaction, iconMaster, readingStatusMaster, workTransaction } from "../../../db";
+import { authorTransaction, bookTransaction, iconMaster, readingStatusMaster, workTransaction } from "../../../db";
 
 /**
  * 書籍詳細取得リポジトリ実装
@@ -72,6 +72,18 @@ export class GetBookRepository implements IGetBookRepository {
       // 削除済みを末尾にするため削除フラグを第1キーにする（docs/delete-restore/plan.md の U12）
       // 削除済み同士は表示順が NULL で並ぶことがあり、表示順には一意制約もないため、順序を固定するよう id を最後のキーにする
       .orderBy(asc(workTransaction.deleteFlg), asc(workTransaction.sortOrder), asc(workTransaction.id));
+  }
+
+  async findAuthor(userId: UserId, bookId: BookId): Promise<AuthorItem[]> {
+    return this.db
+      .select({
+        name: authorTransaction.name,
+      })
+      .from(authorTransaction)
+      // 他ユーザー・論理削除済みの書籍の著者を返さないため、書籍側の条件で絞り込む
+      .innerJoin(bookTransaction, eq(authorTransaction.bookId, bookTransaction.id))
+      .where(this.buildBookCondition(userId, bookId))
+      .orderBy(asc(authorTransaction.sortOrder), asc(authorTransaction.id));
   }
 
   /**
