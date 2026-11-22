@@ -633,6 +633,56 @@ describe("BookAggregate", () => {
     });
   });
 
+  describe("createWork", () => {
+    function createWorkParam(title: string) {
+      return {
+        title: WorkTitle.of(title),
+        memo: WorkMemo.of("作品メモ"),
+        iconId: IconId.of(4),
+        updatedAt: Timestamp.of(NEW_UPDATED_AT),
+      };
+    }
+
+    it("新しい ID を採番した作品を、削除されていない作品の表示順の最大値+1 で末尾に追加して返し、既存の作品・書籍情報（更新日時を含む）は変更しないこと", () => {
+      const book = createBookWithDeletedWork();
+      const before = book.toSnapshot();
+
+      const result = book.createWork(createWorkParam("作品4"));
+
+      const created = result._unsafeUnwrap().toSnapshot();
+      expect(created.id).toMatch(ULID_PATTERN);
+      // 削除済みの作品3（表示順 null）は最大値の計算に含めない
+      expect(created).toEqual({ id: created.id, title: "作品4", sort: 3, memo: "作品メモ", iconId: 4, deleteFlg: false, updatedAt: NEW_UPDATED_AT });
+      expect(book.toSnapshot()).toEqual({ ...before, works: [...before.works, created] });
+    });
+
+    it("削除済みの書籍の場合は throw すること", () => {
+      const book = createBook(true);
+
+      expect(() => book.createWork(createWorkParam("作品4"))).toThrow("既に削除済みの書籍です。");
+    });
+
+    it("削除されていない作品と作品名が重複する場合は DUPLICATE_WORK_TITLE を返し、自身を変更しないこと", () => {
+      const book = createBookWithDeletedWork();
+      const before = book.toSnapshot();
+
+      const result = book.createWork(createWorkParam("作品2"));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_WORK_TITLE", title: "作品2" });
+      expect(book.toSnapshot()).toEqual(before);
+    });
+
+    it("削除済みの作品とだけ作品名が重複する場合は DUPLICATE_DELETED_WORK_TITLE を返し、自身を変更しないこと", () => {
+      const book = createBookWithDeletedWork();
+      const before = book.toSnapshot();
+
+      const result = book.createWork(createWorkParam("作品3"));
+
+      expect(result._unsafeUnwrapErr()).toEqual({ type: "DUPLICATE_DELETED_WORK_TITLE", title: "作品3" });
+      expect(book.toSnapshot()).toEqual(before);
+    });
+  });
+
   describe("updateWork", () => {
     function updateWorkParam(id: string, title: string, expectedUpdatedAt = WORK_UPDATED_AT) {
       return {

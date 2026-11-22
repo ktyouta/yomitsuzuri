@@ -63,6 +63,13 @@ type RestoreBookParamType = {
     expectedUpdatedAt: Timestamp;
 };
 
+type CreateSingleWorkParamType = {
+    title: WorkTitle;
+    memo: WorkMemo;
+    iconId: IconId;
+    updatedAt: Timestamp;
+};
+
 type UpdateSingleWorkParamType = {
     id: WorkId;
     title: WorkTitle;
@@ -114,6 +121,14 @@ export type BookDeleteError =
  */
 export type BookRestoreError =
     | { type: "CONFLICT_BOOK" };
+
+/**
+ * 作品1件の追加の失敗
+ * - DUPLICATE_WORK_TITLE: 削除されていない作品と作品名が重複する
+ * - DUPLICATE_DELETED_WORK_TITLE: 削除済みの作品とだけ作品名が重複する（復元するか、別の作品名にする必要がある）
+ */
+export type BookWorkCreateError = { type: "DUPLICATE_WORK_TITLE"; title: string }
+    | { type: "DUPLICATE_DELETED_WORK_TITLE"; title: string };
 
 /**
  * 作品1件の更新の失敗
@@ -577,6 +592,56 @@ export class BookAggregate {
     }
 
     /**
+     * 作品1件の追加（新しい ID を採番し、表示順の末尾に追加する）
+     *
+     * 事前条件（満たさない場合は throw）:
+     * - 書籍が削除されていないこと
+     *
+     * err の条件（上から順に判定し、該当した時点で返す）:
+     * - DUPLICATE_WORK_TITLE: 削除されていない作品と作品名が重複すること（削除済みの作品とも重複する場合を含む）
+     * - DUPLICATE_DELETED_WORK_TITLE: 削除済みの作品とだけ作品名が重複すること
+     *
+     * 事後条件:
+     * - ok の場合: 引数の作品名・メモ・アイコン・更新日時を持ち、表示順を削除されていない作品の最大値+1（末尾）にした、削除されていない作品を自身に追加する
+     *   （既存の作品・書籍情報（更新日時を含む）は変更しない）
+     * - err の場合: 自身は変更しない
+     * @param params 追加する作品の作品名・メモ・アイコン・更新日時
+     * @returns 成功時は追加した作品、作品名が重複する場合はその内容を持つ Result
+     * @throws 事前条件を満たさない場合
+     */
+    createWork(params: CreateSingleWorkParamType): Result<WorkEntity, BookWorkCreateError> {
+        if (this._deleteFlg) {
+            throw new Error(`既に削除済みの書籍です。`);
+        }
+
+        // 作品名重複チェック（削除済みの作品も対象にする。復元したときに重複させないため）
+        const title = params.title.value;
+        const duplicates = this._works.filter((work) => {
+            return work.title.value === title;
+        });
+
+        if (duplicates.some((work) => !work.deleteFlg)) {
+            return err({ type: "DUPLICATE_WORK_TITLE", title: title });
+        }
+        if (duplicates.length > 0) {
+            return err({ type: "DUPLICATE_DELETED_WORK_TITLE", title: title });
+        }
+
+        const nextSort = this.nextSortOrder();
+        const work = WorkEntity.create({
+            title: params.title,
+            sort: nextSort,
+            memo: params.memo,
+            iconId: params.iconId,
+            updatedAt: params.updatedAt,
+        });
+
+        this._works.push(work);
+
+        return ok(work);
+    }
+
+    /**
      * 作品1件の更新（作品名・メモ・アイコンを置き換える。表示順・削除フラグと他の作品は変更しない）
      *
      * 事前条件（満たさない場合は throw）:
@@ -596,13 +661,13 @@ export class BookAggregate {
      * @returns 成功時は更新後の作品、作品が見つからない・排他の失敗・作品名が重複する場合はその内容を持つ Result
      * @throws 事前条件を満たさない場合
      */
-    updateWork(param: UpdateSingleWorkParamType): Result<WorkEntity, BookWorkUpdateError> {
+    updateWork(params: UpdateSingleWorkParamType): Result<WorkEntity, BookWorkUpdateError> {
         if (this._deleteFlg) {
             throw new Error(`既に削除済みの書籍です。`);
         }
 
         const target = this._works.find((work) => {
-            return work.id.value === param.id.value && !work.deleteFlg;
+            return work.id.value === params.id.value && !work.deleteFlg;
         });
 
         if (!target) {
@@ -610,11 +675,11 @@ export class BookAggregate {
         }
 
         const updated = target.update({
-            title: param.title,
-            memo: param.memo,
-            iconId: param.iconId,
-            expectedUpdatedAt: param.expectedUpdatedAt,
-            updatedAt: param.updatedAt,
+            title: params.title,
+            memo: params.memo,
+            iconId: params.iconId,
+            expectedUpdatedAt: params.expectedUpdatedAt,
+            updatedAt: params.updatedAt,
         });
         if (updated.isErr()) {
             return err(updated.error);
@@ -622,14 +687,14 @@ export class BookAggregate {
 
         // 作品名重複チェック（削除済みの作品も対象にする。復元したときに重複させないため）
         const duplicates = this._works.filter((work) => {
-            return work.id.value !== target.id.value && work.title.value === param.title.value;
+            return work.id.value !== target.id.value && work.title.value === params.title.value;
         });
 
         if (duplicates.some((work) => !work.deleteFlg)) {
-            return err({ type: "DUPLICATE_WORK_TITLE", title: param.title.value });
+            return err({ type: "DUPLICATE_WORK_TITLE", title: params.title.value });
         }
         if (duplicates.length > 0) {
-            return err({ type: "DUPLICATE_DELETED_WORK_TITLE", title: param.title.value });
+            return err({ type: "DUPLICATE_DELETED_WORK_TITLE", title: params.title.value });
         }
 
         this._works = this._works.map((work) => {
