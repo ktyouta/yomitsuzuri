@@ -16,6 +16,9 @@ export type CreateBookResultType = {
     memo: string | null;
     iconId: number;
   }[];
+  authors: {
+    name: string;
+  }[];
 };
 
 /**
@@ -46,6 +49,9 @@ export class CreateBookResultDto {
         sort: e.sort,
         memo: e.memo,
         iconId: e.iconId,
+      })),
+      authors: snapshot.authors.map((e) => ({
+        name: e.name,
       })),
     };
   }

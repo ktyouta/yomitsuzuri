@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { UpdateBookResultDto } from "..";
-import { BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, UserId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../../../domain";
+import { AuthorEntity, AuthorId, AuthorName, AuthorSortOrder, BookAggregate, BookId, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, ReadingStatusId, Timestamp, UserId, WorkEntity, WorkId, WorkMemo, WorkSort, WorkTitle } from "../../../../domain";
 
 describe("UpdateBookResultDto", () => {
-  it("書籍集約から、書籍の userId・削除フラグを除いた項目（更新日時を含む）と、削除済みを含む作品（削除フラグ付き）でDTOを生成できること", () => {
+  it("書籍集約から、書籍の userId・削除フラグを除いた項目（更新日時を含む）と、削除済みを含む作品（削除フラグ付き）と、著者一覧（表示順）でDTOを生成できること", () => {
     const book = BookAggregate.reconstruct({
       id: BookId.of("01BX5ZZKBKACTAV9WEVGEMMVRZ"),
       userId: UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
@@ -20,7 +20,10 @@ describe("UpdateBookResultDto", () => {
         WorkEntity.reconstruct({ id: WorkId.of("01BX5ZZKBKACTAV9WEVGEMMVS2"), title: WorkTitle.of("削除済み作品"), sort: WorkSort.of(3), memo: WorkMemo.of(null), iconId: IconId.of(6), deleteFlg: true, updatedAt: Timestamp.of("2025-12-01T00:00:00.000Z") }),
       ],
       updatedAt: Timestamp.of("2026-01-02T00:00:00.000Z"),
-      authors: [],
+      authors: [
+        AuthorEntity.reconstruct({ id: AuthorId.of("01BX5ZZKBKACTAV9WEVGEMMVT0"), name: AuthorName.of("著者A"), sortOrder: AuthorSortOrder.of(1), deleteFlg: false }),
+        AuthorEntity.reconstruct({ id: AuthorId.of("01BX5ZZKBKACTAV9WEVGEMMVT1"), name: AuthorName.of("著者B"), sortOrder: AuthorSortOrder.of(2), deleteFlg: false }),
+      ],
     });
 
     const dto = new UpdateBookResultDto(book);
@@ -39,6 +42,7 @@ describe("UpdateBookResultDto", () => {
         { id: "01BX5ZZKBKACTAV9WEVGEMMVS1", title: "作品2", sort: 2, memo: "作品メモ", iconId: 5, deleteFlg: false },
         { id: "01BX5ZZKBKACTAV9WEVGEMMVS2", title: "削除済み作品", sort: 3, memo: null, iconId: 6, deleteFlg: true },
       ],
+      authors: [{ name: "著者A" }, { name: "著者B" }],
     });
   });
 });

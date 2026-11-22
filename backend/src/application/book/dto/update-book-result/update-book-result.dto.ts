@@ -17,6 +17,9 @@ export type UpdateBookResultType = {
     iconId: number;
     deleteFlg: boolean;
   }[];
+  authors: {
+    name: string;
+  }[];
 };
 
 /**
@@ -50,6 +53,9 @@ export class UpdateBookResultDto {
         memo: e.memo,
         iconId: e.iconId,
         deleteFlg: e.deleteFlg,
+      })),
+      authors: snapshot.authors.map((e) => ({
+        name: e.name,
       })),
     };
   }

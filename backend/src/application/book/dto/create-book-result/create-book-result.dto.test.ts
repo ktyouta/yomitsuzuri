@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { CreateBookResultDto } from "..";
-import { BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, Timestamp, UserId } from "../../../../domain";
+import { AuthorName, BookAggregate, BookMemo, BookTitle, CurrentPage, IconId, PublishedDate, Timestamp, UserId } from "../../../../domain";
 
 describe("CreateBookResultDto", () => {
-  it("書籍集約から、ユーザーID・削除フラグを除いた書籍の項目（更新日時を含む）と作品一覧を写像すること", () => {
+  it("書籍集約から、ユーザーID・削除フラグを除いた書籍の項目（更新日時を含む）と作品一覧・著者一覧（表示順）を写像すること", () => {
     const book = BookAggregate.create({
       userId: UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV"),
       title: BookTitle.of("容疑者Xの献身"),
@@ -12,7 +12,7 @@ describe("CreateBookResultDto", () => {
       memo: BookMemo.of("メモ"),
       iconId: IconId.of(2),
       updatedAt: Timestamp.of("2026-01-02T00:00:00.000Z"),
-      authorNames: [],
+      authorNames: [AuthorName.of("著者A"), AuthorName.of("著者B")],
     })._unsafeUnwrap();
     const snapshot = book.toSnapshot();
 
@@ -36,6 +36,7 @@ describe("CreateBookResultDto", () => {
           iconId: 2,
         },
       ],
+      authors: [{ name: "著者A" }, { name: "著者B" }],
     });
   });
 });
