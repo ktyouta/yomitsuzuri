@@ -13,6 +13,7 @@ export * from "./event-id-param";
 export * from "./get-list-book";
 export * from "./get-list-deleted-book";
 export * from "./hard-delete-book";
+export * from "./hard-delete-work";
 export * from "./restore-book";
 export * from "./restore-work";
 export * from "./update-book";

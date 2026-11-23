@@ -27,6 +27,7 @@ export * from "./get-list-event";
 export * from "./get-list-word";
 export * from "./get-work";
 export * from "./hard-delete-book";
+export * from "./hard-delete-work";
 export * from "./icon-validity";
 export * from "./reading-status-validity";
 export * from "./restore-book";
