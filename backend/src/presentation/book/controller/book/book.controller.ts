@@ -14,6 +14,7 @@ import { deleteWord } from "../delete-word";
 import { deleteWork } from "../delete-work";
 import { getBook } from "../get-book";
 import { getCharacter } from "../get-character";
+import { getDeletedBook } from "../get-deleted-book";
 import { getEvent } from "../get-event";
 import { getListBook } from "../get-list-book";
 import { getListDeletedBook } from "../get-list-deleted-book";
@@ -39,6 +40,7 @@ import { updateWork } from "../update-work";
 const book = new Hono<AppEnv>()
     .route("/", getListBook)
     .route("/", getListDeletedBook)
+    .route("/", getDeletedBook)
     .route("/", getBook)
     .route("/", getWork)
     .route("/", createWork)
