@@ -23,6 +23,7 @@ import { getListCharacterRelation } from "../get-list-character-relation";
 import { getListEvent } from "../get-list-event";
 import { getListWord } from "../get-list-word";
 import { getWork } from "../get-work";
+import { hardDeleteBook } from "../hard-delete-book";
 import { restoreBook } from "../restore-book";
 import { restoreCharacter } from "../restore-character";
 import { restoreCharacterRelation } from "../restore-character-relation";
@@ -41,6 +42,7 @@ const book = new Hono<AppEnv>()
     .route("/", getListBook)
     .route("/", getListDeletedBook)
     .route("/", getDeletedBook)
+    .route("/", hardDeleteBook)
     .route("/", getBook)
     .route("/", getWork)
     .route("/", createWork)

@@ -22,5 +22,5 @@ export interface IHardDeleteBookRepository {
    * @param expectedUpdatedAt 取得時点の書籍の更新日時
    * @returns 削除した場合は true、他の操作で更新されていたため削除しなかった場合は false
    */
-  hardDeleteBook(bookId: BookId, expectedUpdatedAt: Timestamp): Promise<boolean>;
+  deleteBook(bookId: BookId, expectedUpdatedAt: Timestamp): Promise<boolean>;
 }

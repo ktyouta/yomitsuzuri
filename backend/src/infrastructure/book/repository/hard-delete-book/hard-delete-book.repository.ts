@@ -42,7 +42,7 @@ export class HardDeleteBookRepository implements IHardDeleteBookRepository {
    * @param expectedUpdatedAt 取得時点の書籍の更新日時
    * @returns 削除した場合は true、他の操作で更新されていたため削除しなかった場合は false
    */
-  async hardDeleteBook(bookId: BookId, expectedUpdatedAt: Timestamp): Promise<boolean> {
+  async deleteBook(bookId: BookId, expectedUpdatedAt: Timestamp): Promise<boolean> {
     const id = bookId.value;
 
     // 書籍が取得時点の状態のまま（削除済み・更新日時が一致）であることの条件。確認と各削除で共有する
