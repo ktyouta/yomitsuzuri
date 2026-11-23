@@ -22,6 +22,7 @@ export * from "./get-list-event";
 export * from "./get-list-word";
 export * from "./get-work";
 export * from "./hard-delete-book";
+export * from "./hard-delete-character";
 export * from "./hard-delete-character-relation";
 export * from "./hard-delete-event";
 export * from "./hard-delete-word";
