@@ -25,6 +25,7 @@ import { getListWord } from "../get-list-word";
 import { getWork } from "../get-work";
 import { hardDeleteBook } from "../hard-delete-book";
 import { hardDeleteCharacterRelation } from "../hard-delete-character-relation";
+import { hardDeleteEvent } from "../hard-delete-event";
 import { hardDeleteWord } from "../hard-delete-word";
 import { hardDeleteWork } from "../hard-delete-work";
 import { restoreBook } from "../restore-book";
@@ -69,6 +70,7 @@ const book = new Hono<AppEnv>()
     .route("/", updateEvent)
     .route("/", updateEventOrder)
     .route("/", restoreEvent)
+    .route("/", hardDeleteEvent)
     .route("/", createWord)
     .route("/", updateWord)
     .route("/", deleteWord)
