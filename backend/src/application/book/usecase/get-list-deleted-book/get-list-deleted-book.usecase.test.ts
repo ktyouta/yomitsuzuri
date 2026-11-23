@@ -1,0 +1,79 @@
+import { describe, it, expect, vi } from "vitest";
+import { GetListDeletedBookUsecase } from "..";
+import { UserId, type DeletedBookListItem, type IGetListDeletedBookRepository } from "../../../../domain";
+
+const USER_ID = UserId.of("01ARZ3NDEKTSV4RRFFQ69G5FAV");
+
+const BOOK: DeletedBookListItem = {
+  id: "01BX5ZZKBKACTAV9WEVGEMMVRZ",
+  title: "テスト書籍",
+  updatedAt: "2026-10-01T00:00:00.000Z",
+  readingStatusId: 2,
+  readingStatusLabel: "読書中",
+  workCount: 2,
+  icon: "📕",
+};
+
+function createRepository(list: DeletedBookListItem[], total: number) {
+  return {
+    findDeletedBookList: vi.fn<IGetListDeletedBookRepository["findDeletedBookList"]>().mockResolvedValue(list),
+    countDeletedBook: vi.fn<IGetListDeletedBookRepository["countDeletedBook"]>().mockResolvedValue(total),
+  } satisfies IGetListDeletedBookRepository;
+}
+
+describe("GetListDeletedBookUsecase", () => {
+  it("取得した一覧と全件数をそのまま返し、全件数から総ページ数を算出すること", async () => {
+    const usecase = new GetListDeletedBookUsecase(createRepository([BOOK], 31));
+
+    const result = await usecase.execute({ userId: USER_ID, page: 1 });
+
+    expect(result._unsafeUnwrap().value.list).toEqual([BOOK]);
+    expect(result._unsafeUnwrap().value.total).toBe(31);
+    expect(result._unsafeUnwrap().value.totalPages).toBe(2);
+  });
+
+  it("削除済みの書籍が0件の場合、空の一覧と総ページ数0を返すこと", async () => {
+    const usecase = new GetListDeletedBookUsecase(createRepository([], 0));
+
+    const result = await usecase.execute({ userId: USER_ID, page: 1 });
+
+    expect(result._unsafeUnwrap().value.list).toEqual([]);
+    expect(result._unsafeUnwrap().value.total).toBe(0);
+    expect(result._unsafeUnwrap().value.totalPages).toBe(0);
+  });
+
+  it("指定したユーザー・ページ番号と1ページ30件で一覧を問い合わせ、全件数も問い合わせること", async () => {
+    const repository = createRepository([], 0);
+    const usecase = new GetListDeletedBookUsecase(repository);
+
+    await usecase.execute({ userId: USER_ID, page: 2 });
+
+    const [userId, pagination, pageSize] = repository.findDeletedBookList.mock.calls[0];
+    expect(userId).toBe(USER_ID);
+    expect(pagination.value).toBe(2);
+    expect(pageSize).toBe(30);
+    expect(repository.countDeletedBook).toHaveBeenCalledWith(USER_ID);
+  });
+
+  it("全件数が1ページの件数ちょうどの場合、総ページ数が1になること", async () => {
+    const usecase = new GetListDeletedBookUsecase(createRepository([BOOK], 30));
+
+    const result = await usecase.execute({ userId: USER_ID, page: 1 });
+
+    expect(result._unsafeUnwrap().value.totalPages).toBe(1);
+  });
+
+  it.each([0, 1.5, NaN])("ページ番号が%sの場合、INVALID_INPUT を返し、一覧も全件数も問い合わせないこと", async (page) => {
+    const repository = createRepository([], 0);
+    const usecase = new GetListDeletedBookUsecase(repository);
+
+    const result = await usecase.execute({ userId: USER_ID, page });
+
+    expect(result._unsafeUnwrapErr()).toEqual({
+      type: "INVALID_INPUT",
+      errors: [{ field: "page", error: { type: "BOOK_LIST_PAGE_INVALID", min: 1 } }],
+    });
+    expect(repository.findDeletedBookList).not.toHaveBeenCalled();
+    expect(repository.countDeletedBook).not.toHaveBeenCalled();
+  });
+});

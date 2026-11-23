@@ -14,6 +14,7 @@ export * from "./get-book";
 export * from "./get-character";
 export * from "./get-event";
 export * from "./get-list-book";
+export * from "./get-list-deleted-book";
 export * from "./get-list-character";
 export * from "./get-list-character-relation";
 export * from "./get-list-event";

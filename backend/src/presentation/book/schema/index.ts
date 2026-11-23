@@ -11,6 +11,7 @@ export * from "./delete-book";
 export * from "./delete-work";
 export * from "./event-id-param";
 export * from "./get-list-book";
+export * from "./get-list-deleted-book";
 export * from "./restore-book";
 export * from "./restore-work";
 export * from "./update-book";
