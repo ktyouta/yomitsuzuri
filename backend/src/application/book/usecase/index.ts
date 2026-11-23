@@ -23,6 +23,7 @@ export * from "./get-list-word";
 export * from "./get-work";
 export * from "./hard-delete-book";
 export * from "./hard-delete-work";
+export * from "./hard-delete-word";
 export * from "./restore-book";
 export * from "./restore-character";
 export * from "./restore-character-relation";
