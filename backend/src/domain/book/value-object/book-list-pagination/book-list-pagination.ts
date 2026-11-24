@@ -25,6 +25,11 @@ export class BookListPagination {
     }
 
     /**
+     * 1ページ目（検索条件のページ番号が不正な場合の既定値）
+     */
+    static readonly FIRST = new BookListPagination(BookListPagination.MIN_PAGE);
+
+    /**
      * 外部からの入力値から生成する
      * @param page ページ番号（1始まり）
      * @returns 成功時はページング条件、MIN_PAGE 以上の整数でない場合（NaN を含む）はその内容を持つ Result

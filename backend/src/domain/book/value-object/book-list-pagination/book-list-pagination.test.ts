@@ -2,6 +2,12 @@ import { describe, it, expect } from "vitest";
 import { BookListPagination } from "../../..";
 
 describe("BookListPagination", () => {
+  describe("FIRST", () => {
+    it("MIN_PAGE のページ番号を保持すること", () => {
+      expect(BookListPagination.FIRST.value).toBe(BookListPagination.MIN_PAGE);
+    });
+  });
+
   describe("create", () => {
     it("1以上の整数の場合、指定したページ番号を保持すること", () => {
       expect(BookListPagination.create(2)._unsafeUnwrap().value).toBe(2);

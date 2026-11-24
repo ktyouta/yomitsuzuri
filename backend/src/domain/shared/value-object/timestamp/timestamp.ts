@@ -7,7 +7,7 @@ export type TimestampError = { type: "TIMESTAMP_INVALID" };
 
 /**
  * 日時（ISO 8601 形式・UTC・ミリ秒まで。Date.prototype.toISOString() の形式）
- * 排他チェックでは文字列の一致で比べるため、この形式だけを受け付ける
+ * 保存する形式であり、排他チェック（一致）や検索の絞り込み（大小）で文字列のまま比べるため、この形式だけを受け付ける
  */
 export class Timestamp {
 

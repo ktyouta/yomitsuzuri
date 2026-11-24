@@ -4,7 +4,6 @@ import { API_ENDPOINT, HTTP_STATUS } from "../../../../constant";
 import { GetListBookRepository } from "../../../../infrastructure";
 import { authMiddleware, validatorMiddleware } from "../../../../middleware";
 import type { AppEnv } from "../../../../types";
-import { toInputErrorMessage } from "../../error-message";
 import { GetListBookQuerySchema } from "../../schema";
 
 /**
@@ -24,22 +23,9 @@ const getListBook = new Hono<AppEnv>().get(
     const repository = new GetListBookRepository(db);
     const usecase = new GetListBookUsecase(repository);
 
-    const result = await usecase.execute({ userId: user.userId, page: query.page });
+    const dto = await usecase.execute({ userId: user.userId, query });
 
-    return result.match(
-      (dto) => c.json({ message: "書籍一覧を取得しました。", data: dto.value }, HTTP_STATUS.OK),
-      (error) => {
-        switch (error.type) {
-          case "INVALID_INPUT":
-            return c.json({ message: "入力エラー", data: error.errors.map((e) => ({ field: e.field, message: toInputErrorMessage(e.error) })) }, HTTP_STATUS.UNPROCESSABLE_ENTITY);
-          default: {
-            // 全てのエラー種別を網羅していることを型で保証する
-            error.type satisfies never;
-            return c.json({ message: "サーバーエラー" }, HTTP_STATUS.INTERNAL_SERVER_ERROR);
-          }
-        }
-      },
-    );
+    return c.json({ message: "書籍一覧を取得しました。", data: dto.value }, HTTP_STATUS.OK);
   }
 );
 

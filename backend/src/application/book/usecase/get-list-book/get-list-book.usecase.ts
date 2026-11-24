@@ -1,17 +1,18 @@
-import { err, ok, type Result } from "neverthrow";
-import { BookListPagination, type BookListPaginationError, type IGetListBookRepository, type UserId } from "../../../../domain";
+import { BookListPagination, Timestamp, type IGetListBookRepository, type UserId } from "../../../../domain";
 import { GetListBookResultDto } from "../../dto";
 
-/**
- * 書籍一覧取得の入力値の制約違反（field は入力値の項目名）
- */
-export type GetListBookInputError = { field: "page"; error: BookListPaginationError };
-
-export type GetListBookError = { type: "INVALID_INPUT"; errors: GetListBookInputError[] };
+type QueryType = {
+  keyword?: string;
+  createdAtFrom?: string;
+  createdAtTo?: string;
+  updatedAtFrom?: string;
+  updatedAtTo?: string;
+  page: number;
+};
 
 type PropsType = {
   userId: UserId;
-  page: number;
+  query: QueryType;
 }
 
 /**
@@ -25,23 +26,26 @@ export class GetListBookUsecase {
 
   /**
    * @param userId 書籍を所有するユーザーID
-   * @param page ページ番号（1始まり）
-   * @returns 成功時は指定ページの書籍一覧・全件数・総ページ数（0件の場合は空の一覧）。
-   * ページ番号が制約を満たさない場合は INVALID_INPUT（一覧・件数は問い合わせない）
+   * @param query 検索条件（日時は From 以上・To 未満で絞り込む。ページ番号は1始まり）
+   * @returns 指定ページの書籍一覧・全件数・総ページ数（0件の場合は空の一覧）。
+   * 検索条件の不正な値はエラーにせず無視する（形式が不正な日時は条件から外し、不正なページ番号は1ページ目として扱う）
    */
-  async execute({ userId, page }: PropsType): Promise<Result<GetListBookResultDto, GetListBookError>> {
-    // 入力値の制約チェック
-    const pagination = BookListPagination.create(page);
-    if (pagination.isErr()) {
-      return err({ type: "INVALID_INPUT", errors: [{ field: "page", error: pagination.error }] });
-    }
-
+  async execute({ userId, query }: PropsType): Promise<GetListBookResultDto> {
+    // 検索条件の不正な値は無視する（日時は条件から外し、ページ番号は1ページ目にする）
+    const bookListQuery = {
+      keyword: query.keyword,
+      createdAtFrom: !query.createdAtFrom ? undefined : Timestamp.fromInput(query.createdAtFrom).unwrapOr(undefined),
+      createdAtTo: !query.createdAtTo ? undefined : Timestamp.fromInput(query.createdAtTo).unwrapOr(undefined),
+      updatedAtFrom: !query.updatedAtFrom ? undefined : Timestamp.fromInput(query.updatedAtFrom).unwrapOr(undefined),
+      updatedAtTo: !query.updatedAtTo ? undefined : Timestamp.fromInput(query.updatedAtTo).unwrapOr(undefined),
+      page: BookListPagination.create(query.page).unwrapOr(BookListPagination.FIRST),
+    };
     const [list, total] = await Promise.all([
-      this.repository.findBookList(userId, pagination.value, GetListBookUsecase.PAGE_SIZE),
-      this.repository.countBook(userId),
+      this.repository.findBookList(userId, bookListQuery, GetListBookUsecase.PAGE_SIZE),
+      this.repository.countBook(userId, bookListQuery),
     ]);
     const totalPages = Math.ceil(total / GetListBookUsecase.PAGE_SIZE);
 
-    return ok(new GetListBookResultDto(list, total, totalPages));
+    return new GetListBookResultDto(list, total, totalPages);
   }
 }

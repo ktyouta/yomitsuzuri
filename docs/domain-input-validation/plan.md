@@ -222,7 +222,7 @@ class WorkTitle {
 | クラス・メソッド | 契約の種類 | 内容 |
 |---|---|---|
 | `BookListPagination.create` | 事後条件 | `MIN_PAGE` 以上の整数なら ok、それ以外（`NaN` を含む）は `BOOK_LIST_PAGE_INVALID`（`min`） |
-| `GetListBookUsecase.execute` | 事後条件 | ページ番号が制約を満たさない場合は `field: "page"` 付きで `INVALID_INPUT` を返し、一覧・件数は問い合わせない。それ以外は指定ページの一覧・全件数・総ページ数を返す |
+| `GetListBookUsecase.execute` | 事後条件 | 指定ページの一覧・全件数・総ページ数を返す。検索条件の不正な値はエラーにせず無視する（ページ番号は1ページ目として扱い、形式が不正な日時は条件から外す）。当初は `INVALID_INPUT` を返していたが、検索条件の扱いを見直して変更した |
 
 ### Phase 4（user）
 

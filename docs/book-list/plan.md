@@ -13,7 +13,8 @@
 - 返却項目: id, title, updatedAt, readingStatusId（読書状況ID）, readingStatusLabel（表示名）, workCount, icon（絵文字）
 - 読書状況は `reading_status_master` を新設して JOIN し、読書状況IDと表示名をフラットに返す
 - 読み始めた日・タグ数・著者は返さない
-- 絞り込みは今回なし
+- 絞り込みは今回なし（後から追加: keyword（タイトル・メモの部分一致）、作成日時・更新日時の範囲（From 以上・To 未満。フロントが利用者の時間の日付を UTC の日時に変換して送り、To は終了日の翌日 0:00 にする））
+- 検索条件の不正な値はエラーにせず無視する（形式が不正な日時は条件から外し、不正なページ番号は1ページ目として扱う）
 - 主キーを `id`（integer）にし、`book_transaction.reading_status_id` から FK で参照する（`icon_master` と同じ形。当初の「コード値（text）を主キー」から、ユーザー指示で変更）
 - 論理削除された読書状況は readingStatusLabel を null にする（Claude提案をユーザー承認）
 - page の上限（MAX_PAGE）は設けない
@@ -31,7 +32,7 @@
 
 ## 設計
 
-- Repository: `findBookList(userId, pagination, pageSize)` が指定ページの一覧を、`countBook(userId)` が全件数を返す。抽出条件は両者で共通化する（件数側への条件適用漏れを防ぐため）
+- Repository: `findBookList(userId, query, pageSize)` が検索条件に合う書籍の指定ページの一覧を、`countBook(userId, query)` が検索条件に合う件数を返す。抽出条件は両者で共通化する（件数側への条件適用漏れを防ぐため）
 - Usecase: `findBookList` と `countBook` を `Promise.all` で並列に実行する（一覧と件数は別クエリのため、間に登録・削除があると一致しない可能性があるが、自分の書籍のみが対象のため許容する）
 - `BookListItem` は表示用の読み取り結果のため、id・readingStatusId を値オブジェクトで包まずプリミティブで返す
 - Usecase は `UserId` を受け取る（Controller は認証済みユーザーの `UserId` をそのまま渡す）
