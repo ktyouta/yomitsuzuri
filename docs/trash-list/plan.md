@@ -4,7 +4,7 @@
 
 論理削除済みの書籍（ゴミ箱の書籍）の一覧を返す API を作る。ゴミ箱の画面から、書籍を見分けて復元・完全削除を選ぶために使う。削除・復元の方針は `docs/delete-restore/plan.md` を参照。
 
-今回の対象はバックエンドのみ。フロントエンド（ゴミ箱一覧・詳細画面）は未着手。
+今回の対象はバックエンドのみ。絞り込み（keyword・作成日時・更新日時）は U11 で後から追加した。フロントエンド（ゴミ箱一覧・詳細画面）は未着手。
 
 ## 決定事項
 
@@ -22,6 +22,9 @@
 - U8: 返却項目は `id, title, updatedAt, readingStatusId, readingStatusLabel, workCount, icon`（書籍一覧と同じ項目。読書状況も返す。2026-11-23 ユーザー決定）
 - U9: 1ページの件数（30件）は、ゴミ箱の Usecase に別の定数として持つ（書籍一覧と共有しない。2026-11-23。Claude の提案をユーザーが選択）
 - U10: コントローラーを `presentation/book/controller/index.ts` の export にも追加する（2026-11-23 ユーザー決定）
+- U11: 書籍一覧と同じ絞り込みを追加する（keyword（タイトル・メモの部分一致）、作成日時・更新日時の範囲（From 以上・To 未満））。検索条件の不正な値はエラーにせず無視する（形式が不正な日時は条件から外し、不正なページ番号は1ページ目として扱う）（2026-11-25 ユーザー指示）
+  - ゴミ箱では `updatedAt` が削除日時のため、更新日時の絞り込みは実質的に削除日時の絞り込みになる
+- U12: 検索条件の型は書籍一覧の `BookListQueryType` を使い回さず、`DeletedBookListQueryType` を新設する（書籍一覧と独立して変えられるように。2026-11-25。Claude が提示した案 B をユーザーが選択）
 
 ### Claudeの提案（ユーザーの明示的な承認なし）
 
@@ -45,6 +48,18 @@
 
 推奨着手順: #1 → #2 → #3 → #4 → #5 → #6 → #7 → #8 → #9
 
+#### 絞り込みの追加（U11）
+
+| # | タスク | ファイル | 前提 |
+|---|--------|----------|------|
+| 10 | [x] `DeletedBookListQueryType` 新設・Repository interface の引数変更 | `backend/src/domain/book/repository/get-list-deleted-book/get-list-deleted-book.repository.interface.ts` | ― |
+| 11 | [x] Usecase の契約テスト更新（失敗確認） | `backend/src/application/book/usecase/get-list-deleted-book/get-list-deleted-book.usecase.test.ts` | #10 |
+| 12 | [x] Usecase 変更 | `backend/src/application/book/usecase/get-list-deleted-book/get-list-deleted-book.usecase.ts` | #11 |
+| 13 | [x] Repository 実装変更 | `backend/src/infrastructure/book/repository/get-list-deleted-book/get-list-deleted-book.repository.ts` | #10 |
+| 14 | [x] クエリスキーマ変更 + テスト | `backend/src/presentation/book/schema/get-list-deleted-book/`（`.schema.ts`・`.schema.test.ts`） | ― |
+| 15 | [x] Controller 変更（422 の分岐を削除） | `backend/src/presentation/book/controller/get-list-deleted-book/get-list-deleted-book.controller.ts` | #12, #14 |
+| 16 | [ ] コミット | ― | #10〜#15 |
+
 ## 破綻ケース
 
 - 削除済みの書籍の `updated_at` が、削除後に書き換わる操作ができた場合: 並びが削除日時の順でなくなり、画面の表示後に更新されたとみなされて復元が `CONFLICT_BOOK` になる。読書進捗の更新・タグの付け外し（API 定数 `BOOKS_ID_READING_PROGRESS`・`BOOKS_ID_TAGS_ID` のみ存在し未実装）を作るときは、削除済みの書籍を対象から外す必要がある
@@ -60,9 +75,9 @@
 
 | メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
 |---|---|---|---|
-| `execute({ userId, page })` | なし | ページ番号が正しい場合は ok。一覧・全件数は Repository の結果をそのまま返し、`totalPages = ceil(total / 30)`（0件なら空の一覧・総ページ数0）。一覧は指定したユーザー・ページ番号・30件で問い合わせる。ページ番号が不正（1未満・整数でない・NaN）の場合は `INVALID_INPUT`（field: `page`, error: `BOOK_LIST_PAGE_INVALID`）を返し、一覧・件数を問い合わせない | なし |
+| `execute({ userId, query })` | なし | 一覧・全件数は Repository の結果をそのまま返し、`totalPages = ceil(total / 30)`（0件なら空の一覧・総ページ数0）。一覧は指定したユーザー・検索条件・30件で、件数は同じ検索条件で問い合わせる。検索条件の不正な値はエラーにせず無視する（形式が不正な日時は条件から外し、ページ番号が不正（1未満・整数でない・NaN）なら1ページ目として扱う）。当初は不正なページ番号で `INVALID_INPUT` を返していたが、U11 で変更した | なし |
 
-- **テストケース**: 一覧・全件数をそのまま返し総ページ数2（31件）／0件で空・総ページ数0／ユーザー・ページ2・30件で一覧を、同じユーザーで件数を問い合わせる／30件ちょうどで総ページ数1／ページ番号 0・1.5・NaN で INVALID_INPUT かつ問い合わせなし
+- **テストケース**: 一覧・全件数をそのまま返し総ページ数2（31件）／0件で空・総ページ数0／30件ちょうどで総ページ数1／ユーザー・検索条件・30件で一覧を、同じ検索条件で件数を問い合わせる／日時の指定なしで日時の条件なし／不正な形式の日時だけを条件から外す／ページ番号 0・1.5・NaN で1ページ目として問い合わせる
 
 ### GetListDeletedBookResultDto（application）
 
@@ -76,8 +91,8 @@
 
 | メソッド | 事後条件 |
 |---|---|
-| `findDeletedBookList(userId, pagination, pageSize)` | 指定ユーザーの削除済みの書籍を `updatedAt` 降順・`id` 降順で、指定ページ分（最大 pageSize 件）返す。`workCount` は削除済みを含む全作品の数（U5）。論理削除された読書状況・アイコンは null（P1） |
-| `countDeletedBook(userId)` | 一覧と同じ抽出条件での全件数を返す |
+| `findDeletedBookList(userId, query, pageSize)` | 指定ユーザーの削除済みの書籍のうち検索条件に合うもの（keyword はタイトル・メモの部分一致、日時は From 以上・To 未満。指定がない項目は条件にしない）を `updatedAt` 降順・`id` 降順で、指定ページ分（最大 pageSize 件）返す。`workCount` は削除済みを含む全作品の数（U5）。論理削除された読書状況・アイコンは null（P1） |
+| `countDeletedBook(userId, query)` | 一覧と同じ抽出条件（検索条件を含む。ページ番号は使わない）での件数を返す |
 
 - **テストケース**: Repository のテスト基盤がないため、なし（実際の DB では未確認）
 
@@ -86,5 +101,6 @@
 | 対象 | 事後条件 |
 |---|---|
 | `page` | 文字列を数値に変換する。省略時は1。値の制約は判定しない（NaN も通す） |
+| `keyword`・`createdAtFrom`・`createdAtTo`・`updatedAtFrom`・`updatedAtTo` | 文字列のまま通す。省略時は undefined。値の制約は判定しない |
 
-- **テストケース**: 省略で1／"2"→2／"0"・"1.5"・"" を判定せず数値で通す／"abc" を NaN で通す
+- **テストケース**: 省略で1／"2"→2／"0"・"1.5"・"" を判定せず数値で通す／"abc" を NaN で通す／keyword・日時の省略で undefined／keyword・日時を判定せず文字列のまま通す

@@ -1,5 +1,18 @@
-import type { UserId } from "../../../shared";
+import type { Timestamp, UserId } from "../../../shared";
 import type { BookListPagination } from "../../value-object";
+
+/**
+ * 削除済みの書籍一覧（ゴミ箱）の検索条件（日時は From 以上・To 未満で絞り込む。指定がない項目は条件にしない）
+ */
+export type DeletedBookListQueryType = {
+  keyword?: string;
+  createdAtFrom?: Timestamp;
+  createdAtTo?: Timestamp;
+  // 書籍の削除で現在日時に更新するため、削除日時での絞り込みになる
+  updatedAtFrom?: Timestamp;
+  updatedAtTo?: Timestamp;
+  page: BookListPagination;
+};
 
 /**
  * 削除済みの書籍一覧（ゴミ箱）の1件分
@@ -25,16 +38,17 @@ export interface IGetListDeletedBookRepository {
   /**
    * ユーザーの削除済みの書籍一覧を更新日時の降順で取得
    * @param userId 書籍を所有するユーザーID
-   * @param pagination 取得するページ番号
+   * @param query 検索条件（取得するページ番号を含む）
    * @param pageSize 1ページあたりの最大取得件数
-   * @returns 指定ページの削除済みの書籍一覧
+   * @returns 検索条件に合う削除済みの書籍のうち指定ページの一覧
    */
-  findDeletedBookList(userId: UserId, pagination: BookListPagination, pageSize: number): Promise<DeletedBookListItem[]>;
+  findDeletedBookList(userId: UserId, query: DeletedBookListQueryType, pageSize: number): Promise<DeletedBookListItem[]>;
 
   /**
-   * ユーザーの削除済みの書籍の全件数を取得
+   * ユーザーの削除済みの書籍のうち検索条件に合う件数を取得
    * @param userId 書籍を所有するユーザーID
-   * @returns ページング適用前の全件数
+   * @param query 検索条件（ページ番号は使わない）
+   * @returns ページング適用前の件数
    */
-  countDeletedBook(userId: UserId): Promise<number>;
+  countDeletedBook(userId: UserId, query: DeletedBookListQueryType): Promise<number>;
 }
