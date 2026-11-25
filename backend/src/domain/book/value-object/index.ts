@@ -3,6 +3,7 @@ export * from "./author-name";
 export * from "./author-sort-order";
 export * from "./book-id";
 export * from "./book-list-pagination";
+export * from "./book-list-sort";
 export * from "./book-memo";
 export * from "./book-title";
 export * from "./character-age";
