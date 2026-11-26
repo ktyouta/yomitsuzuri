@@ -29,7 +29,7 @@ describe("GetListBookQuerySchema", () => {
     }
   });
 
-  it("keyword・日時を省略した場合、undefined になること", () => {
+  it("keyword・日時・並び順を省略した場合、undefined になること", () => {
     const result = GetListBookQuerySchema.safeParse({});
     expect(result.success).toBe(true);
     if (result.success) {
@@ -38,16 +38,18 @@ describe("GetListBookQuerySchema", () => {
       expect(result.data.createdAtTo).toBeUndefined();
       expect(result.data.updatedAtFrom).toBeUndefined();
       expect(result.data.updatedAtTo).toBeUndefined();
+      expect(result.data.sort).toBeUndefined();
     }
   });
 
-  it("keyword・日時は判定せず、文字列のまま通すこと", () => {
+  it("keyword・日時・並び順は判定せず、文字列のまま通すこと", () => {
     const query = {
       keyword: "テスト",
       createdAtFrom: "abc",
       createdAtTo: "2026-11-24",
       updatedAtFrom: "2026-11-19T15:00:00.000Z",
       updatedAtTo: "",
+      sort: "abc",
     };
     const result = GetListBookQuerySchema.safeParse(query);
     expect(result.success).toBe(true);

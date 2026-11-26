@@ -1,5 +1,5 @@
 import type { Timestamp, UserId } from "../../../shared";
-import type { BookListPagination } from "../../value-object";
+import type { BookListPagination, BookListSort } from "../../value-object";
 
 /**
  * 削除済みの書籍一覧（ゴミ箱）の検索条件（日時は From 以上・To 未満で絞り込む。指定がない項目は条件にしない）
@@ -11,6 +11,8 @@ export type DeletedBookListQueryType = {
   // 書籍の削除で現在日時に更新するため、削除日時での絞り込みになる
   updatedAtFrom?: Timestamp;
   updatedAtTo?: Timestamp;
+  // 更新日時での並び替えは、削除日時での並び替えになる
+  bookListSort: BookListSort;
   page: BookListPagination;
 };
 
@@ -36,7 +38,7 @@ export type DeletedBookListItem = {
  */
 export interface IGetListDeletedBookRepository {
   /**
-   * ユーザーの削除済みの書籍一覧を更新日時の降順で取得
+   * ユーザーの削除済みの書籍一覧を検索条件の並び順で取得
    * @param userId 書籍を所有するユーザーID
    * @param query 検索条件（取得するページ番号を含む）
    * @param pageSize 1ページあたりの最大取得件数

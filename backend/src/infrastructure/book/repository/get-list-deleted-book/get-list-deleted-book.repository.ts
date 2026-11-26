@@ -1,7 +1,15 @@
-import { and, count, desc, eq, gte, like, lt, or, sql } from "drizzle-orm";
-import type { DeletedBookListItem, DeletedBookListQueryType, IGetListDeletedBookRepository, UserId } from "../../../../domain";
+import { and, asc, count, desc, eq, gte, like, lt, or, SQL, sql } from "drizzle-orm";
+import type { BookListSortType, DeletedBookListItem, DeletedBookListQueryType, IGetListDeletedBookRepository, UserId } from "../../../../domain";
 import type { Database } from "../../../db";
 import { bookTransaction, iconMaster, readingStatusMaster, workTransaction } from "../../../db";
+
+// 日時が同じ書籍の順序をページ間で固定するため、どの並び順でも id を第2キーにする
+const SORT_MAP: Record<BookListSortType, SQL[]> = {
+  updatedAtDesc: [desc(bookTransaction.updatedAt), desc(bookTransaction.id)],
+  updatedAtAsc: [asc(bookTransaction.updatedAt), asc(bookTransaction.id)],
+  createdAtDesc: [desc(bookTransaction.createdAt), desc(bookTransaction.id)],
+  createdAtAsc: [asc(bookTransaction.createdAt), asc(bookTransaction.id)],
+};
 
 /**
  * 削除済みの書籍一覧取得リポジトリ実装
@@ -39,8 +47,7 @@ export class GetListDeletedBookRepository implements IGetListDeletedBookReposito
         )
       )
       .where(this.buildCondition(userId, query))
-      // 更新日時が同じ書籍の順序をページ間で固定するため id を第2キーにする
-      .orderBy(desc(bookTransaction.updatedAt), desc(bookTransaction.id))
+      .orderBy(...SORT_MAP[query.bookListSort.value])
       .limit(pageSize)
       .offset((query.page.value - 1) * pageSize);
   }

@@ -1,5 +1,5 @@
 import type { Timestamp, UserId } from "../../../shared";
-import type { BookListPagination } from "../../value-object";
+import type { BookListPagination, BookListSort } from "../../value-object";
 
 /**
  * 書籍一覧の検索条件（日時は From 以上・To 未満で絞り込む。指定がない項目は条件にしない）
@@ -10,6 +10,7 @@ export type BookListQueryType = {
   createdAtTo?: Timestamp;
   updatedAtFrom?: Timestamp;
   updatedAtTo?: Timestamp;
+  bookListSort: BookListSort;
   page: BookListPagination;
 };
 
@@ -33,7 +34,7 @@ export type BookListItem = {
  */
 export interface IGetListBookRepository {
   /**
-   * ユーザーの書籍一覧を更新日時の降順で取得
+   * ユーザーの書籍一覧を検索条件の並び順で取得
    * @param userId 書籍を所有するユーザーID
    * @param query 検索条件（取得するページ番号を含む）
    * @param pageSize 1ページあたりの最大取得件数

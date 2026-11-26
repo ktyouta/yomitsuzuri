@@ -9,12 +9,12 @@
 ### ユーザー決定事項
 
 - ページングあり（クエリ `page`、レスポンス `{ list, total, totalPages }`）
-- 並び順は updatedAt 降順
+- 並び順は updatedAt 降順（後から追加: クエリ `sort` で `updatedAtDesc`・`updatedAtAsc`・`createdAtDesc`・`createdAtAsc` を選べる。省略時・不正な値の場合は `updatedAtDesc`。2026-11-26 ユーザー実装）
 - 返却項目: id, title, updatedAt, readingStatusId（読書状況ID）, readingStatusLabel（表示名）, workCount, icon（絵文字）
 - 読書状況は `reading_status_master` を新設して JOIN し、読書状況IDと表示名をフラットに返す
 - 読み始めた日・タグ数・著者は返さない
 - 絞り込みは今回なし（後から追加: keyword（タイトル・メモの部分一致）、作成日時・更新日時の範囲（From 以上・To 未満。フロントが利用者の時間の日付を UTC の日時に変換して送り、To は終了日の翌日 0:00 にする））
-- 検索条件の不正な値はエラーにせず無視する（形式が不正な日時は条件から外し、不正なページ番号は1ページ目として扱う）
+- 検索条件の不正な値はエラーにせず無視する（形式が不正な日時は条件から外し、不正な並び順は `updatedAtDesc`、不正なページ番号は1ページ目として扱う）
 - 主キーを `id`（integer）にし、`book_transaction.reading_status_id` から FK で参照する（`icon_master` と同じ形。当初の「コード値（text）を主キー」から、ユーザー指示で変更）
 - 論理削除された読書状況は readingStatusLabel を null にする（Claude提案をユーザー承認）
 - page の上限（MAX_PAGE）は設けない
@@ -29,6 +29,7 @@
 - P3: 範囲外ページは 200 で空 list を返し、total / totalPages は実数を返す
 - P4: 0 件のとき totalPages = 0
 - P6: updatedAt が同じ場合の第2ソートキーは id 降順
+  - 並び順の追加（2026-11-26 ユーザー実装）で、どの並び順でも id を第2キーにし、向きは第1キーに合わせる（降順なら id 降順、昇順なら id 昇順）
 
 ## 設計
 
@@ -39,7 +40,7 @@
 - workCount: SELECT 句の相関サブクエリ（`work_transaction.delete_flg = false` の件数）
 - readingStatusLabel: `reading_status_master` を LEFT JOIN（結合条件に `delete_flg = false`）。削除済みの場合は null
 - icon: `icon_master` を LEFT JOIN（結合条件に `delete_flg = false`）。削除済み・未結合の場合は null
-- page 検証: zod（`z.coerce.number().int().min(BookListPagination.MIN_PAGE).default(BookListPagination.MIN_PAGE)`）と値オブジェクト `BookListPagination` の二段構え
+- page 検証: zod は文字列から数値への変換と省略時の既定値（`MIN_PAGE`）のみを行い、ページ番号として正しいかは値オブジェクト `BookListPagination` で判定する（当初は zod と値オブジェクトの二段構えだったが、絞り込みの追加時に変更した）
 - 1ページあたりの最大取得件数（`PAGE_SIZE` = 30）は Usecase が持ち、Repository に渡す。offset（`(page-1)*pageSize`）は Repository、totalPages（`ceil(total/PAGE_SIZE)`）は Usecase で算出する
 - 値オブジェクト `BookListPagination` は page の検証のみを担う
 
@@ -78,13 +79,25 @@
 
 ### BookListPagination（Value Object）
 
-- **不変条件**: page は 1 以上の整数
+- **不変条件**: value は `MIN_PAGE`（1）以上の整数
 
 | メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
 |---|---|---|---|
-| constructor(page) | page が 1 以上の整数（Error） | page は引数の値 | なし |
+| `FIRST`（定数） | なし | value は `MIN_PAGE`（1） | なし |
+| `create(page)` | なし | page が `MIN_PAGE` 以上の整数なら value が page のインスタンスを ok で返す。それ以外（NaN を含む）は `BOOK_LIST_PAGE_INVALID`（最小値 `min` 付き）を err で返す | なし |
 
-- **テストケース**: page=2 で page が 2 / page が 0・-1・1.5・NaN で例外
+- **テストケース**: FIRST の value が 1 / create(2) で value が 2 / create に 0・-1・1.5・NaN で `BOOK_LIST_PAGE_INVALID`（min=1）
+
+### BookListSort（Value Object）
+
+- **不変条件**: value は `SORTS`（`updatedAtDesc`・`updatedAtAsc`・`createdAtDesc`・`createdAtAsc`）のいずれか
+
+| メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
+|---|---|---|---|
+| `DEFAULT`（定数） | なし | value は `updatedAtDesc` | なし |
+| `create(sort)` | なし | sort が省略・空文字なら `DEFAULT` を ok で返す。`SORTS` のいずれかと完全一致すれば value が sort のインスタンスを ok で返す。それ以外は `BOOK_LIST_SORT_INVALID` を err で返す | なし |
+
+- **テストケース**: DEFAULT の value が `updatedAtDesc` / SORTS の各値で value がその値 / undefined・空文字で DEFAULT / "abc"・"UpdatedAtDesc"・"updatedAt"・" updatedAtDesc" で `BOOK_LIST_SORT_INVALID`
 
 ### ReadingStatusId（Value Object）
 
@@ -92,22 +105,23 @@
 
 | メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
 |---|---|---|---|
-| of(readingStatusId) | readingStatusId が 1 以上の整数（Error） | value は引数の値 | なし |
-| initial() | なし | value は `INITIAL`（1、未読） | なし |
+| `create(readingStatusId)` | なし | 1 以上の整数なら value が引数のインスタンスを ok で返す。それ以外（NaN を含む）は `READING_STATUS_ID_INVALID` を err で返す | なし |
+| `of(readingStatusId)` | readingStatusId が 1 以上の整数（Error。DB 等の信頼できる値からの生成に使う） | value は引数の値 | なし |
+| `initial()` | なし | value は `INITIAL`（1、未読） | なし |
 
-- **テストケース**: of(1) で生成できる / of に 0・-1・1.5・NaN で例外 / initial() の value が 1
+- **テストケース**: create(1) で生成できる / create に 0・-1・1.5・NaN で `READING_STATUS_ID_INVALID` / of で制約を満たす値から生成できる / of で制約を満たさない値は throw / initial() の value が 1
 - マスタに存在するかは FK で保証する（値オブジェクトでは確認しない）
 
 ### GetListBookUsecase（Usecase）
 
 | メソッド | 事前条件（違反時の例外） | 事後条件 | 決定的でない処理 |
 |---|---|---|---|
-| execute(userId, page) | page が上記の事前条件を満たす（Error。違反時は Repository を呼ばない）。userId の妥当性は `UserId` 型で保証する | userId・page・PAGE_SIZE（30）で一覧を、userId で全件数を問い合わせる。list・total は Repository の結果どおり。totalPages = ceil(total/30) | なし |
+| `execute({ userId, query })` | なし（userId の妥当性は `UserId` 型で保証する） | 一覧・全件数は Repository の結果をそのまま返し、`totalPages = ceil(total / 30)`（0件なら空の一覧・総ページ数0）。一覧は指定したユーザー・検索条件・30件で、件数は同じ検索条件で問い合わせる。検索条件の不正な値はエラーにせず無視する（形式が不正な日時は条件から外し、並び順が省略・不正なら `updatedAtDesc`、ページ番号が不正（1未満・整数でない・NaN）なら1ページ目として扱う）。当初は不正なページ番号で例外にしていたが、絞り込みの追加時に変更した | なし |
 
-- **テストケース**: list・total をそのまま返し total=31 で totalPages=2 / total=0 で空 list・totalPages=0 / total=30 で totalPages=1 / page=2 で Repository に userId・page=2・pageSize=30 が渡り、countBook に userId が渡る / page=0 で例外・findBookList・countBook 未呼び出し
-- offset の算出は Repository 実装にあり、単体テストの対象外（Repository のテストがないため）
+- **テストケース**: 一覧・全件数をそのまま返し総ページ数2（31件）／0件で空・総ページ数0／30件ちょうどで総ページ数1／ユーザー・検索条件（並び順を含む）・30件で一覧を、同じ検索条件で件数を問い合わせる／日時の指定なしで日時の条件なし／不正な形式の日時だけを条件から外す／ページ番号 0・1.5・NaN で1ページ目として問い合わせる／並び順の省略・空文字・不正な値で `updatedAtDesc` として問い合わせる
+- offset の算出・並び順の SQL への変換は Repository 実装にあり、単体テストの対象外（Repository のテストがないため）
 
 ### その他
 
-- DTO: 各項目がそのまま写像されること
-- zod スキーマ: 省略時 1 / "2"→2 / "0"・"-1"・"1.5"・"abc"・"" はエラー
+- DTO: 一覧・全件数・総ページ数から生成できること
+- zod スキーマ: 型と構造だけを検証し、値の制約は判定しない（値オブジェクトで判定する）。page は省略時 1・"2"→2、"0"・"1.5"・"" も判定せず数値に変換して通し、"abc" は NaN として通す。keyword・日時・並び順は省略時 undefined、指定時は判定せず文字列のまま通す

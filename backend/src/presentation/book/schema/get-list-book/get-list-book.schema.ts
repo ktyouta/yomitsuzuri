@@ -13,5 +13,6 @@ export const GetListBookQuerySchema = z.object({
   createdAtTo: z.string().optional(),
   updatedAtFrom: z.string().optional(),
   updatedAtTo: z.string().optional(),
+  sort: z.string().optional(),
   page: z.string().default(String(BookListPagination.MIN_PAGE)).transform(Number),
 });

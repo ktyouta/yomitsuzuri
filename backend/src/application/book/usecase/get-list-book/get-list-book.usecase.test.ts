@@ -62,6 +62,7 @@ describe("GetListBookUsecase", () => {
         createdAtTo: "2026-11-24T15:00:00.000Z",
         updatedAtFrom: "2026-11-20T15:00:00.000Z",
         updatedAtTo: "2026-11-25T15:00:00.000Z",
+        sort: "createdAtAsc",
         page: 2,
       },
     });
@@ -73,6 +74,7 @@ describe("GetListBookUsecase", () => {
     expect(query.createdAtTo?.value).toBe("2026-11-24T15:00:00.000Z");
     expect(query.updatedAtFrom?.value).toBe("2026-11-20T15:00:00.000Z");
     expect(query.updatedAtTo?.value).toBe("2026-11-25T15:00:00.000Z");
+    expect(query.bookListSort.value).toBe("createdAtAsc");
     expect(query.page.value).toBe(2);
     expect(pageSize).toBe(30);
     expect(repository.countBook).toHaveBeenCalledWith(USER_ID, query);
@@ -115,5 +117,25 @@ describe("GetListBookUsecase", () => {
 
     const [, query] = repository.findBookList.mock.calls[0];
     expect(query.page.value).toBe(1);
+  });
+
+  it.each([undefined, ""])("並び順が%sの場合、更新日時の降順で一覧を問い合わせること", async (sort) => {
+    const repository = createRepository([], 0);
+    const usecase = new GetListBookUsecase(repository);
+
+    await usecase.execute({ userId: USER_ID, query: { sort, page: 1 } });
+
+    const [, query] = repository.findBookList.mock.calls[0];
+    expect(query.bookListSort.value).toBe("updatedAtDesc");
+  });
+
+  it.each(["abc", "UPDATEDATASC", "updatedAt"])("並び順が不正（%s）な場合、更新日時の降順で一覧を問い合わせること", async (sort) => {
+    const repository = createRepository([], 0);
+    const usecase = new GetListBookUsecase(repository);
+
+    await usecase.execute({ userId: USER_ID, query: { sort, page: 1 } });
+
+    const [, query] = repository.findBookList.mock.calls[0];
+    expect(query.bookListSort.value).toBe("updatedAtDesc");
   });
 });
