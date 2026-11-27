@@ -316,6 +316,7 @@ export const bookTagTransaction = sqliteTable(
     userId: text("user_id").notNull().references(() => userMaster.id, { onDelete: "no action" }), // FK → user_master.id
     bookId: text("book_id").notNull(),
     tagId: text("tag_id").notNull(),
+    sortOrder: integer("sort_order").notNull(),
     deleteFlg: integer("delete_flg", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
