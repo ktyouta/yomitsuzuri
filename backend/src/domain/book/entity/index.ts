@@ -2,5 +2,6 @@ export * from "./author-entity";
 export * from "./character-entity";
 export * from "./character-relation-entity";
 export * from "./event-entity";
+export * from "./tag-entity";
 export * from "./word-entity";
 export * from "./work-entity";
